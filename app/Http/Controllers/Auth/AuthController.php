@@ -51,7 +51,7 @@ class AuthController extends Controller
         $user = Auth::user();
         $user->update(['last_login_at' => now()]);
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('admin.dashboard'));
     }
 
     public function logout(Request $request)
