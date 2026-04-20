@@ -1,35 +1,54 @@
 <template>
-    <div class="min-h-screen bg-gray-50">
-        <nav class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-            <h1 class="font-semibold text-gray-800">Yangi Asr Universiteti</h1>
-            <div class="flex items-center gap-4">
-                <span class="text-sm text-gray-600">{{ $page.props.auth.user.full_name }}</span>
-                <button
-                    @click="logout"
-                    class="text-sm text-gray-500 hover:text-gray-800 transition"
-                >
-                    Chiqish
-                </button>
+    <AppLayout title="Dashboard">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div
+                v-for="stat in stats"
+                :key="stat.label"
+                class="bg-white rounded-xl border border-gray-200 p-5"
+            >
+                <p class="text-xs text-gray-400 mb-1">{{ stat.label }}</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ stat.value }}</p>
             </div>
-        </nav>
-
-        <div class="max-w-7xl mx-auto px-6 py-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-2">Dashboard</h2>
-            <p class="text-gray-500 text-sm">
-                Xush kelibsiz, {{ $page.props.auth.user.full_name }}!
-                Sizning rolingiz:
-                <span class="font-medium text-gray-700">
-                    {{ $page.props.auth.user.roles[0] ?? 'Noma\'lum' }}
-                </span>
-            </p>
         </div>
-    </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 class="text-sm font-medium text-gray-700 mb-4">Tizim holati</h2>
+            <div class="space-y-3">
+                <div
+                    v-for="item in status"
+                    :key="item.label"
+                    class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                >
+                    <span class="text-sm text-gray-600">{{ item.label }}</span>
+                    <span
+                        class="text-xs px-2.5 py-1 rounded-full font-medium"
+                        :class="item.ok
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-red-50 text-red-600'"
+                    >
+                        {{ item.ok ? 'Ishlayapti' : 'Xato' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </AppLayout>
 </template>
 
 <script setup>
-import { router } from '@inertiajs/vue3'
+import AppLayout from '@/Layouts/AppLayout.vue'
 
-const logout = () => {
-    router.post('/logout')
-}
+const stats = [
+    { label: 'Talabalar', value: '0' },
+    { label: 'Abituriyentlar', value: '0' },
+    { label: 'Kurslar', value: '0' },
+    { label: 'Kitoblar', value: '0' },
+]
+
+const status = [
+    { label: 'Ma\'lumotlar bazasi', ok: true },
+    { label: 'Auth tizimi', ok: true },
+    { label: 'RBAC / Rollar', ok: true },
+    { label: 'SMS Gateway', ok: false },
+    { label: 'HEMIS integratsiya', ok: false },
+]
 </script>
