@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('applicants', function (Blueprint $table) {
@@ -22,9 +19,9 @@ return new class extends Migration
             $table->foreignId('direction_id')->nullable()->constrained()->nullOnDelete();
 
             // Shaxsiy ma'lumotlar
-            $table->string('first_name', 100);   // Familiya
-            $table->string('last_name', 100);    // Ism
-            $table->string('middle_name', 100);  // Otasining ismi
+            $table->string('first_name', 100);
+            $table->string('last_name', 100);
+            $table->string('middle_name', 100);
             $table->tinyInteger('birth_day');
             $table->tinyInteger('birth_month');
             $table->smallInteger('birth_year');
@@ -34,16 +31,21 @@ return new class extends Migration
             // Hujjat va aloqa
             $table->string('passport_series', 9);
             $table->string('jshshir', 14)->nullable();
-            $table->string('phone', 15);
-            $table->string('extra_phone', 15)->nullable();
+            $table->string('passport_file', 500)->nullable();
+            $table->string('phone', 20);
+            $table->string('extra_phone', 20)->nullable();
             $table->string('email', 255)->nullable();
+
+            // Magistr uchun fayllar
+            $table->string('diploma_file', 500)->nullable();
+            $table->string('diploma_appendix_file', 500)->nullable();
 
             // Manzil
             $table->foreignId('region_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('district_id')->nullable()->constrained()->nullOnDelete();
             $table->text('address')->nullable();
 
-            // Qo'shimcha (Magistr/Ko'chirish uchun)
+            // Qo'shimcha
             $table->string('previous_diploma', 255)->nullable();
             $table->string('previous_edu_place', 255)->nullable();
 
@@ -56,9 +58,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('applicants');

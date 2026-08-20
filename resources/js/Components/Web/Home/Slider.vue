@@ -1,6 +1,6 @@
 <template>
     <section class="container mx-auto px-4 pt-4">
-        <div class="relative rounded-2xl overflow-hidden slider-height">
+        <div class="relative rounded-lg overflow-hidden slider-height">
 
             <!-- Slides -->
             <div
