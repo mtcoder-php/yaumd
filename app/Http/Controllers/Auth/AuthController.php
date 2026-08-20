@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -47,6 +48,9 @@ class AuthController extends Controller
         RateLimiter::clear($key);
         $request->session()->regenerate();
 
+        // 1. Audit log yozish (Login)
+        AuditService::log('login');
+
         // Rolga qarab yo'naltirish
         $user = Auth::user();
         $user->update(['last_login_at' => now()]);
@@ -56,6 +60,9 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        // 2. Audit log yozish (Logout - Auth::logout'dan oldin yoziladi, chunki user_id kerak)
+        AuditService::log('logout');
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

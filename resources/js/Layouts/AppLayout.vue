@@ -158,6 +158,7 @@ import {
     CreditCardIcon,
     BuildingLibraryIcon,
     RectangleStackIcon,
+    CommandLineIcon, // <-- Audit log ikonkasi sifatida qo'shildi
 } from '@heroicons/vue/24/outline'
 
 defineProps({
@@ -222,6 +223,7 @@ const menus = {
         { icon: UsersIcon,                 label: 'Foydalanuvchilar', href: '/admin/users' },
         { icon: AcademicCapIcon,           label: 'Fakultetlar',      href: '/admin/faculties' },
         { icon: RectangleStackIcon,        label: "Yo'nalishlar",     href: '/admin/directions' },
+        { icon: CommandLineIcon,           label: 'Audit log',        href: '/admin/audit-logs' }, // <-- QO'SHILDI
         { type: 'group', label: 'Qabul' },
         { icon: ClipboardDocumentListIcon, label: 'Abituriyentlar',   href: '/admin/applicants' },
         { icon: CalendarDaysIcon,          label: 'Suhbatlar',        href: '/admin/interviews' },
