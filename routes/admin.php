@@ -10,9 +10,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Abituriyentlar
     Route::prefix('applicants')->name('applicants.')->group(function () {
-        Route::get('/',              [ApplicantController::class, 'index'])->name('index');
-        Route::get('/{id}',          [ApplicantController::class, 'show'])->name('show');
-        Route::patch('/{id}/status', [ApplicantController::class, 'updateStatus'])->name('status');
+        Route::get('/',                  [ApplicantController::class, 'index'])->name('index');
+        Route::get('/{id}',              [ApplicantController::class, 'show'])->name('show');
+        Route::get('/{id}/edit',         [ApplicantController::class, 'edit'])->name('edit');
+        Route::put('/{id}',              [ApplicantController::class, 'update'])->name('update');
+        Route::patch('/{id}/status',     [ApplicantController::class, 'updateStatus'])->name('status');
     });
 
 });

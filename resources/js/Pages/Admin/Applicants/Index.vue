@@ -78,14 +78,14 @@
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
-                        <tr v-if="!applicants.data.length">
+                        <tr v-if="!applicants.data?.length">
                             <td colspan="8" class="text-center py-16 text-gray-400">
                                 <Icon icon="mdi:file-search-outline" class="w-12 h-12 mx-auto mb-3 opacity-40" />
                                 <p class="text-sm">Ariza topilmadi</p>
                             </td>
                         </tr>
                         <tr
-                            v-for="a in applicants.data"
+                            v-for="a in applicants.data ?? []"
                             :key="a.id"
                             class="hover:bg-gray-50 transition-colors"
                         >
@@ -134,15 +134,24 @@
                                 {{ formatDate(a.created_at) }}
                             </td>
 
-                            <!-- Ko'rish -->
+                            <!-- Ko'rish / Tahrirlash -->
                             <td class="px-4 py-3">
-                                <Link
-                                    :href="route('admin.applicants.show', a.id)"
-                                    class="inline-flex items-center gap-1 text-xs font-medium text-[#0f3460] hover:text-[#533483] transition"
-                                >
-                                    <Icon icon="mdi:eye-outline" class="w-4 h-4" />
-                                    Ko'rish
-                                </Link>
+                                <div class="flex items-center gap-3">
+                                    <Link
+                                        :href="route('admin.applicants.show', a.id)"
+                                        class="inline-flex items-center gap-1 text-xs font-medium text-[#0f3460] hover:text-[#533483] transition"
+                                    >
+                                        <Icon icon="mdi:eye-outline" class="w-4 h-4" />
+                                        Ko'rish
+                                    </Link>
+                                    <Link
+                                        :href="route('admin.applicants.edit', a.id)"
+                                        class="inline-flex items-center gap-1 text-xs font-medium text-amber-600 hover:text-amber-800 transition"
+                                    >
+                                        <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
+                                        Tahrir
+                                    </Link>
+                                </div>
                             </td>
                         </tr>
                         </tbody>
@@ -150,23 +159,29 @@
                 </div>
 
                 <!-- Pagination -->
-                <div v-if="applicants.last_page > 1"
+                <div v-if="(applicants.last_page ?? 1) > 1"
                      class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
                     <p class="text-xs text-gray-500">
                         {{ applicants.from }}–{{ applicants.to }} / {{ applicants.total }}
                     </p>
                     <div class="flex items-center gap-1">
-                        <Link
-                            v-for="link in applicants.links"
-                            :key="link.label"
-                            :href="link.url || '#'"
-                            class="px-3 py-1.5 text-xs rounded-lg transition"
-                            :class="link.active
-                                ? 'text-white font-semibold'
-                                : 'text-gray-500 hover:bg-gray-100'"
-                            :style="link.active ? 'background:linear-gradient(135deg,#0f3460,#533483)' : ''"
-                            v-html="link.label"
-                        />
+                        <template v-for="link in (applicants.links ?? [])" :key="link.label">
+                            <Link
+                                v-if="link.url"
+                                :href="link.url"
+                                class="px-3 py-1.5 text-xs rounded-lg transition"
+                                :class="link.active
+                                    ? 'text-white font-semibold'
+                                    : 'text-gray-500 hover:bg-gray-100'"
+                                :style="link.active ? 'background:linear-gradient(135deg,#0f3460,#533483)' : ''"
+                                v-html="link.label"
+                            />
+                            <span
+                                v-else
+                                class="px-3 py-1.5 text-xs rounded-lg text-gray-300"
+                                v-html="link.label"
+                            />
+                        </template>
                     </div>
                 </div>
             </div>
@@ -182,8 +197,19 @@ import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
-    applicants: { type: Object, default: () => ({}) },
-    filters:    { type: Object, default: () => ({}) },
+    applicants: {
+        type: Object,
+        default: () => ({
+            data: [],
+            links: [],
+            total: 0,
+            from: 0,
+            to: 0,
+            last_page: 1,
+            current_page: 1,
+        })
+    },
+    filters: { type: Object, default: () => ({}) },
 })
 
 const filters = ref({

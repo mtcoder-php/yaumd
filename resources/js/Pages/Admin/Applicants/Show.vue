@@ -17,6 +17,16 @@
                     <p class="text-sm text-gray-500 font-mono">{{ applicant.application_number }}</p>
                 </div>
                 <div class="ml-auto flex items-center gap-3">
+                    <!-- Tahrirlash -->
+                    <Link
+                        :href="route('admin.applicants.edit', applicant.id)"
+                        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition hover:shadow-lg"
+                        style="background: linear-gradient(135deg, #0f3460, #533483)"
+                    >
+                        <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
+                        Tahrirlash
+                    </Link>
+
                     <!-- Status o'zgartirish -->
                     <select
                         v-model="selectedStatus"

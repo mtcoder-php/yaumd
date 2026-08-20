@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateAdmissionRequest;
 use App\Models\Applicant;
-use App\Models\Direction;
 use App\Models\Faculty;
+use App\Models\Region;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,17 +19,14 @@ class ApplicantController extends Controller
             ->with(['direction.faculty', 'region', 'district'])
             ->latest();
 
-        // Filter: status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter: education_type
         if ($request->filled('education_type')) {
             $query->where('education_type', $request->education_type);
         }
 
-        // Filter: search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -56,6 +54,31 @@ class ApplicantController extends Controller
         return Inertia::render('Admin/Applicants/Show', [
             'applicant' => $applicant,
         ]);
+    }
+
+    public function edit(int $id): Response
+    {
+        $applicant = Applicant::with(['direction.faculty', 'region', 'district'])
+            ->findOrFail($id);
+
+        return Inertia::render('Admin/Applicants/Edit', [
+            'applicant' => $applicant,
+            'faculties' => Faculty::where('is_active', true)
+                ->with(['directions' => fn($q) => $q->where('is_active', true)])
+                ->get(),
+            'regions'   => Region::where('is_active', true)
+                ->with(['districts' => fn($q) => $q->where('is_active', true)])
+                ->get(),
+        ]);
+    }
+
+    public function update(UpdateAdmissionRequest $request, int $id)
+    {
+        $applicant = Applicant::findOrFail($id);
+        $applicant->update($request->validated());
+
+        return redirect()->route('admin.applicants.show', $id)
+            ->with('success', "Ma'lumotlar yangilandi!");
     }
 
     public function updateStatus(Request $request, int $id)

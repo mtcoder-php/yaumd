@@ -202,7 +202,10 @@ const initials = computed(() => {
     return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
 })
 
-const isActive = (href) => page.url.startsWith(href)
+const isActive = (href) => {
+    if (!href) return false
+    return page.url.startsWith(href)
+}
 
 const logout = () => {
     userMenuOpen.value = false
