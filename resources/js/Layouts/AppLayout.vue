@@ -141,8 +141,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
+import { useToast } from 'vue-toastification'
 import {
     Bars3Icon,
     ChevronDownIcon,
@@ -158,7 +159,8 @@ import {
     CreditCardIcon,
     BuildingLibraryIcon,
     RectangleStackIcon,
-    CommandLineIcon, // <-- Audit log ikonkasi sifatida qo'shildi
+    CommandLineIcon,
+    BookmarkSquareIcon,
 } from '@heroicons/vue/24/outline'
 
 defineProps({
@@ -169,14 +171,22 @@ defineProps({
 })
 
 const page = usePage()
-const auth = computed(() => page.props.auth)
+const toast = useToast()
+
+// Flash xabarlarni toastr orqali chiqarish
+watch(() => page.props.flash, (flash) => {
+    if (flash?.success) toast.success(flash.success)
+    if (flash?.error)   toast.error(flash.error)
+}, { immediate: true, deep: true })
 
 const sidebarOpen  = ref(false)
 const userMenuOpen = ref(false)
 const roleSwitcherOpen = ref(false)
 
+const auth = computed(() => page.props.auth)
+
 // Rol almashtirgich — localStorage da saqlanadi
-const activeRole = ref(localStorage.getItem('devRole') || auth.value.user?.roles?.[0] || 'super-admin')
+const activeRole = ref(localStorage.getItem('devRole') || auth.value?.user?.roles?.[0] || 'super-admin')
 
 const allRoles = [
     { value: 'super-admin', label: 'Super Admin' },
@@ -199,7 +209,7 @@ const switchRole = (role) => {
 }
 
 const initials = computed(() => {
-    const name = auth.value.user?.full_name || ''
+    const name = auth.value?.user?.full_name || ''
     return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
 })
 
@@ -223,11 +233,12 @@ const menus = {
         { icon: UsersIcon,                 label: 'Foydalanuvchilar', href: '/admin/users' },
         { icon: AcademicCapIcon,           label: 'Fakultetlar',      href: '/admin/faculties' },
         { icon: RectangleStackIcon,        label: "Yo'nalishlar",     href: '/admin/directions' },
-        { icon: CommandLineIcon,           label: 'Audit log',        href: '/admin/audit-logs' }, // <-- QO'SHILDI
+        { icon: BookOpenIcon,              label: 'Fanlar',           href: '/admin/subjects' },
+        { icon: ShieldCheckIcon,           label: 'Audit log',        href: '/admin/audit-logs' },
         { type: 'group', label: 'Qabul' },
         { icon: ClipboardDocumentListIcon, label: 'Abituriyentlar',   href: '/admin/applicants' },
         { icon: CalendarDaysIcon,          label: 'Suhbatlar',        href: '/admin/interviews' },
-        { icon: DocumentTextIcon,          label: 'Testlar',          href: '/admin/tests' },
+        { icon: DocumentTextIcon,          label: 'Test savollari',   href: '/admin/test-questions' },
         { type: 'group', label: 'Moliya' },
         { icon: DocumentTextIcon,          label: 'Kontraktlar',      href: '/admin/contracts' },
         { icon: CreditCardIcon,            label: "To'lovlar",        href: '/admin/payments' },
@@ -242,10 +253,11 @@ const menus = {
         { icon: UsersIcon,                 label: 'Foydalanuvchilar', href: '/admin/users' },
         { icon: AcademicCapIcon,           label: 'Fakultetlar',      href: '/admin/faculties' },
         { icon: RectangleStackIcon,        label: "Yo'nalishlar",     href: '/admin/directions' },
+        { icon: BookOpenIcon,              label: 'Fanlar',           href: '/admin/subjects' },
         { type: 'group', label: 'Qabul' },
         { icon: ClipboardDocumentListIcon, label: 'Abituriyentlar',   href: '/admin/applicants' },
         { icon: CalendarDaysIcon,          label: 'Suhbatlar',        href: '/admin/interviews' },
-        { icon: DocumentTextIcon,          label: 'Testlar',          href: '/admin/tests' },
+        { icon: DocumentTextIcon,          label: 'Test savollari',   href: '/admin/test-questions' },
         { type: 'group', label: 'Moliya' },
         { icon: DocumentTextIcon,          label: 'Kontraktlar',      href: '/admin/contracts' },
         { icon: CreditCardIcon,            label: "To'lovlar",        href: '/admin/payments' },
@@ -255,12 +267,13 @@ const menus = {
     ],
     'admission': [
         { type: 'group', label: 'Asosiy' },
-        { icon: Squares2X2Icon,            label: 'Dashboard',      href: '/admin/dashboard' },
+        { icon: Squares2X2Icon,            label: 'Dashboard',        href: '/admin/dashboard' },
         { type: 'group', label: 'Qabul' },
-        { icon: ClipboardDocumentListIcon, label: 'Abituriyentlar', href: '/admin/applicants' },
-        { icon: CalendarDaysIcon,          label: 'Suhbatlar',      href: '/admin/interviews' },
-        { icon: DocumentTextIcon,          label: 'Testlar',        href: '/admin/tests' },
-        { icon: DocumentTextIcon,          label: 'Kontraktlar',    href: '/admin/contracts' },
+        { icon: ClipboardDocumentListIcon, label: 'Abituriyentlar',   href: '/admin/applicants' },
+        { icon: CalendarDaysIcon,          label: 'Suhbatlar',        href: '/admin/interviews' },
+        { icon: BookOpenIcon,              label: 'Fanlar',           href: '/admin/subjects' },
+        { icon: DocumentTextIcon,          label: 'Test savollari',   href: '/admin/test-questions' },
+        { icon: DocumentTextIcon,          label: 'Kontraktlar',      href: '/admin/contracts' },
     ],
     'teacher': [
         { type: 'group', label: 'Asosiy' },

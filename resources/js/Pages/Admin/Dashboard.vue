@@ -322,7 +322,7 @@ const educationTypes = [
     { value: 'bachelor', label: 'Bakalavr',       icon: 'mdi:school-outline',          color: '#3b82f6' },
     { value: 'master',   label: 'Magistr',         icon: 'mdi:account-school-outline',  color: '#8b5cf6' },
     { value: 'transfer', label: 'Transfer',        icon: 'mdi:transfer',                color: '#f97316' },
-    { value: 'second',   label: '2-mutaxassislik', icon: 'mdi:layers-outline',          color: '#14b8a6' },
+    { value: 'second',   label: 'Ikkinchi-mutaxassislik', icon: 'mdi:layers-outline',          color: '#14b8a6' },
 ]
 
 // Tizim holati

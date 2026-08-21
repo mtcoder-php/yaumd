@@ -41,4 +41,9 @@ class Direction extends Model
     {
         return $this->hasMany(Applicant::class);
     }
+
+    public function subjects(): HasMany
+    {
+        return $this->hasMany(DirectionSubject::class);
+    }
 }

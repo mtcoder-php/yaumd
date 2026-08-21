@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TestQuestion extends Model
 {
     protected $fillable = [
-        'test_id', 'question',
+        'subject_id', 'language', 'question',
         'option_a', 'option_b', 'option_c', 'option_d',
         'correct_answer', 'order', 'is_active',
     ];
@@ -20,8 +20,8 @@ class TestQuestion extends Model
         return ['is_active' => 'boolean'];
     }
 
-    public function test(): BelongsTo
+    public function subject(): BelongsTo
     {
-        return $this->belongsTo(Test::class);
+        return $this->belongsTo(Subject::class);
     }
 }
