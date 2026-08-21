@@ -10,6 +10,7 @@ use App\Models\Region;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\TestSession;
 
 class ApplicantController extends Controller
 {
@@ -88,8 +89,43 @@ class ApplicantController extends Controller
         ]);
 
         $applicant = Applicant::findOrFail($id);
+        $oldStatus = $applicant->status;
         $applicant->update(['status' => $request->status]);
 
+        // "tested" statusga o'tganda avtomatik test sessiyasi yaratish
+        if ($request->status === 'tested' && $oldStatus !== 'tested') {
+            $this->createTestSession($applicant);
+        }
+
         return back()->with('success', 'Status yangilandi!');
+    }
+
+    private function createTestSession(Applicant $applicant): void
+    {
+        // Avval mavjud sessiyani tekshiramiz
+        if (TestSession::where('applicant_id', $applicant->id)->exists()) {
+            return;
+        }
+
+        // Parol: DD.MM.YYYY
+        $password = sprintf(
+            '%02d.%02d.%d',
+            $applicant->birth_day,
+            $applicant->birth_month,
+            $applicant->birth_year
+        );
+
+        TestSession::create([
+            'applicant_id'    => $applicant->id,
+            'direction_id'    => $applicant->direction_id,
+            'language'        => 'uz',
+            'foreign_lang'    => 'en',
+            'login'           => $applicant->passport_series,
+            'password_plain'  => $password,
+            'password'        => bcrypt($password),
+            'status'          => 'pending',
+            'expires_at'      => now()->addDays(30),
+            'total_questions' => 90,
+        ]);
     }
 }

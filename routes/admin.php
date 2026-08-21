@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TestQuestionController;
 use App\Http\Controllers\Admin\DirectionSubjectController;
+use App\Http\Controllers\Admin\TestSessionController;
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
 
@@ -52,4 +53,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('/{id}', [DirectionSubjectController::class, 'destroy'])->name('destroy');
     });
 
+
+
+
+    Route::prefix('test-sessions')->name('test-sessions.')->group(function () {
+        Route::get('/',        [TestSessionController::class, 'index'])->name('index');
+        Route::delete('/{id}', [TestSessionController::class, 'destroy'])->name('destroy');
+    });
 });
