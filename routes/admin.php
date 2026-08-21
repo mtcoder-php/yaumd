@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ApplicantController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TestQuestionController;
+use App\Http\Controllers\Admin\DirectionSubjectController;
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
 
@@ -25,12 +26,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Fanlar va savollar
     Route::prefix('subjects')->name('subjects.')->group(function () {
-        Route::get('/',        [SubjectController::class, 'index'])->name('index');
-        Route::get('/create',  [SubjectController::class, 'create'])->name('create');
-        Route::post('/',       [SubjectController::class, 'store'])->name('store');
+        Route::get('/',          [SubjectController::class, 'index'])->name('index');
+        Route::get('/create',    [SubjectController::class, 'create'])->name('create');
+        Route::post('/',         [SubjectController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [SubjectController::class, 'edit'])->name('edit');
-        Route::put('/{id}',    [SubjectController::class, 'update'])->name('update');
-        Route::delete('/{id}', [SubjectController::class, 'destroy'])->name('destroy');
+        Route::put('/{id}',      [SubjectController::class, 'update'])->name('update');
+        Route::delete('/{id}',   [SubjectController::class, 'destroy'])->name('destroy');
 
         // Savollar — fan ichida
         Route::get('/{id}/questions',            [TestQuestionController::class, 'index'])->name('questions.index');
@@ -41,6 +42,14 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/{id}/questions/{qId}/edit', [TestQuestionController::class, 'edit'])->name('questions.edit');
         Route::put('/{id}/questions/{qId}',      [TestQuestionController::class, 'update'])->name('questions.update');
         Route::delete('/{id}/questions/{qId}',   [TestQuestionController::class, 'destroy'])->name('questions.destroy');
+    });
+
+    // Yo'nalish-fanlar
+    Route::prefix('direction-subjects')->name('direction-subjects.')->group(function () {
+        Route::get('/',        [DirectionSubjectController::class, 'index'])->name('index');
+        Route::post('/',       [DirectionSubjectController::class, 'store'])->name('store');
+        Route::put('/{id}',    [DirectionSubjectController::class, 'update'])->name('update');
+        Route::delete('/{id}', [DirectionSubjectController::class, 'destroy'])->name('destroy');
     });
 
 });
