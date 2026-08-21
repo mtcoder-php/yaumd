@@ -102,12 +102,10 @@ class ApplicantController extends Controller
 
     private function createTestSession(Applicant $applicant): void
     {
-        // Avval mavjud sessiyani tekshiramiz
         if (TestSession::where('applicant_id', $applicant->id)->exists()) {
             return;
         }
 
-        // Parol: DD.MM.YYYY
         $password = sprintf(
             '%02d.%02d.%d',
             $applicant->birth_day,
@@ -116,16 +114,16 @@ class ApplicantController extends Controller
         );
 
         TestSession::create([
-            'applicant_id'    => $applicant->id,
-            'direction_id'    => $applicant->direction_id,
-            'language'        => 'uz',
-            'foreign_lang'    => 'en',
-            'login'           => $applicant->passport_series,
-            'password_plain'  => $password,
-            'password'        => bcrypt($password),
-            'status'          => 'pending',
-            'expires_at'      => now()->addDays(30),
-            'total_questions' => 90,
+            'applicant_id'   => $applicant->id,
+            'direction_id'   => $applicant->direction_id,
+            'language'       => 'uz',
+            'foreign_lang'   => 'en',
+            'login'          => $applicant->passport_series,
+            'password_plain' => $password,
+            'password'       => bcrypt($password),
+            'status'         => 'pending',
+            'expires_at'     => now()->addDays(30),
+            'total_questions'=> 90,
         ]);
     }
 }

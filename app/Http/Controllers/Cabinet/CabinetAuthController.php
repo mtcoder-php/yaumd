@@ -26,14 +26,23 @@ class CabinetAuthController extends Controller
             'password.required' => 'Parolni kiriting',
         ]);
 
-        $session = TestSession::where('login', strtoupper(trim($request->login)))
-            ->whereIn('status', ['pending', 'active'])
-            ->first();
+        $session = TestSession::where('login', strtoupper(trim($request->login)))->first();
 
         if (!$session || !Hash::check($request->password, $session->password)) {
             return back()->withErrors([
                 'login' => "Login yoki parol noto'g'ri!",
             ]);
+        }
+
+        if ($session->status === 'expired') {
+            return back()->withErrors([
+                'login' => 'Test sessiyangiz muddati tugagan!',
+            ]);
+        }
+
+        if ($session->status === 'completed') {
+            session(['cabinet_session_id' => $session->id]);
+            return redirect()->route('cabinet.test.result');
         }
 
         if ($session->expires_at && $session->expires_at->isPast()) {
@@ -43,9 +52,7 @@ class CabinetAuthController extends Controller
             ]);
         }
 
-        // Session ga saqlash
         session(['cabinet_session_id' => $session->id]);
-
         return redirect()->route('cabinet.test.language');
     }
 

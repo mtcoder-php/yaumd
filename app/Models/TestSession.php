@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TestSession extends Model
 {
     protected $fillable = [
-        'applicant_id', 'test_id', 'login', 'password',
-        'score', 'correct_answers', 'status',
-        'started_at', 'finished_at', 'expires_at', 'answers',
+        'applicant_id', 'direction_id', 'language', 'foreign_lang',
+        'login', 'password_plain', 'password',
+        'score', 'correct_answers', 'total_questions',
+        'status', 'started_at', 'finished_at', 'expires_at', 'answers',
     ];
 
     protected $hidden = ['password'];
@@ -30,8 +31,8 @@ class TestSession extends Model
         return $this->belongsTo(Applicant::class);
     }
 
-    public function test(): BelongsTo
+    public function direction(): BelongsTo
     {
-        return $this->belongsTo(Test::class);
+        return $this->belongsTo(Direction::class);
     }
 }
