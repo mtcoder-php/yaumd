@@ -7,10 +7,10 @@ use App\Http\Requests\UpdateAdmissionRequest;
 use App\Models\Applicant;
 use App\Models\Faculty;
 use App\Models\Region;
+use App\Models\TestSession;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\TestSession;
 
 class ApplicantController extends Controller
 {
@@ -92,12 +92,33 @@ class ApplicantController extends Controller
         $oldStatus = $applicant->status;
         $applicant->update(['status' => $request->status]);
 
-        // "tested" statusga o'tganda avtomatik test sessiyasi yaratish
         if ($request->status === 'tested' && $oldStatus !== 'tested') {
             $this->createTestSession($applicant);
         }
 
         return back()->with('success', 'Status yangilandi!');
+    }
+
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'ids'    => 'required|array',
+            'ids.*'  => 'exists:applicants,id',
+            'status' => 'required|in:new,accepted,interview,tested,contracted,enrolled,rejected',
+        ]);
+
+        $applicants = Applicant::whereIn('id', $request->ids)->get();
+
+        foreach ($applicants as $applicant) {
+            $oldStatus = $applicant->status;
+            $applicant->update(['status' => $request->status]);
+
+            if ($request->status === 'tested' && $oldStatus !== 'tested') {
+                $this->createTestSession($applicant);
+            }
+        }
+
+        return back()->with('success', count($request->ids) . ' ta abituriyent statusi yangilandi!');
     }
 
     private function createTestSession(Applicant $applicant): void
@@ -114,16 +135,16 @@ class ApplicantController extends Controller
         );
 
         TestSession::create([
-            'applicant_id'   => $applicant->id,
-            'direction_id'   => $applicant->direction_id,
-            'language'       => 'uz',
-            'foreign_lang'   => 'en',
-            'login'          => $applicant->passport_series,
-            'password_plain' => $password,
-            'password'       => bcrypt($password),
-            'status'         => 'pending',
-            'expires_at'     => now()->addDays(30),
-            'total_questions'=> 90,
+            'applicant_id'    => $applicant->id,
+            'direction_id'    => $applicant->direction_id,
+            'language'        => 'uz',
+            'foreign_lang'    => 'en',
+            'login'           => $applicant->passport_series,
+            'password_plain'  => $password,
+            'password'        => bcrypt($password),
+            'status'          => 'pending',
+            'expires_at'      => now()->addDays(30),
+            'total_questions' => 90,
         ]);
     }
 }

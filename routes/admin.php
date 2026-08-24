@@ -20,7 +20,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/{id}/edit',     [ApplicantController::class, 'edit'])->name('edit');
         Route::put('/{id}',          [ApplicantController::class, 'update'])->name('update');
         Route::patch('/{id}/status', [ApplicantController::class, 'updateStatus'])->name('status');
-    });
+        Route::patch('/bulk-status', [ApplicantController::class, 'bulkUpdateStatus'])->name('bulk-status');    });
 
     // Audit log
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
