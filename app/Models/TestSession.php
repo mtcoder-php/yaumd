@@ -11,7 +11,8 @@ class TestSession extends Model
         'applicant_id', 'direction_id', 'language', 'foreign_lang',
         'login', 'password_plain', 'password',
         'score', 'correct_answers', 'total_questions',
-        'status', 'started_at', 'finished_at', 'expires_at', 'answers',
+        'status', 'started_at', 'finished_at', 'expires_at',
+        'answers', 'questions',
     ];
 
     protected $hidden = ['password'];
@@ -20,6 +21,7 @@ class TestSession extends Model
     {
         return [
             'answers'     => 'array',
+            'questions'   => 'array',
             'started_at'  => 'datetime',
             'finished_at' => 'datetime',
             'expires_at'  => 'datetime',

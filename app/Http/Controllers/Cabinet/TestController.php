@@ -9,7 +9,7 @@ use App\Models\TestSession;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-
+use Illuminate\Http\RedirectResponse;
 class TestController extends Controller
 {
     private function getSession(): ?TestSession
@@ -61,7 +61,7 @@ class TestController extends Controller
     }
 
     // Test boshlash
-    public function start(): Response
+    public function start(): Response|RedirectResponse
     {
         $session = $this->getSession();
         if (!$session) return redirect()->route('cabinet.login');
@@ -70,12 +70,19 @@ class TestController extends Controller
             return redirect()->route('cabinet.test.result');
         }
 
-        $questions = $this->loadQuestions($session);
+        // Savollarni bir marta yuklash va saqlash
+        if (empty($session->questions)) {
+            $questions = $this->loadQuestions($session);
 
-        if (empty($questions)) {
-            return Inertia::render('Cabinet/Test/Error', [
-                'message' => "Bu yo'nalish uchun savollar mavjud emas!",
-            ]);
+            if (empty($questions)) {
+                return Inertia::render('Cabinet/Test/Error', [
+                    'message' => "Bu yo'nalish uchun savollar mavjud emas!",
+                ]);
+            }
+
+            $session->update(['questions' => $questions]);
+        } else {
+            $questions = $session->questions;
         }
 
         // Sessiyani faollashtirish
@@ -95,11 +102,11 @@ class TestController extends Controller
 
         return Inertia::render('Cabinet/Test/Taking', [
             'session' => [
-                'id'          => $session->id,
-                'language'    => $session->language,
-                'foreign_lang'=> $session->foreign_lang,
-                'started_at'  => $session->started_at,
-                'expires_at'  => $session->expires_at,
+                'id'           => $session->id,
+                'language'     => $session->language,
+                'foreign_lang' => $session->foreign_lang,
+                'started_at'   => $session->started_at,
+                'expires_at'   => $session->expires_at,
             ],
             'questions' => $questions,
             'answers'   => $session->answers ?? [],
@@ -144,7 +151,8 @@ class TestController extends Controller
     }
 
     // Natija sahifasi
-    public function result(): Response
+// Natija sahifasi
+    public function result(): Response|RedirectResponse
     {
         $session = $this->getSession();
         if (!$session) return redirect()->route('cabinet.login');
@@ -153,20 +161,18 @@ class TestController extends Controller
             return redirect()->route('cabinet.test.start');
         }
 
-        $questions = $this->loadQuestions($session);
-
         return Inertia::render('Cabinet/Test/Result', [
             'session'   => $session->load('applicant', 'direction'),
-            'questions' => $questions,
-            'answers'   => $session->answers ?? [],
+            'questions' => $session->questions ?? [],
+            'answers'   => $session->answers  ?? [],
         ]);
     }
 
-    // Sessiyani yakunlash va ball hisoblash
+// Sessiyani yakunlash
     private function finishSession(TestSession $session): void
     {
-        $questions      = $this->loadQuestions($session);
-        $answers        = $session->answers ?? [];
+        $questions      = $session->questions ?? [];
+        $answers        = $session->answers   ?? [];
         $totalScore     = 0;
         $correctAnswers = 0;
 

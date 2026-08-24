@@ -25,6 +25,7 @@ return new class extends Migration
             $table->timestamp('finished_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->json('answers')->nullable();
+            $table->json('questions')->nullable(); // ← savollar bir marta saqlanadi
             $table->timestamps();
         });
     }

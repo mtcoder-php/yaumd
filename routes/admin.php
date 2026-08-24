@@ -57,7 +57,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
 
     Route::prefix('test-sessions')->name('test-sessions.')->group(function () {
-        Route::get('/',        [TestSessionController::class, 'index'])->name('index');
-        Route::delete('/{id}', [TestSessionController::class, 'destroy'])->name('destroy');
+        Route::get('/',           [TestSessionController::class, 'index'])->name('index');
+        Route::post('/{id}/reset',[TestSessionController::class, 'reset'])->name('reset');
+        Route::delete('/{id}',    [TestSessionController::class, 'destroy'])->name('destroy');
     });
 });

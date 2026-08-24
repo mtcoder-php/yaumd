@@ -58,12 +58,11 @@
                             Parol (tug'ilgan sana)
                         </label>
                         <input
-                            v-model="form.password"
-                            type="text"
-                            placeholder="KK.OO.YYYY"
+                            type="date"
                             class="w-full px-4 py-3 rounded-xl text-sm font-mono outline-none transition-all"
-                            style="background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2); color: white"
+                            style="background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2); color: white; color-scheme: dark"
                             :style="form.errors.password ? 'border-color: #f87171' : ''"
+                            @change="onDateChange"
                             @keyup.enter="submit"
                         >
                         <p v-if="form.errors.password" class="text-red-400 text-xs mt-1.5">{{ form.errors.password }}</p>
@@ -73,8 +72,7 @@
                     <div class="p-3 rounded-xl" style="background: rgba(255,255,255,0.08)">
                         <p class="text-xs flex items-start gap-2" style="color: rgba(255,255,255,0.6)">
                             <Icon icon="mdi:information-outline" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                            Parol — tug'ilgan sanangiz. Masalan:
-                            <strong style="color: rgba(255,255,255,0.9)">15.12.1999</strong>
+                            Parol — tug'ilgan sanangiz. Taqvimdan tanlang!
                         </p>
                     </div>
 
@@ -102,6 +100,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 
@@ -109,6 +108,14 @@ const form = useForm({
     login:    '',
     password: '',
 })
+
+const onDateChange = (e) => {
+    const val = e.target.value // YYYY-MM-DD
+    if (val) {
+        const [y, m, d] = val.split('-')
+        form.password = `${d}.${m}.${y}`
+    }
+}
 
 const submit = () => {
     form.post(route('cabinet.login.post'))

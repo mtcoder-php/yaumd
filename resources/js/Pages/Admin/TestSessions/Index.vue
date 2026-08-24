@@ -39,7 +39,7 @@
                     <option value="expired">Muddati o'tgan</option>
                 </select>
 
-                <!-- Reset -->
+                <!-- Reset filters -->
                 <button
                     v-if="hasFilters"
                     @click="resetFilters"
@@ -90,16 +90,16 @@
 
                             <!-- Login -->
                             <td class="px-4 py-3">
-                                    <span class="text-sm font-mono font-semibold text-[#0f3460]">
-                                        {{ session.login }}
-                                    </span>
+                                <span class="text-sm font-mono font-semibold text-[#0f3460]">
+                                    {{ session.login }}
+                                </span>
                             </td>
 
                             <!-- Parol -->
                             <td class="px-4 py-3">
-                                    <span class="text-sm font-mono text-gray-600">
-                                        {{ session.password_plain }}
-                                    </span>
+                                <span class="text-sm font-mono text-gray-600">
+                                    {{ session.password_plain }}
+                                </span>
                             </td>
 
                             <!-- Yo'nalish -->
@@ -111,44 +111,53 @@
                             <!-- Til -->
                             <td class="px-4 py-3">
                                 <div class="flex flex-col gap-1">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                                              :class="session.language === 'uz' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'">
-                                            {{ session.language === 'uz' ? "O'zbek" : 'Rus' }}
-                                        </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                          :class="session.language === 'uz' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'">
+                                        {{ session.language === 'uz' ? "O'zbek" : 'Rus' }}
+                                    </span>
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                            {{ session.foreign_lang === 'en' ? 'Ingliz' : 'Arab' }}
-                                        </span>
+                                        {{ session.foreign_lang === 'en' ? 'Ingliz' : 'Arab' }}
+                                    </span>
                                 </div>
                             </td>
 
                             <!-- Ball -->
                             <td class="px-4 py-3">
-                                    <span v-if="session.score !== null" class="text-sm font-bold text-green-600">
-                                        {{ session.score }}
-                                    </span>
+                                <span v-if="session.score !== null" class="text-sm font-bold text-green-600">
+                                    {{ session.score }}
+                                </span>
                                 <span v-else class="text-xs text-gray-400">—</span>
                             </td>
 
                             <!-- Status -->
                             <td class="px-4 py-3">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
-                                        :class="statusBadge(session.status)"
-                                    >
-                                        <Icon :icon="statusIcon(session.status)" class="w-3 h-3 mr-1" />
-                                        {{ statusLabel(session.status) }}
-                                    </span>
+                                <span
+                                    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+                                    :class="statusBadge(session.status)"
+                                >
+                                    <Icon :icon="statusIcon(session.status)" class="w-3 h-3 mr-1" />
+                                    {{ statusLabel(session.status) }}
+                                </span>
                             </td>
 
                             <!-- Amallar -->
                             <td class="px-4 py-3">
-                                <button
-                                    @click="confirmDelete(session)"
-                                    class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1"
-                                >
-                                    <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
-                                    O'chirish
-                                </button>
+                                <div class="flex items-center gap-3">
+                                    <button
+                                        @click="confirmReset(session)"
+                                        class="text-xs font-medium text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                                    >
+                                        <Icon icon="mdi:refresh" class="w-3.5 h-3.5" />
+                                        Qayta berish
+                                    </button>
+                                    <button
+                                        @click="confirmDelete(session)"
+                                        class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1"
+                                    >
+                                        <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
+                                        O'chirish
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         </tbody>
@@ -174,6 +183,29 @@
                             <span v-else class="px-3 py-1.5 text-xs text-gray-300" v-html="link.label" />
                         </template>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reset modal -->
+        <div
+            v-if="resetTarget"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style="background: rgba(0,0,0,0.5)"
+            @click.self="resetTarget = null"
+        >
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
+                    <Icon icon="mdi:refresh" class="w-6 h-6 text-blue-500" />
+                </div>
+                <h3 class="text-base font-bold text-gray-900 text-center mb-2">Qayta test berish</h3>
+                <p class="text-sm text-gray-500 text-center mb-6">
+                    <strong>{{ resetTarget?.applicant?.last_name }} {{ resetTarget?.applicant?.first_name }}</strong>
+                    ga yangi test sessiyasi yaratilib, eski natija o'chiriladi. Davom etasizmi?
+                </p>
+                <div class="flex gap-3">
+                    <button @click="resetTarget = null" class="btn-secondary flex-1">Bekor qilish</button>
+                    <button @click="submitReset" class="btn-primary flex-1">Qayta berish</button>
                 </div>
             </div>
         </div>
@@ -216,6 +248,7 @@ const props = defineProps({
 })
 
 const deleteTarget = ref(null)
+const resetTarget  = ref(null)
 
 const filters = ref({
     search: props.filters.search || '',
@@ -243,10 +276,10 @@ const resetFilters = () => {
 }
 
 const statuses = [
-    { value: 'pending',   label: 'Kutilmoqda',       icon: 'mdi:clock-outline',         class: 'bg-yellow-50 text-yellow-700' },
-    { value: 'active',    label: 'Faol',              icon: 'mdi:play-circle-outline',   class: 'bg-green-50 text-green-700' },
-    { value: 'completed', label: 'Yakunlangan',       icon: 'mdi:check-circle-outline',  class: 'bg-blue-50 text-blue-700' },
-    { value: 'expired',   label: "Muddati o'tgan",    icon: 'mdi:alert-circle-outline',  class: 'bg-red-50 text-red-700' },
+    { value: 'pending',   label: 'Kutilmoqda',    icon: 'mdi:clock-outline',        class: 'bg-yellow-50 text-yellow-700' },
+    { value: 'active',    label: 'Faol',           icon: 'mdi:play-circle-outline',  class: 'bg-green-50 text-green-700' },
+    { value: 'completed', label: 'Yakunlangan',    icon: 'mdi:check-circle-outline', class: 'bg-blue-50 text-blue-700' },
+    { value: 'expired',   label: "Muddati o'tgan", icon: 'mdi:alert-circle-outline', class: 'bg-red-50 text-red-700' },
 ]
 
 const statusLabel = (s) => statuses.find(x => x.value === s)?.label || s
@@ -254,15 +287,38 @@ const statusIcon  = (s) => statuses.find(x => x.value === s)?.icon  || 'mdi:circ
 const statusBadge = (s) => statuses.find(x => x.value === s)?.class || 'bg-gray-50 text-gray-600'
 
 const confirmDelete = (session) => { deleteTarget.value = session }
+const confirmReset  = (session) => { resetTarget.value  = session }
 
 const submitDelete = () => {
     router.delete(route('admin.test-sessions.destroy', deleteTarget.value.id), {
         onSuccess: () => { deleteTarget.value = null },
     })
 }
+
+const submitReset = () => {
+    router.post(route('admin.test-sessions.reset', resetTarget.value.id), {}, {
+        onSuccess: () => { resetTarget.value = null },
+    })
+}
 </script>
 
 <style scoped>
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, #0f3460, #533483);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
+
 .btn-secondary {
     display: inline-flex;
     align-items: center;

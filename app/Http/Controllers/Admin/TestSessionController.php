@@ -39,4 +39,38 @@ class TestSessionController extends Controller
         TestSession::findOrFail($id)->delete();
         return back()->with('success', "Test sessiyasi o'chirildi!");
     }
+
+
+
+    public function reset(int $id)
+    {
+        $session   = TestSession::findOrFail($id);
+        $applicant = $session->applicant;
+
+        // Eski sessiyani o'chirish
+        $session->delete();
+
+        // Yangi sessiya yaratish
+        $password = sprintf(
+            '%02d.%02d.%d',
+            $applicant->birth_day,
+            $applicant->birth_month,
+            $applicant->birth_year
+        );
+
+        TestSession::create([
+            'applicant_id'    => $applicant->id,
+            'direction_id'    => $applicant->direction_id,
+            'language'        => 'uz',
+            'foreign_lang'    => 'en',
+            'login'           => $applicant->passport_series,
+            'password_plain'  => $password,
+            'password'        => bcrypt($password),
+            'status'          => 'pending',
+            'expires_at'      => now()->addDays(30),
+            'total_questions' => 90,
+        ]);
+
+        return back()->with('success', 'Test sessiyasi yangilandi!');
+    }
 }
