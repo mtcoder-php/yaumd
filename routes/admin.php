@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TestQuestionController;
 use App\Http\Controllers\Admin\DirectionSubjectController;
 use App\Http\Controllers\Admin\TestSessionController;
+use App\Http\Controllers\Admin\ContractController;
+
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
 
@@ -54,11 +56,24 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     });
 
 
-
-
     Route::prefix('test-sessions')->name('test-sessions.')->group(function () {
         Route::get('/',           [TestSessionController::class, 'index'])->name('index');
         Route::post('/{id}/reset',[TestSessionController::class, 'reset'])->name('reset');
         Route::delete('/{id}',    [TestSessionController::class, 'destroy'])->name('destroy');
     });
+
+
+
+
+    Route::prefix('contracts')->name('contracts.')->group(function () {
+        Route::get('/',          [ContractController::class, 'index'])->name('index');
+        Route::get('/create',    [ContractController::class, 'create'])->name('create');
+        Route::post('/',         [ContractController::class, 'store'])->name('store');
+        Route::get('/{id}',      [ContractController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [ContractController::class, 'edit'])->name('edit');
+        Route::put('/{id}',      [ContractController::class, 'update'])->name('update');
+        Route::delete('/{id}',   [ContractController::class, 'destroy'])->name('destroy');
+    });
+
+
 });
