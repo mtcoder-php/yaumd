@@ -11,7 +11,9 @@ use App\Http\Controllers\Admin\TestSessionController;
 use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\UserController;
-
+use App\Http\Controllers\Admin\FacultyController;
+use App\Http\Controllers\Admin\DirectionController;
+use App\Http\Controllers\Admin\DepartmentController;
 
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -88,5 +90,35 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
         Route::put('/{id}',      [UserController::class, 'update'])->name('update');
         Route::delete('/{id}',   [UserController::class, 'destroy'])->name('destroy');
+    });
+
+
+
+    Route::prefix('faculties')->name('faculties.')->group(function () {
+        Route::get('/',          [FacultyController::class, 'index'])->name('index');
+        Route::get('/create',    [FacultyController::class, 'create'])->name('create');
+        Route::post('/',         [FacultyController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [FacultyController::class, 'edit'])->name('edit');
+        Route::put('/{id}',      [FacultyController::class, 'update'])->name('update');
+        Route::delete('/{id}',   [FacultyController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('directions')->name('directions.')->group(function () {
+        Route::get('/',          [DirectionController::class, 'index'])->name('index');
+        Route::get('/create',    [DirectionController::class, 'create'])->name('create');
+        Route::post('/',         [DirectionController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [DirectionController::class, 'edit'])->name('edit');
+        Route::put('/{id}',      [DirectionController::class, 'update'])->name('update');
+        Route::delete('/{id}',   [DirectionController::class, 'destroy'])->name('destroy');
+    });
+
+
+    Route::prefix('departments')->name('departments.')->group(function () {
+        Route::get('/',          [DepartmentController::class, 'index'])->name('index');
+        Route::get('/create',    [DepartmentController::class, 'create'])->name('create');
+        Route::post('/',         [DepartmentController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [DepartmentController::class, 'edit'])->name('edit');
+        Route::put('/{id}',      [DepartmentController::class, 'update'])->name('update');
+        Route::delete('/{id}',   [DepartmentController::class, 'destroy'])->name('destroy');
     });
 });

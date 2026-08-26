@@ -6,14 +6,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('directions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('faculty_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
             $table->string('hemis_code', 20)->unique()->nullable();
             $table->string('name_uz', 255);
             $table->string('name_ru', 255)->nullable();
@@ -28,9 +26,7 @@ return new class extends Migration
             $table->softDeletes();
         });
     }
-    /**
-     * Reverse the migrations.
-     */
+
     public function down(): void
     {
         Schema::dropIfExists('directions');

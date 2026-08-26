@@ -32,4 +32,9 @@ class Faculty extends Model
     {
         return $this->hasMany(Direction::class);
     }
+
+    public function departments(): HasMany
+    {
+        return $this->hasMany(Department::class);
+    }
 }

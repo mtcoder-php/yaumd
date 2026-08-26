@@ -3,100 +3,182 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Faculty;
-use App\Models\Direction;
+use Illuminate\Support\Facades\DB;
 
 class FacultyDirectionSeeder extends Seeder
 {
     public function run(): void
     {
-        $data = [
+        // Fakultet
+        $facultyId = DB::table('faculties')->insertGetId([
+            'name_uz'    => 'Yangi Asr Universiteti',
+            'name_ru'    => 'Университет Нового Века',
+            'name_en'    => 'New Age University',
+            'short_name' => 'YAU',
+            'is_active'  => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Kafedralar
+        $departments = [
             [
-                'name_uz' => "Mumtoz sharq filologiyasi fakulteti",
-                'name_ru' => "Факультет классической восточной филологии",
-                'name_en' => "Faculty of Classical Eastern Philology",
-                'short_name' => "Sharq filologiyasi",
-                'directions' => [
-                    ['name_uz' => "Arab tili filologiyasi",             'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 0,  'quota_contract' => 25, 'annual_fee' => 18000000],
-                    ['name_uz' => "Sharq mumtoz tili (Arab tili)",      'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 0,  'quota_contract' => 20, 'annual_fee' => 18000000],
-                    ['name_uz' => "Lingvistika: Arab tili",             'degree' => 'master',   'duration_years' => 2, 'quota_grant' => 0,  'quota_contract' => 15, 'annual_fee' => 22000000],
-                ],
+                'name_uz'    => 'Maxsus pedagogika kafedrasi',
+                'name_ru'    => 'Кафедра специальной педагогики',
+                'short_name' => 'MPK',
             ],
             [
-                'name_uz' => "Tillar fakulteti",
-                'name_ru' => "Факультет языков",
-                'name_en' => "Faculty of Languages",
-                'short_name' => "Tillar",
-                'directions' => [
-                    ['name_uz' => "Ingliz tili va adabiyoti",           'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 10, 'quota_contract' => 40, 'annual_fee' => 20000000],
-                    ['name_uz' => "Rus tili va adabiyoti",              'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 0,  'quota_contract' => 25, 'annual_fee' => 18000000],
-                    ['name_uz' => "Xitoy tili va adabiyoti",            'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 0,  'quota_contract' => 30, 'annual_fee' => 22000000],
-                    ['name_uz' => "Turk tili va adabiyoti",             'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 0,  'quota_contract' => 25, 'annual_fee' => 20000000],
-                    ['name_uz' => "Koreys tili va adabiyoti",           'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 0,  'quota_contract' => 25, 'annual_fee' => 22000000],
-                    ['name_uz' => "Lingvistika: Ingliz tili",           'degree' => 'master',   'duration_years' => 2, 'quota_grant' => 0,  'quota_contract' => 15, 'annual_fee' => 22000000],
-                ],
+                'name_uz'    => "Umumta'lim fanlari kafedrasi",
+                'name_ru'    => 'Кафедра общеобразовательных дисциплин',
+                'short_name' => 'UFK',
             ],
             [
-                'name_uz' => "Maxsus pedagogika fakulteti",
-                'name_ru' => "Факультет специальной педагогики",
-                'name_en' => "Faculty of Special Pedagogy",
-                'short_name' => "Maxsus pedagogika",
-                'directions' => [
-                    ['name_uz' => "Logopediya",                         'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 5,  'quota_contract' => 20, 'annual_fee' => 16000000],
-                    ['name_uz' => "Psixologiya",                        'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 5,  'quota_contract' => 30, 'annual_fee' => 16000000],
-                ],
+                'name_uz'    => 'Tillar kafedrasi',
+                'name_ru'    => 'Кафедра языков',
+                'short_name' => 'TK',
             ],
             [
-                'name_uz' => "Maktab va maktabgacha ta'lim fakulteti",
-                'name_ru' => "Факультет школьного и дошкольного образования",
-                'name_en' => "Faculty of School and Preschool Education",
-                'short_name' => "Maktab ta'limi",
-                'directions' => [
-                    ['name_uz' => "Ta'lim va tarbiya nazariyasi va metodikasi", 'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 5, 'quota_contract' => 25, 'annual_fee' => 15000000],
-                    ['name_uz' => "Maktabgacha ta'lim",                 'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 5,  'quota_contract' => 25, 'annual_fee' => 15000000],
-                ],
+                'name_uz'    => 'Maktab va maktabgacha ta\'lim kafedrasi',
+                'name_ru'    => 'Кафедра школьного и дошкольного образования',
+                'short_name' => 'MMTK',
             ],
             [
-                'name_uz' => "Umumta'lim fanlari fakulteti",
-                'name_ru' => "Факультет общеобразовательных дисциплин",
-                'name_en' => "Faculty of General Education",
-                'short_name' => "Umumta'lim",
-                'directions' => [
-                    ['name_uz' => "Pedagogika",                         'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 5,  'quota_contract' => 25, 'annual_fee' => 15000000],
-                    ['name_uz' => "Dizayn: Interyerni loyihalash",      'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 0,  'quota_contract' => 20, 'annual_fee' => 20000000],
-                    ['name_uz' => "Dizayn: Liboslar dizayni",           'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 0,  'quota_contract' => 20, 'annual_fee' => 20000000],
-                    ['name_uz' => "Iqtisodiyot",                        'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 5,  'quota_contract' => 30, 'annual_fee' => 18000000],
-                    ['name_uz' => "Buxgalteriya hisobi va audit",       'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 5,  'quota_contract' => 25, 'annual_fee' => 18000000],
-                    ['name_uz' => "Dasturiy injiniring",                'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 5,  'quota_contract' => 35, 'annual_fee' => 24000000],
-                    ['name_uz' => "Matematika",                         'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 5,  'quota_contract' => 20, 'annual_fee' => 16000000],
-                    ['name_uz' => "Tarix",                              'degree' => 'bachelor', 'duration_years' => 4, 'quota_grant' => 5,  'quota_contract' => 20, 'annual_fee' => 15000000],
-                ],
+                'name_uz'    => 'Mumtoz sharq filologiyasi kafedrasi',
+                'name_ru'    => 'Кафедра классической восточной филологии',
+                'short_name' => 'MSFK',
+            ],
+            [
+                'name_uz'    => 'Sharq filologiyasi kafedrasi',
+                'name_ru'    => 'Кафедра восточной филологии',
+                'short_name' => 'SFK',
             ],
         ];
 
-        foreach ($data as $facultyData) {
-            $faculty = Faculty::create([
-                'name_uz'    => $facultyData['name_uz'],
-                'name_ru'    => $facultyData['name_ru'],
-                'name_en'    => $facultyData['name_en'],
-                'short_name' => $facultyData['short_name'],
+        $departmentIds = [];
+        foreach ($departments as $dept) {
+            $departmentIds[$dept['short_name']] = DB::table('departments')->insertGetId([
+                'faculty_id' => $facultyId,
+                'name_uz'    => $dept['name_uz'],
+                'name_ru'    => $dept['name_ru'],
+                'short_name' => $dept['short_name'],
                 'is_active'  => true,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
-
-            foreach ($facultyData['directions'] as $dir) {
-                Direction::create([
-                    'faculty_id'      => $faculty->id,
-                    'name_uz'         => $dir['name_uz'],
-                    'is_active'       => true,
-                    'degree'          => $dir['degree'],
-                    'duration_years'  => $dir['duration_years'],
-                    'quota_grant'     => $dir['quota_grant'],
-                    'quota_contract'  => $dir['quota_contract'],
-                    'annual_fee'      => $dir['annual_fee'],
-                ]);
-            }
         }
 
-        $this->command->info('✓ ' . count($data) . ' ta fakultet va yo\'nalishlar yaratildi!');
+        // Yo'nalishlar — qaysi kafedrada ekanini belgilang
+        $directions = [
+            // Maxsus pedagogika kafedrasi
+            [
+                'department' => 'MPK',
+                'name_uz'    => 'Maxsus pedagogika',
+                'name_ru'    => 'Специальная педагогика',
+                'hemis_code' => '5110900',
+                'degree'     => 'bachelor',
+                'duration_years' => 4,
+                'quota_grant'    => 10,
+                'quota_contract' => 30,
+                'annual_fee'     => 16000000,
+            ],
+            // Umumta'lim fanlari kafedrasi
+            [
+                'department' => 'UFK',
+                'name_uz'    => 'Matematika',
+                'name_ru'    => 'Математика',
+                'hemis_code' => '5140200',
+                'degree'     => 'bachelor',
+                'duration_years' => 4,
+                'quota_grant'    => 10,
+                'quota_contract' => 30,
+                'annual_fee'     => 16000000,
+            ],
+            // Tillar kafedrasi
+            [
+                'department' => 'TK',
+                'name_uz'    => 'Ingliz tili va adabiyoti',
+                'name_ru'    => 'Английский язык и литература',
+                'hemis_code' => '5120200',
+                'degree'     => 'bachelor',
+                'duration_years' => 4,
+                'quota_grant'    => 15,
+                'quota_contract' => 40,
+                'annual_fee'     => 18000000,
+            ],
+            [
+                'department' => 'TK',
+                'name_uz'    => 'Arab tili va adabiyoti',
+                'name_ru'    => 'Арабский язык и литература',
+                'hemis_code' => '5120600',
+                'degree'     => 'bachelor',
+                'duration_years' => 4,
+                'quota_grant'    => 10,
+                'quota_contract' => 30,
+                'annual_fee'     => 18000000,
+            ],
+            // Maktab va maktabgacha ta'lim kafedrasi
+            [
+                'department' => 'MMTK',
+                'name_uz'    => "Boshlang'ich ta'lim",
+                'name_ru'    => 'Начальное образование',
+                'hemis_code' => '5111000',
+                'degree'     => 'bachelor',
+                'duration_years' => 4,
+                'quota_grant'    => 10,
+                'quota_contract' => 30,
+                'annual_fee'     => 15000000,
+            ],
+            [
+                'department' => 'MMTK',
+                'name_uz'    => "Maktabgacha ta'lim",
+                'name_ru'    => 'Дошкольное образование',
+                'hemis_code' => '5111100',
+                'degree'     => 'bachelor',
+                'duration_years' => 4,
+                'quota_grant'    => 10,
+                'quota_contract' => 30,
+                'annual_fee'     => 15000000,
+            ],
+            // Mumtoz sharq filologiyasi kafedrasi
+            [
+                'department' => 'MSFK',
+                'name_uz'    => 'Mumtoz sharq filologiyasi',
+                'name_ru'    => 'Классическая восточная филология',
+                'hemis_code' => '5120700',
+                'degree'     => 'bachelor',
+                'duration_years' => 4,
+                'quota_grant'    => 5,
+                'quota_contract' => 20,
+                'annual_fee'     => 16000000,
+            ],
+            // Sharq filologiyasi kafedrasi
+            [
+                'department' => 'SFK',
+                'name_uz'    => 'Sharq filologiyasi',
+                'name_ru'    => 'Восточная филология',
+                'hemis_code' => '5120800',
+                'degree'     => 'bachelor',
+                'duration_years' => 4,
+                'quota_grant'    => 5,
+                'quota_contract' => 20,
+                'annual_fee'     => 16000000,
+            ],
+        ];
+
+        foreach ($directions as $direction) {
+            $deptKey = $direction['department'];
+            unset($direction['department']);
+
+            DB::table('directions')->insert([
+                ...$direction,
+                'faculty_id'    => $facultyId,
+                'department_id' => $departmentIds[$deptKey],
+                'is_active'     => true,
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ]);
+        }
+
+        $this->command->info('✓ Fakultet, kafedralar va yo\'nalishlar yaratildi!');
     }
 }

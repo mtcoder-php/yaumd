@@ -46,4 +46,9 @@ class Direction extends Model
     {
         return $this->hasMany(DirectionSubject::class);
     }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
 }
