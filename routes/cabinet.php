@@ -7,9 +7,9 @@ use App\Http\Controllers\Cabinet\TestController;
 Route::prefix('cabinet')->name('cabinet.')->group(function () {
 
     // Auth
-    Route::get('/login',  [CabinetAuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [CabinetAuthController::class, 'login'])->name('login.post');
-    Route::post('/logout',[CabinetAuthController::class, 'logout'])->name('logout');
+    Route::get('/login',   [CabinetAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login',  [CabinetAuthController::class, 'login'])->name('login.post');
+    Route::post('/logout', [CabinetAuthController::class, 'logout'])->name('logout');
 
     // Test
     Route::get('/test/language',  [TestController::class, 'language'])->name('test.language');

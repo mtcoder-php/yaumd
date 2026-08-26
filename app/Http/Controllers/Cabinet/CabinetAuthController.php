@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\TestSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,13 +28,26 @@ class CabinetAuthController extends Controller
             'password.required' => 'Parolni kiriting',
         ]);
 
+        // Rate limiting
+        $key = 'cabinet.login.' . Str::lower($request->login) . '.' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+            return back()->withErrors([
+                'login' => "Juda ko'p urinish! {$seconds} soniyadan so'ng qayta urinib ko'ring.",
+            ]);
+        }
+
         $session = TestSession::where('login', strtoupper(trim($request->login)))->first();
 
         if (!$session || !Hash::check($request->password, $session->password)) {
+            RateLimiter::hit($key, 60);
             return back()->withErrors([
                 'login' => "Login yoki parol noto'g'ri!",
             ]);
         }
+
+        RateLimiter::clear($key);
 
         if ($session->status === 'expired') {
             return back()->withErrors([

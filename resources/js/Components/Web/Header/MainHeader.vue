@@ -97,7 +97,7 @@
                                 <p class="text-xs text-gray-400">Shaxsiy kabinet</p>
                             </div>
                             <Link
-                                href="/login"
+                                href="/cabinet/login"
                                 @click="userOpen = false"
                                 class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition"
                             >
