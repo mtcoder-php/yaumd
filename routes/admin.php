@@ -10,6 +10,9 @@ use App\Http\Controllers\Admin\DirectionSubjectController;
 use App\Http\Controllers\Admin\TestSessionController;
 use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\UserController;
+
+
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
 
@@ -56,13 +59,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('/{id}', [DirectionSubjectController::class, 'destroy'])->name('destroy');
     });
 
-
     Route::prefix('test-sessions')->name('test-sessions.')->group(function () {
         Route::get('/', [TestSessionController::class, 'index'])->name('index');
         Route::post('/{id}/reset', [TestSessionController::class, 'reset'])->name('reset');
         Route::delete('/{id}', [TestSessionController::class, 'destroy'])->name('destroy');
     });
-
 
     Route::prefix('contracts')->name('contracts.')->group(function () {
         Route::get('/', [ContractController::class, 'index'])->name('index');
@@ -74,11 +75,18 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('/{id}', [ContractController::class, 'destroy'])->name('destroy');
     });
 
-
     Route::prefix('payments')->name('payments.')->group(function () {
         Route::get('/', [PaymentController::class, 'index'])->name('index');
         Route::post('/', [PaymentController::class, 'store'])->name('store');
         Route::delete('/{id}', [PaymentController::class, 'destroy'])->name('destroy');
     });
 
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/',          [UserController::class, 'index'])->name('index');
+        Route::get('/create',    [UserController::class, 'create'])->name('create');
+        Route::post('/',         [UserController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{id}',      [UserController::class, 'update'])->name('update');
+        Route::delete('/{id}',   [UserController::class, 'destroy'])->name('destroy');
+    });
 });
