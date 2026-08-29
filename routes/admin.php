@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\FacultyController;
 use App\Http\Controllers\Admin\DirectionController;
 use App\Http\Controllers\Admin\DepartmentController;
+use App\Http\Controllers\Admin\InterviewController;
 
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -120,5 +121,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/{id}/edit', [DepartmentController::class, 'edit'])->name('edit');
         Route::put('/{id}',      [DepartmentController::class, 'update'])->name('update');
         Route::delete('/{id}',   [DepartmentController::class, 'destroy'])->name('destroy');
+    });
+
+
+    Route::prefix('interviews')->name('interviews.')->group(function () {
+        Route::get('/',      [InterviewController::class, 'index'])->name('index');
+        Route::post('/',     [InterviewController::class, 'store'])->name('store');
     });
 });

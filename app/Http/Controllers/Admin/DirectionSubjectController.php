@@ -17,10 +17,11 @@ class DirectionSubjectController extends Controller
     {
         return Inertia::render('Admin/DirectionSubjects/Index', [
             'faculties' => Faculty::where('is_active', true)
-                ->with(['directions' => fn($q) => $q
+                ->with(['departments' => fn($q) => $q
                     ->where('is_active', true)
-                    ->with(['subjects' => fn($q) => $q
-                        ->with('subject')
+                    ->with(['directions' => fn($q) => $q
+                        ->where('is_active', true)
+                        ->with(['subjects' => fn($q) => $q->with('subject')])
                     ])
                 ])
                 ->get(),

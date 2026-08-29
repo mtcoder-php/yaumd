@@ -78,6 +78,14 @@ class ApplicantController extends Controller
         $applicant = Applicant::findOrFail($id);
         $applicant->update($request->validated());
 
+        // Agar yo'nalish o'zgargan bo'lsa — sessiyani ham yangilaymiz
+        if ($request->direction_id && $applicant->testSession) {
+            $applicant->testSession->update([
+                'direction_id' => $request->direction_id,
+                'questions'    => null, // savollarni qayta yuklash uchun
+            ]);
+        }
+
         return redirect()->route('admin.applicants.show', $id)
             ->with('success', "Ma'lumotlar yangilandi!");
     }

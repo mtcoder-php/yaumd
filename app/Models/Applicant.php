@@ -77,4 +77,9 @@ class Applicant extends Model
     {
         return $this->hasOne(Contract::class);
     }
+
+    public function interview(): HasOne
+    {
+        return $this->hasOne(Interview::class);
+    }
 }
