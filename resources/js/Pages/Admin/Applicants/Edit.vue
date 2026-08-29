@@ -81,20 +81,22 @@
                             </h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
+                                <!-- Familiya = last_name -->
                                 <div>
                                     <label class="field-label">Familiya <span class="req">*</span></label>
-                                    <input v-model="form.first_name" type="text" class="field-input"
-                                           :class="errors.first_name ? 'field-error' : ''"
-                                           @input="form.first_name = form.first_name.toUpperCase()">
-                                    <p v-if="errors.first_name" class="err">{{ errors.first_name }}</p>
-                                </div>
-
-                                <div>
-                                    <label class="field-label">Ism <span class="req">*</span></label>
                                     <input v-model="form.last_name" type="text" class="field-input"
                                            :class="errors.last_name ? 'field-error' : ''"
                                            @input="form.last_name = form.last_name.toUpperCase()">
                                     <p v-if="errors.last_name" class="err">{{ errors.last_name }}</p>
+                                </div>
+
+                                <!-- Ism = first_name -->
+                                <div>
+                                    <label class="field-label">Ism <span class="req">*</span></label>
+                                    <input v-model="form.first_name" type="text" class="field-input"
+                                           :class="errors.first_name ? 'field-error' : ''"
+                                           @input="form.first_name = form.first_name.toUpperCase()">
+                                    <p v-if="errors.first_name" class="err">{{ errors.first_name }}</p>
                                 </div>
 
                                 <div class="sm:col-span-2">
