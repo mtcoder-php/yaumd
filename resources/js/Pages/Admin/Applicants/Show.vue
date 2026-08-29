@@ -79,11 +79,11 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="info-label">Familiya</p>
-                                <p class="info-value">{{ applicant.first_name }}</p>
+                                <p class="info-value">{{ applicant.last_name }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Ism</p>
-                                <p class="info-value">{{ applicant.last_name }}</p>
+                                <p class="info-value">{{ applicant.first_name }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Otasining ismi</p>
