@@ -50,8 +50,14 @@ class ApplicantController extends Controller
 
     public function show(int $id): Response
     {
-        $applicant = Applicant::with(['direction.faculty', 'region', 'district'])
-            ->findOrFail($id);
+        $applicant = Applicant::with([
+            'direction.faculty',
+            'region',
+            'district',
+            'interview.interviewer',
+            'testSession',
+            'contract.payments',
+        ])->findOrFail($id);
 
         return Inertia::render('Admin/Applicants/Show', [
             'applicant' => $applicant,
