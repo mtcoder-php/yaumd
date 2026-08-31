@@ -11,6 +11,7 @@ use App\Models\TestSession;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Contract;
 
 class ApplicantController extends Controller
 {
@@ -90,6 +91,8 @@ class ApplicantController extends Controller
             ->with('success', "Ma'lumotlar yangilandi!");
     }
 
+
+
     public function updateStatus(Request $request, int $id)
     {
         $request->validate([
@@ -104,7 +107,32 @@ class ApplicantController extends Controller
             $this->createTestSession($applicant);
         }
 
+        // Kontrakt statusiga o'tganda avtomatik kontrakt yaratish
+        if ($request->status === 'contracted' && $oldStatus !== 'contracted') {
+            $this->createContract($applicant);
+        }
+
         return back()->with('success', 'Status yangilandi!');
+    }
+
+    private function createContract(Applicant $applicant): void
+    {
+        if (Contract::where('applicant_id', $applicant->id)->exists()) {
+            return;
+        }
+
+        do {
+            $number = 'BK' . random_int(100000000, 999999999);
+        } while (Contract::withTrashed()->where('contract_number', $number)->exists());
+
+        Contract::create([
+            'applicant_id'    => $applicant->id,
+            'direction_id'    => $applicant->direction_id,
+            'contract_number' => $number,
+            'amount'          => $applicant->direction?->annual_fee ?? 0,
+            'payment_type'    => 'contract',
+            'status'          => 'draft',
+        ]);
     }
 
     public function bulkUpdateStatus(Request $request)

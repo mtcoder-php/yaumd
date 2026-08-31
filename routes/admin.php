@@ -69,13 +69,14 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     });
 
     Route::prefix('contracts')->name('contracts.')->group(function () {
-        Route::get('/', [ContractController::class, 'index'])->name('index');
-        Route::get('/create', [ContractController::class, 'create'])->name('create');
-        Route::post('/', [ContractController::class, 'store'])->name('store');
-        Route::get('/{id}', [ContractController::class, 'show'])->name('show');
+        Route::get('/',          [ContractController::class, 'index'])->name('index');
+        Route::get('/create',    [ContractController::class, 'create'])->name('create');
+        Route::post('/',         [ContractController::class, 'store'])->name('store');
+        Route::get('/{id}',      [ContractController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [ContractController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [ContractController::class, 'update'])->name('update');
-        Route::delete('/{id}', [ContractController::class, 'destroy'])->name('destroy');
+        Route::put('/{id}',      [ContractController::class, 'update'])->name('update');
+        Route::get('/{id}/pdf',  [ContractController::class, 'generatePdf'])->name('pdf'); // ← qo'shing
+        Route::delete('/{id}',   [ContractController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('payments')->name('payments.')->group(function () {

@@ -30,6 +30,12 @@
                     <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                     Tahrirlash
                 </Link>
+                <a :href="route('admin.contracts.pdf', contract.id)"
+                   target="_blank"
+                   class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 hover:bg-gray-50">
+                    <Icon icon="mdi:file-pdf-box" class="w-4 h-4 text-red-500" />
+                    PDF yuklash
+                </a>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">

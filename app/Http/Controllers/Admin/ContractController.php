@@ -10,6 +10,8 @@ use App\Models\Contract;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ContractController extends Controller
 {
@@ -70,9 +72,15 @@ class ContractController extends Controller
 
     public function store(StoreContractRequest $request)
     {
-        $year   = date('Y');
-        $count  = Contract::whereYear('created_at', $year)->count() + 1;
-        $number = 'KNT-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+        if (Contract::where('applicant_id', $request->applicant_id)->exists()) {
+            return back()->withErrors([
+                'applicant_id' => 'Bu abituriyentga kontrakt allaqachon mavjud!',
+            ]);
+        }
+
+        do {
+            $number = 'BK' . random_int(100000000, 999999999);
+        } while (Contract::withTrashed()->where('contract_number', $number)->exists());
 
         Contract::create([
             ...$request->validated(),
@@ -114,5 +122,66 @@ class ContractController extends Controller
     {
         Contract::findOrFail($id)->delete();
         return back()->with('success', "Kontrakt o'chirildi!");
+    }
+
+
+
+    public function generatePdf(int $id)
+    {
+        $contract  = Contract::with(['applicant.region', 'applicant.district', 'direction'])->findOrFail($id);
+        $applicant = $contract->applicant;
+        $direction = $contract->direction;
+
+        // QR kod URL
+        $qrUrl = url('/contracts/' . $contract->contract_number);
+
+        // QR kod generatsiya (SVG)
+        $qrCode1 = base64_encode(QrCode::format('svg')->size(200)->generate($qrUrl));
+        $qrCode2 = base64_encode(QrCode::format('svg')->size(200)->generate($qrUrl));
+        // Summani so'zda
+        $amountInWords = $this->numberToWords((int) $contract->amount);
+
+        $pdf = Pdf::loadView('pdf.contract', compact(
+            'contract', 'applicant', 'direction', 'qrCode1', 'qrCode2', 'amountInWords'
+        ))->setPaper('a4', 'portrait');
+
+        return $pdf->download("kontrakt-{$contract->contract_number}.pdf");
+    }
+
+    private function numberToWords(int $number): string
+    {
+        $ones = ['', 'bir', 'ikki', 'uch', 'to\'rt', 'besh', 'olti', 'yetti', 'sakkiz', 'to\'qqiz',
+            'o\'n', 'o\'n bir', 'o\'n ikki', 'o\'n uch', 'o\'n to\'rt', 'o\'n besh',
+            'o\'n olti', 'o\'n yetti', 'o\'n sakkiz', 'o\'n to\'qqiz'];
+        $tens  = ['', '', 'yigirma', 'o\'ttiz', 'qirq', 'ellik', 'oltmish', 'yetmish', 'sakson', 'to\'qson'];
+
+        if ($number === 0) return 'nol';
+        if ($number < 0)   return 'minus ' . $this->numberToWords(-$number);
+
+        $result = '';
+        if ($number >= 1000000000) {
+            $result .= $this->numberToWords((int)($number / 1000000000)) . ' milliard ';
+            $number %= 1000000000;
+        }
+        if ($number >= 1000000) {
+            $result .= $this->numberToWords((int)($number / 1000000)) . ' million ';
+            $number %= 1000000;
+        }
+        if ($number >= 1000) {
+            $result .= $this->numberToWords((int)($number / 1000)) . ' ming ';
+            $number %= 1000;
+        }
+        if ($number >= 100) {
+            $result .= $ones[(int)($number / 100)] . ' yuz ';
+            $number %= 100;
+        }
+        if ($number >= 20) {
+            $result .= $tens[(int)($number / 10)] . ' ';
+            $number %= 10;
+        }
+        if ($number > 0) {
+            $result .= $ones[$number] . ' ';
+        }
+        return trim($result);
     }
 }
