@@ -216,17 +216,19 @@
                         <label class="field-label">To'lov turi <span class="req">*</span></label>
                         <div class="flex gap-2">
                             <button v-for="pv in providers" :key="pv.value" type="button"
-                                    @click="payForm.provider = pv.value"
+                                    @click="!pv.disabled && (payForm.provider = pv.value)"
                                     class="flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all"
-                                    :style="payForm.provider === pv.value
-                                    ? 'border-color:#0f3460; background:linear-gradient(135deg,#eff6ff,#f5f3ff)'
-                                    : 'border-color:#e5e7eb; background:#fafafa'">
-                                <Icon :icon="pv.icon" class="w-5 h-5"
-                                      :style="payForm.provider === pv.value ? 'color:#0f3460' : 'color:#9ca3af'" />
+                                    :class="pv.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
+                                    :style="!pv.disabled && payForm.provider === pv.value
+                ? 'border-color:#0f3460; background:linear-gradient(135deg,#eff6ff,#f5f3ff)'
+                : 'border-color:#e5e7eb; background:#fafafa'">
+                                <Icon :icon="pv.disabled ? 'mdi:lock-outline' : pv.icon" class="w-5 h-5"
+                                      :style="!pv.disabled && payForm.provider === pv.value ? 'color:#0f3460' : 'color:#9ca3af'" />
                                 <span class="text-xs font-semibold"
-                                      :style="payForm.provider === pv.value ? 'color:#0f3460' : 'color:#374151'">
-                                    {{ pv.label }}
-                                </span>
+                                      :style="!pv.disabled && payForm.provider === pv.value ? 'color:#0f3460' : 'color:#374151'">
+                {{ pv.label }}
+            </span>
+                                <span v-if="pv.disabled" class="text-xs text-gray-400">tez orada</span>
                             </button>
                         </div>
                         <p v-if="payErrors.provider" class="err">{{ payErrors.provider }}</p>
@@ -378,9 +380,9 @@ const submitDelete = () => {
 }
 
 const providers = [
-    { value: 'cash',  label: 'Naqd',  icon: 'mdi:cash' },
-    { value: 'click', label: 'Click', icon: 'mdi:cellphone' },
-    { value: 'payme', label: 'Payme', icon: 'mdi:credit-card-outline' },
+    { value: 'cash',  label: 'Naqd',  icon: 'mdi:cash',                disabled: false },
+    { value: 'click', label: 'Click', icon: 'mdi:cellphone',            disabled: true  },
+    { value: 'payme', label: 'Payme', icon: 'mdi:credit-card-outline',  disabled: true  },
 ]
 
 const providerLabel = (p) => providers.find(x => x.value === p)?.label || p
