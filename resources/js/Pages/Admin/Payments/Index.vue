@@ -8,7 +8,7 @@
                     <h1 class="text-xl font-bold text-gray-900">To'lovlar</h1>
                     <p class="text-sm text-gray-500 mt-0.5">Jami: {{ payments.total }} ta to'lov</p>
                 </div>
-                <button @click="addModal = true" class="btn-primary">
+                <button @click="openAddModal" class="btn-primary">
                     <Icon icon="mdi:plus" class="w-4 h-4" />
                     To'lov qabul qilish
                 </button>
@@ -113,9 +113,8 @@
                             </td>
 
                             <td class="px-4 py-3">
-                                <Link
-                                    :href="route('admin.contracts.show', p.contract_id)"
-                                    class="text-xs font-mono font-semibold text-[#0f3460] hover:underline">
+                                <Link :href="route('admin.contracts.show', p.contract_id)"
+                                      class="text-xs font-mono font-semibold text-[#0f3460] hover:underline">
                                     {{ p.contract?.contract_number }}
                                 </Link>
                             </td>
@@ -199,8 +198,16 @@
                     <!-- Summa -->
                     <div>
                         <label class="field-label">Summa <span class="req">*</span></label>
-                        <input v-model="payForm.amount" type="number" min="1" placeholder="0"
-                               class="field-input" :class="payErrors.amount ? 'field-error' : ''">
+                        <div class="relative">
+                            <input
+                                ref="amountRef"
+                                type="text"
+                                placeholder="0"
+                                class="field-input pr-12"
+                                :class="payErrors.amount ? 'field-error' : ''"
+                            >
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">so'm</span>
+                        </div>
                         <p v-if="payErrors.amount" class="err">{{ payErrors.amount }}</p>
                     </div>
 
@@ -267,10 +274,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { Link, router, usePage } from '@inertiajs/vue3'
+import { ref, computed, nextTick } from 'vue'
+import { Link, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import IMask from 'imask'
 
 const props = defineProps({
     payments:        { type: Object, default: () => ({ data: [], links: [], total: 0 }) },
@@ -279,10 +287,12 @@ const props = defineProps({
     activeContracts: { type: Array,  default: () => [] },
 })
 
-const addModal    = ref(false)
-const paying      = ref(false)
+const addModal     = ref(false)
+const paying       = ref(false)
 const deleteTarget = ref(null)
-const payErrors   = ref({})
+const payErrors    = ref({})
+const amountRef    = ref(null)
+let   amountMask   = null
 
 const payForm = ref({
     contract_id:    '',
@@ -300,6 +310,27 @@ const filters = ref({
 const hasFilters = computed(() =>
     filters.value.search || filters.value.status || filters.value.provider
 )
+
+const openAddModal = () => {
+    payForm.value  = { contract_id: '', amount: '', provider: 'cash', transaction_id: '' }
+    payErrors.value = {}
+    addModal.value  = true
+
+    nextTick(() => {
+        if (amountRef.value) {
+            amountMask = IMask(amountRef.value, {
+                mask: Number,
+                thousandsSeparator: '.',
+                radix: ',',
+                min: 0,
+                max: 9999999999,
+            })
+            amountMask.on('accept', () => {
+                payForm.value.amount = amountMask.unmaskedValue
+            })
+        }
+    })
+}
 
 const applyFilters = () => {
     router.get(route('admin.payments.index'), filters.value, {
@@ -330,6 +361,7 @@ const submitPayment = () => {
             addModal.value = false
             paying.value   = false
             payForm.value  = { contract_id: '', amount: '', provider: 'cash', transaction_id: '' }
+            if (amountMask) { amountMask.destroy(); amountMask = null }
         },
         onError: (errors) => {
             payErrors.value = errors
@@ -353,14 +385,11 @@ const providers = [
 
 const providerLabel = (p) => providers.find(x => x.value === p)?.label || p
 const providerIcon  = (p) => providers.find(x => x.value === p)?.icon  || 'mdi:cash'
-const providerBadge = (p) => {
-    const badges = {
-        cash:  'bg-green-50 text-green-700',
-        click: 'bg-blue-50 text-blue-700',
-        payme: 'bg-purple-50 text-purple-700',
-    }
-    return badges[p] || 'bg-gray-100 text-gray-600'
-}
+const providerBadge = (p) => ({
+    cash:  'bg-green-50 text-green-700',
+    click: 'bg-blue-50 text-blue-700',
+    payme: 'bg-purple-50 text-purple-700',
+}[p] || 'bg-gray-100 text-gray-600')
 
 const statuses = [
     { value: 'pending',  label: 'Kutilmoqda', class: 'bg-yellow-50 text-yellow-700' },
@@ -387,78 +416,17 @@ const formatDate = (date) => {
 </script>
 
 <style scoped>
-.field-label {
-    display: block;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 0.375rem;
-}
+.field-label { display: block; font-size: 0.78rem; font-weight: 600; color: #374151; margin-bottom: 0.375rem; }
 .req { color: #ef4444; }
-.field-input {
-    width: 100%;
-    padding: 0.6rem 0.875rem;
-    border-radius: 0.625rem;
-    border: 1.5px solid #e5e7eb;
-    font-size: 0.875rem;
-    color: #111827;
-    background: #fafafa;
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: auto;
-}
+.field-input { width: 100%; padding: 0.6rem 0.875rem; border-radius: 0.625rem; border: 1.5px solid #e5e7eb; font-size: 0.875rem; color: #111827; background: #fafafa; outline: none; transition: border-color 0.2s; appearance: auto; }
 .field-input:focus { border-color: #0f3460; background: white; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-}
+.btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.75rem; background: linear-gradient(135deg, #0f3460, #533483); color: white; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; text-decoration: none; transition: all 0.2s; }
 .btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-}
+.btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.75rem; background: white; color: #374151; font-size: 0.875rem; font-weight: 600; border: 1.5px solid #e5e7eb; cursor: pointer; transition: all 0.2s; }
 .btn-secondary:hover { background: #f9fafb; }
-
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: #ef4444;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-}
+.btn-danger { display: inline-flex; align-items: center; justify-content: center; padding: 0.625rem 1.25rem; border-radius: 0.75rem; background: #ef4444; color: white; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; }
 .btn-danger:hover { background: #dc2626; }
 </style>
