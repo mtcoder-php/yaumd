@@ -17,6 +17,11 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\InterviewController;
 use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\StudentGroupController;
+use App\Http\Controllers\Admin\CourseCategoryController;
+use App\Http\Controllers\Admin\CourseController;
+use App\Http\Controllers\Admin\CourseModuleController;
+use App\Http\Controllers\Admin\LessonController;
 
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -158,5 +163,52 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/{id}/edit',  [StudentController::class, 'edit'])->name('edit');
         Route::put('/{id}',       [StudentController::class, 'update'])->name('update');
         Route::delete('/{id}',    [StudentController::class, 'destroy'])->name('destroy');
+    });
+
+    // Guruhlar — o'quv guruhlari va ularning a'zolari
+    Route::prefix('student-groups')->name('student-groups.')->group(function () {
+        Route::get('/',           [StudentGroupController::class, 'index'])->name('index');
+        Route::get('/create',     [StudentGroupController::class, 'create'])->name('create');
+        Route::post('/',          [StudentGroupController::class, 'store'])->name('store');
+        Route::get('/{id}',       [StudentGroupController::class, 'show'])->name('show');
+        Route::get('/{id}/edit',  [StudentGroupController::class, 'edit'])->name('edit');
+        Route::put('/{id}',       [StudentGroupController::class, 'update'])->name('update');
+        Route::delete('/{id}',    [StudentGroupController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/students',                 [StudentGroupController::class, 'addStudent'])->name('students.add');
+        Route::delete('/{id}/students/{studentId}',   [StudentGroupController::class, 'removeStudent'])->name('students.remove');
+    });
+
+    // Kurs kategoriyalari
+    Route::prefix('course-categories')->name('course-categories.')->group(function () {
+        Route::get('/',          [CourseCategoryController::class, 'index'])->name('index');
+        Route::get('/create',    [CourseCategoryController::class, 'create'])->name('create');
+        Route::post('/',         [CourseCategoryController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [CourseCategoryController::class, 'edit'])->name('edit');
+        Route::put('/{id}',      [CourseCategoryController::class, 'update'])->name('update');
+        Route::delete('/{id}',   [CourseCategoryController::class, 'destroy'])->name('destroy');
+    });
+
+    // Kurslar — kurs + modul + darslar (LMS asosiy qurilmasi)
+    Route::prefix('courses')->name('courses.')->group(function () {
+        Route::get('/',           [CourseController::class, 'index'])->name('index');
+        Route::get('/create',     [CourseController::class, 'create'])->name('create');
+        Route::post('/',          [CourseController::class, 'store'])->name('store');
+        Route::get('/{id}',       [CourseController::class, 'show'])->name('show');
+        Route::get('/{id}/edit',  [CourseController::class, 'edit'])->name('edit');
+        Route::put('/{id}',       [CourseController::class, 'update'])->name('update');
+        Route::delete('/{id}',    [CourseController::class, 'destroy'])->name('destroy');
+
+        // Modullar (kurs ichida)
+        Route::post('/{id}/modules',               [CourseModuleController::class, 'store'])->name('modules.store');
+        Route::put('/{id}/modules/{moduleId}',     [CourseModuleController::class, 'update'])->name('modules.update');
+        Route::delete('/{id}/modules/{moduleId}',  [CourseModuleController::class, 'destroy'])->name('modules.destroy');
+
+        // Darslar (modul ichida)
+        Route::get('/{id}/modules/{moduleId}/lessons/create', [LessonController::class, 'create'])->name('lessons.create');
+        Route::post('/{id}/modules/{moduleId}/lessons',       [LessonController::class, 'store'])->name('lessons.store');
+        Route::get('/{id}/lessons/{lessonId}/edit',           [LessonController::class, 'edit'])->name('lessons.edit');
+        Route::put('/{id}/lessons/{lessonId}',                [LessonController::class, 'update'])->name('lessons.update');
+        Route::delete('/{id}/lessons/{lessonId}',             [LessonController::class, 'destroy'])->name('lessons.destroy');
+        Route::delete('/{id}/lessons/{lessonId}/attachments/{attachmentId}', [LessonController::class, 'destroyAttachment'])->name('lessons.attachments.destroy');
     });
 });

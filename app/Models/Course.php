@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Course extends Model
 {
     use SoftDeletes;
+
+    protected $appends = ['thumbnail_url'];
 
     protected $fillable = [
         'category_id', 'created_by',
@@ -38,6 +41,11 @@ class Course extends Model
         ];
     }
 
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        return $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null;
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(CourseCategory::class);
@@ -55,17 +63,17 @@ class Course extends Model
 
     public function instructors(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'course_instructors')->withPivot('role');
+        return $this->belongsToMany(User::class, 'course_instructors')->withPivot('role')->withTimestamps();
     }
 
     public function directions(): BelongsToMany
     {
-        return $this->belongsToMany(Direction::class, 'course_directions');
+        return $this->belongsToMany(Direction::class, 'course_directions')->withTimestamps();
     }
 
     public function groups(): BelongsToMany
     {
-        return $this->belongsToMany(StudentGroup::class, 'course_groups');
+        return $this->belongsToMany(StudentGroup::class, 'course_groups')->withTimestamps();
     }
 
     public function enrollments(): HasMany
