@@ -246,6 +246,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/{id}/lessons/{lessonId}',       [StudentCourseController::class, 'lesson'])->name('lesson');
         Route::post('/{id}/lessons/{lessonId}/complete', [StudentCourseController::class, 'markComplete'])->name('lessons.complete');
 
+        // Sertifikatni PDF holida yuklab olish — faqat kurs allaqachon
+        // tugatilgan (CertificateService orqali sertifikat chiqarilgan)
+        // bo'lsagina mavjud bo'ladi.
+        Route::get('/{id}/certificate',              [StudentCourseController::class, 'downloadCertificate'])->name('certificate');
+
         // SCORM 1.2 / SCORM 2004 pleyeri (resources/js/scormApi.js) Commit()
         // yoki Finish()/Terminate() chaqirganda shu yerga CMI ma'lumotlarini
         // yuboradi.

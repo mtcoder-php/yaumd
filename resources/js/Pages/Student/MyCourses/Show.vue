@@ -28,6 +28,18 @@
                     <Icon icon="mdi:certificate-outline" class="w-4 h-4" />
                     Tabriklaymiz, kursni tugatdingiz!
                 </p>
+
+                <!-- Sertifikat: faqat kurs tugatilgan VA sertifikat allaqachon
+                     chiqarilgan bo'lsa ko'rinadi (CertificateService orqali
+                     avtomatik yaratiladi). Oddiy <a> ishlatilyapti, Inertia
+                     <Link> emas — bu PDF fayl yuklab olishga olib boradi. -->
+                <a v-if="enrollment.certificate"
+                   :href="route('admin.my-courses.certificate', enrollment.course_id)"
+                   class="mt-3 inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl transition"
+                   style="color:#0f3460; background:#eef2ff">
+                    <Icon icon="mdi:certificate" class="w-4 h-4" />
+                    Sertifikatni yuklab olish
+                </a>
             </div>
 
             <!-- O'quv dasturi -->

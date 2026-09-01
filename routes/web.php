@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\AdmissionController;
+use App\Http\Controllers\Web\CertificateVerifyController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 
@@ -14,6 +15,11 @@ Route::prefix('qabul')->name('qabul.')->group(function () {
     Route::post('/ariza', [AdmissionController::class, 'store'])->name('ariza.store');
     Route::get('/ariza/muvaffaqiyat', [AdmissionController::class, 'success'])->name('ariza.success');
 });
+
+// Sertifikatni tekshirish — sertifikat PDF'idagi QR kod orqali ochiladi,
+// login talab qilinmaydi (istalgan kishi, masalan ish beruvchi, sertifikat
+// raqamini kiritib uning haqiqiyligini tekshirishi mumkin).
+Route::get('/certificates/{number}', [CertificateVerifyController::class, 'show'])->name('certificates.verify');
 
 // ─── AUTH ─────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {

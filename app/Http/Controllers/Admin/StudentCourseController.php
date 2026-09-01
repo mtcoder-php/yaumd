@@ -7,10 +7,13 @@ use App\Models\Enrollment;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
 use App\Models\ScormAttempt;
+use App\Services\LmsProgressService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 /**
  * "Kurslarim" — joriy foydalanuvchining o'ziga yozilgan (Enrollment)
@@ -22,6 +25,11 @@ use Inertia\Response;
  */
 class StudentCourseController extends Controller
 {
+    public function __construct(
+        private LmsProgressService $progress,
+    ) {
+    }
+
     public function index(Request $request): Response
     {
         $enrollments = Enrollment::where('user_id', $request->user()->id)
@@ -39,6 +47,7 @@ class StudentCourseController extends Controller
         $enrollment = $this->findEnrollmentOrFail($request, $id, [
             'course.modules' => fn ($q) => $q->where('is_published', true),
             'course.modules.lessons' => fn ($q) => $q->where('is_published', true),
+            'certificate',
         ]);
 
         $completedLessonIds = LessonProgress::where('enrollment_id', $enrollment->id)
@@ -131,36 +140,45 @@ class StudentCourseController extends Controller
         $lesson = Lesson::whereHas('module', fn ($q) => $q->where('course_id', $id))
             ->findOrFail($lessonId);
 
-        LessonProgress::updateOrCreate(
-            ['lesson_id' => $lesson->id, 'user_id' => $request->user()->id],
-            [
-                'enrollment_id' => $enrollment->id,
-                'is_completed'  => true,
-                'progress'      => 100,
-                'completed_at'  => now(),
-            ]
-        );
+        $wasCompleted = $enrollment->status === 'completed';
 
-        $totalLessons = Lesson::where('is_published', true)
-            ->whereHas('module', fn ($q) => $q->where('course_id', $id)->where('is_published', true))
-            ->count();
+        // Progress/status hisob-kitobi va sertifikat chiqarish endi
+        // LmsProgressService'da markazlashtirilgan — SCORM/xAPI Commit() va
+        // oddiy "Tugatdim" tugmasi endi bir xil (va bir joydan
+        // boshqariladigan) mantiqdan foydalanadi.
+        $this->progress->markLessonDone($enrollment, $lesson);
 
-        $completedLessons = LessonProgress::where('enrollment_id', $enrollment->id)
-            ->where('is_completed', true)
-            ->count();
-
-        $percent = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100, 2) : 0;
-        $justCompleted = $percent >= 100 && $enrollment->status !== 'completed';
-
-        $enrollment->update([
-            'progress'     => $percent,
-            'status'       => $percent >= 100 ? 'completed' : $enrollment->status,
-            'completed_at' => $percent >= 100 ? ($enrollment->completed_at ?? now()) : $enrollment->completed_at,
-        ]);
+        $justCompleted = ! $wasCompleted && $enrollment->fresh()->status === 'completed';
 
         return back()->with('success', $justCompleted
             ? "Tabriklaymiz! Kursni 100% tugatdingiz 🎉"
             : 'Dars tugallandi deb belgilandi!');
+    }
+
+    /**
+     * Talaba o'ziga tegishli sertifikatni PDF holida yuklab oladi.
+     * Sertifikat faqat kurs 100% tugatilgach (LmsProgressService /
+     * CertificateService orqali) avtomatik yaratiladi — bu yerda hech
+     * qanday yangi sertifikat yaratilmaydi, faqat mavjudi PDF qilinadi.
+     */
+    public function downloadCertificate(Request $request, int $id)
+    {
+        $enrollment = $this->findEnrollmentOrFail($request, $id, ['certificate', 'course', 'user']);
+
+        $certificate = $enrollment->certificate;
+        abort_if(! $certificate, 404, "Bu kurs uchun sertifikat hali chiqarilmagan.");
+
+        $qrUrl = route('certificates.verify', $certificate->certificate_number);
+        $qrCode = base64_encode(QrCode::format('svg')->size(200)->generate($qrUrl));
+
+        $pdf = Pdf::loadView('pdf.certificate', [
+            'certificate' => $certificate,
+            'user'        => $enrollment->user,
+            'course'      => $enrollment->course,
+            'qrCode'      => $qrCode,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download("sertifikat-{$certificate->certificate_number}.pdf");
     }
 
     /**

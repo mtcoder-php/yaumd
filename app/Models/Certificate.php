@@ -35,4 +35,18 @@ class Certificate extends Model
     {
         return $this->belongsTo(Enrollment::class);
     }
+
+    /**
+     * Yagona sertifikat raqamini generatsiya qiladi (masalan
+     * "YAU-CERT-2026-004821"). Contract::generateNumber() bilan bir xil
+     * naqshda — takrorlanmasligi bazadan tekshirilib turiladi.
+     */
+    public static function generateNumber(): string
+    {
+        do {
+            $number = 'YAU-CERT-'.date('Y').'-'.str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        } while (self::where('certificate_number', $number)->exists());
+
+        return $number;
+    }
 }

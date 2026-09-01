@@ -124,10 +124,13 @@
                         <input type="checkbox" v-model="form.is_free" class="rounded">
                         Bepul namuna sifatida ko'rsatish
                     </label>
-                    <label class="flex items-center gap-2 text-sm text-gray-700 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                        <input type="checkbox" v-model="form.is_published" class="rounded">
-                        Nashr qilingan
-                    </label>
+                    <div>
+                        <label class="flex items-center gap-2 text-sm text-gray-700 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                            <input type="checkbox" v-model="form.is_published" class="rounded">
+                            Nashr qilingan
+                        </label>
+                        <p class="hint">Belgilanmaguncha bu dars faqat qoralama — talabalarga ko'rinmaydi va kurs progressiga ta'sir qilmaydi. Darsni to'liq tayyorlab bo'lgach belgilang.</p>
+                    </div>
                 </div>
             </div>
 
@@ -170,7 +173,7 @@ const form = useForm({
     order: 0,
     duration: 0,
     is_free: false,
-    is_published: true,
+    is_published: false,
     content: '',
     video_source: 'upload',
     video_url: '',

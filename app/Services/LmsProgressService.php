@@ -15,6 +15,11 @@ use App\Models\LessonProgress;
  */
 class LmsProgressService
 {
+    public function __construct(
+        private CertificateService $certificates,
+    ) {
+    }
+
     public function markLessonDone(Enrollment $enrollment, Lesson $lesson): void
     {
         $progress = LessonProgress::firstOrNew([
@@ -72,10 +77,37 @@ class LmsProgressService
 
         $percent = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100, 2) : 0;
 
+        // Agar kursga keyinchalik yangi (nashr qilingan) dars qo'shilsa va
+        // talaba hali uni ko'rmagan bo'lsa, foiz 100 dan pastga tushadi —
+        // bunday holda "tugallangan" holati ham haqiqatga mos ravishda
+        // "faol"ga qaytariladi. DIQQAT: allaqachon chiqarilgan sertifikat
+        // BEKOR QILINMAYDI (CertificateService faqat yaratadi, o'chirmaydi) —
+        // bu ataylab shunday: talaba sertifikatni qo'lga kiritgach, keyinroq
+        // kursga qo'shilgan yangi darsni ko'rmagani uchun uni "orqaga tortish"
+        // noto'g'ri bo'lardi. Boshqa holatlar (masalan 'cancelled', 'expired')
+        // tegilmaydi.
+        $status = $enrollment->status;
+        if ($percent >= 100) {
+            $status = 'completed';
+        } elseif ($status === 'completed') {
+            $status = 'active';
+        }
+
         $enrollment->update([
             'progress'     => $percent,
-            'status'       => $percent >= 100 ? 'completed' : $enrollment->status,
-            'completed_at' => $percent >= 100 ? ($enrollment->completed_at ?? now()) : $enrollment->completed_at,
+            'status'       => $status,
+            'completed_at' => $percent >= 100
+                ? ($enrollment->completed_at ?? now())
+                : ($enrollment->status === 'completed' ? null : $enrollment->completed_at),
         ]);
+
+        // Endigina "completed" holatiga o'tgan (yoki allaqachon shunday
+        // bo'lgan, lekin sertifikati hali chiqarilmagan) yozilishlar uchun
+        // sertifikat chiqaramiz. issueIfEligible() ichida allaqachon mavjud
+        // sertifikat va has_certificate=false holatlari tekshiriladi, shu
+        // sabab bu yerda qo'shimcha shart shart emas.
+        if ($status === 'completed') {
+            $this->certificates->issueIfEligible($enrollment->fresh('course'));
+        }
     }
 }

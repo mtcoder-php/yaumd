@@ -56,6 +56,15 @@ class LessonController extends Controller
         }
         $this->saveFiles($lesson, $request);
 
+        // Yangi dars nashr qilingan holda qo'shilsa, kursning "jami darslar
+        // soni" ortadi — bu kursga allaqachon yozilgan (va hatto 100%
+        // tugatgan) talabalarning progress-foizini pasaytirishi kerak,
+        // aks holda ular haqiqatda ko'rmagan darsni ham "tugatgan" bo'lib
+        // ko'rinaveradi.
+        if ($lesson->is_published) {
+            $this->progress->recalculateCourseEnrollments($courseId);
+        }
+
         return redirect()->route('admin.courses.show', $courseId)
             ->with('success', "Dars qo'shildi!");
     }
@@ -95,6 +104,12 @@ class LessonController extends Controller
             }
         }
         $this->saveFiles($lesson, $request);
+
+        // Nashr holati (is_published) yoki dars butunlay o'chirilishi
+        // kabi, uni tahrirlash orqali nashrdan olish/qo'shish ham "jami
+        // darslar soni"ni o'zgartiradi — shuning uchun bu yerda ham
+        // progressni qayta hisoblaymiz.
+        $this->progress->recalculateCourseEnrollments($courseId);
 
         return redirect()->route('admin.courses.show', $courseId)
             ->with('success', 'Dars yangilandi!');
