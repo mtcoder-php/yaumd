@@ -21,6 +21,11 @@ use App\Http\Controllers\Admin\StudentController;
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
 
+    // Qulaylik uchun: /admin -> /admin/dashboard
+    Route::get('/', function () {
+        return redirect()->route('admin.dashboard');
+    })->name('home');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Abituriyentlar
