@@ -24,6 +24,8 @@ use App\Http\Controllers\Admin\CourseModuleController;
 use App\Http\Controllers\Admin\LessonController;
 use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Controllers\Admin\StudentCourseController;
+use App\Http\Controllers\Admin\ScormRuntimeController;
+use App\Http\Controllers\Admin\XapiController;
 
 
 // Har bir marshrutga qo'yilgan 'permission:...' RolePermissionSeeder'dagi
@@ -243,5 +245,17 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/{id}',                          [StudentCourseController::class, 'show'])->name('show');
         Route::get('/{id}/lessons/{lessonId}',       [StudentCourseController::class, 'lesson'])->name('lesson');
         Route::post('/{id}/lessons/{lessonId}/complete', [StudentCourseController::class, 'markComplete'])->name('lessons.complete');
+
+        // SCORM 1.2 / SCORM 2004 pleyeri (resources/js/scormApi.js) Commit()
+        // yoki Finish()/Terminate() chaqirganda shu yerga CMI ma'lumotlarini
+        // yuboradi.
+        Route::post('/{id}/lessons/{lessonId}/scorm/commit', [ScormRuntimeController::class, 'commit'])->name('lessons.scorm.commit');
+
+        // xAPI (Tin Can) — paket ichidagi kutubxona statement'larni
+        // to'g'ridan-to'g'ri shu manzilga yuboradi. CSRF'dan ozod qilingan
+        // (bootstrap/app.php'ga qarang), chunki paket Laravel CSRF tokenini
+        // bilmaydi — autentifikatsiya sessiya cookie orqali amalga oshadi.
+        Route::match(['post', 'put'], '/{id}/lessons/{lessonId}/xapi/statements', [XapiController::class, 'store'])->name('lessons.xapi.statements.store');
+        Route::get('/{id}/lessons/{lessonId}/xapi/statements', [XapiController::class, 'index'])->name('lessons.xapi.statements.index');
     });
 });

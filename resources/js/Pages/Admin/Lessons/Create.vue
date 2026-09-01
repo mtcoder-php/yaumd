@@ -46,9 +46,21 @@
                         <option value="text">Matnli dars</option>
                         <option value="quiz" disabled>🔒 Test (tez orada)</option>
                         <option value="assignment" disabled>🔒 Topshiriq (tez orada)</option>
-                        <option value="scorm" disabled>🔒 SCORM paket (tez orada)</option>
+                        <option value="scorm">SCORM / xAPI paket</option>
                     </select>
                     <p v-if="form.errors.type" class="err">{{ form.errors.type }}</p>
+                </div>
+
+                <!-- SCORM / xAPI -->
+                <div v-if="form.type === 'scorm'" class="space-y-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                    <div>
+                        <label class="field-label">Paket fayli (.zip) <span class="req">*</span></label>
+                        <input type="file" accept=".zip,application/zip" class="field-input"
+                               :class="form.errors.scorm_file ? 'field-error' : ''"
+                               @change="form.scorm_file = $event.target.files[0]">
+                        <p class="hint">SCORM 1.2, SCORM 2004 yoki xAPI (Tin Can) paketini ZIP arxiv holida yuklang (imsmanifest.xml yoki tincan.xml ichida bo'lishi kerak). Maksimum 500 MB.</p>
+                        <p v-if="form.errors.scorm_file" class="err">{{ form.errors.scorm_file }}</p>
+                    </div>
                 </div>
 
                 <!-- Video -->
@@ -85,7 +97,7 @@
                 </div>
 
                 <!-- Fayllar -->
-                <div>
+                <div v-if="form.type !== 'scorm'">
                     <label class="field-label">
                         {{ form.type === 'pdf' ? "Fayl (PDF/hujjat)" : "Qo'shimcha fayllar" }}
                         <span v-if="form.type === 'pdf'" class="req">*</span>
@@ -164,6 +176,7 @@ const form = useForm({
     video_url: '',
     video_file: null,
     files: [],
+    scorm_file: null,
 })
 
 const submit = () => {

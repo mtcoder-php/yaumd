@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
+use App\Models\ScormAttempt;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -56,7 +58,7 @@ class StudentCourseController extends Controller
             'course.modules.lessons' => fn ($q) => $q->where('is_published', true)->orderBy('order'),
         ]);
 
-        $lesson = Lesson::with(['video', 'attachments'])
+        $lesson = Lesson::with(['video', 'attachments', 'scormPackage'])
             ->where('is_published', true)
             ->whereHas('module', fn ($q) => $q->where('course_id', $id)->where('is_published', true))
             ->findOrFail($lessonId);
@@ -78,10 +80,41 @@ class StudentCourseController extends Controller
             ->where('is_completed', true)
             ->pluck('lesson_id');
 
+        // SCORM (1.2/2004) bo'lsa — oldingi urinishni (davom ettirish/resume
+        // uchun) beramiz. xAPI bo'lsa — pleyerga kerak bo'ladigan ishga
+        // tushirish parametrlarini (endpoint/actor/registration) tayyorlaymiz.
+        $scormAttempt = null;
+        $xapiLaunch = null;
+
+        if ($lesson->scormPackage && $lesson->scormPackage->version !== 'xapi') {
+            $scormAttempt = ScormAttempt::where('lesson_id', $lesson->id)
+                ->where('user_id', $request->user()->id)
+                ->first();
+        }
+
+        if ($lesson->scormPackage && $lesson->scormPackage->version === 'xapi') {
+            $existingAttempt = ScormAttempt::where('lesson_id', $lesson->id)
+                ->where('user_id', $request->user()->id)
+                ->first();
+
+            $xapiLaunch = [
+                'endpoint'     => route('admin.my-courses.lessons.xapi.statements.store', [$id, $lessonId]),
+                'actor'        => [
+                    'objectType' => 'Agent',
+                    'name'       => $request->user()->full_name,
+                    'mbox'       => 'mailto:'.$request->user()->email,
+                ],
+                'registration' => $existingAttempt->attempt_id ?? (string) Str::uuid(),
+                'activityId'   => $lesson->scormPackage->identifier,
+            ];
+        }
+
         return Inertia::render('Student/MyCourses/Lesson', [
             'enrollment'         => $enrollment,
             'lesson'             => $lesson,
             'completedLessonIds' => $completedLessonIds,
+            'scormAttempt'       => $scormAttempt,
+            'xapiLaunch'         => $xapiLaunch,
             'prevLesson'         => $currentIndex !== false && $currentIndex > 0
                 ? ['id' => $flatLessons[$currentIndex - 1]->id, 'title_uz' => $flatLessons[$currentIndex - 1]->title_uz]
                 : null,

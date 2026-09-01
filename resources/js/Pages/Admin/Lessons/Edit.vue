@@ -46,9 +46,29 @@
                         <option value="text">Matnli dars</option>
                         <option value="quiz" disabled>🔒 Test (tez orada)</option>
                         <option value="assignment" disabled>🔒 Topshiriq (tez orada)</option>
-                        <option value="scorm" disabled>🔒 SCORM paket (tez orada)</option>
+                        <option value="scorm">SCORM / xAPI paket</option>
                     </select>
                     <p v-if="form.errors.type" class="err">{{ form.errors.type }}</p>
+                </div>
+
+                <!-- SCORM / xAPI -->
+                <div v-if="form.type === 'scorm'" class="space-y-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                    <div v-if="lesson.scormPackage" class="flex items-center gap-2 text-xs text-gray-500 bg-white rounded-lg px-3 py-2 border border-gray-100">
+                        <Icon icon="mdi:check-circle-outline" class="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span class="flex-1">
+                            Paket mavjud: {{ lesson.scormPackage.title }}
+                            ({{ { scorm12: 'SCORM 1.2', scorm2004: 'SCORM 2004', xapi: 'xAPI (Tin Can)' }[lesson.scormPackage.version] || lesson.scormPackage.version }}).
+                            Yangisini tanlasangiz, eskisi almashtiriladi.
+                        </span>
+                    </div>
+                    <div>
+                        <label class="field-label">{{ lesson.scormPackage ? "Yangi paket fayli (.zip)" : "Paket fayli (.zip)" }} <span v-if="!lesson.scormPackage" class="req">*</span></label>
+                        <input type="file" accept=".zip,application/zip" class="field-input"
+                               :class="form.errors.scorm_file ? 'field-error' : ''"
+                               @change="form.scorm_file = $event.target.files[0]">
+                        <p class="hint">SCORM 1.2, SCORM 2004 yoki xAPI (Tin Can) paketini ZIP arxiv holida yuklang (imsmanifest.xml yoki tincan.xml ichida bo'lishi kerak). Bo'sh qoldirsangiz, mavjud paket o'zgarmaydi. Maksimum 500 MB.</p>
+                        <p v-if="form.errors.scorm_file" class="err">{{ form.errors.scorm_file }}</p>
+                    </div>
                 </div>
 
                 <!-- Video -->
@@ -107,7 +127,7 @@
                 </div>
 
                 <!-- Yangi fayllar -->
-                <div>
+                <div v-if="form.type !== 'scorm'">
                     <label class="field-label">
                         {{ form.type === 'pdf' ? "Yangi fayl qo'shish" : "Qo'shimcha fayl qo'shish" }}
                     </label>
@@ -186,6 +206,7 @@ const form = useForm({
     video_url: (props.lesson.video && ['youtube', 'vimeo'].includes(props.lesson.video.source)) ? props.lesson.video.url : '',
     video_file: null,
     files: [],
+    scorm_file: null,
 })
 
 const submit = () => {

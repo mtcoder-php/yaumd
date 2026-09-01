@@ -5,23 +5,35 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * xAPI (Tin Can) kontenti yuborgan har bir "statement"ning yozuvi.
+ * "Amaliy" LRS — rasmiy Learning Record Store spetsifikatsiyasining
+ * to'liq konformansi emas, lekin real xAPI paketlaridan (Articulate
+ * Rise/Storyline va h.k.) kelayotgan statement'larni qabul qilib,
+ * ular asosida tugallanish/o'tish holatini kuzatish uchun yetarli.
+ */
 class XapiStatement extends Model
 {
     protected $fillable = [
-        'user_id', 'lesson_id', 'statement_id',
-        'verb', 'object_id', 'object_type',
-        'actor', 'result', 'context', 'raw', 'stored_at',
+        'scorm_package_id', 'lesson_id', 'user_id',
+        'statement_id', 'verb_id', 'verb_display', 'object_id',
+        'result_completion', 'result_success',
+        'result_score_scaled', 'result_score_raw', 'result_duration',
+        'raw',
     ];
 
     protected function casts(): array
     {
         return [
-            'actor'     => 'array',
-            'result'    => 'array',
-            'context'   => 'array',
-            'raw'       => 'array',
-            'stored_at' => 'datetime',
+            'result_completion' => 'boolean',
+            'result_success'    => 'boolean',
+            'raw'               => 'array',
         ];
+    }
+
+    public function lesson(): BelongsTo
+    {
+        return $this->belongsTo(Lesson::class);
     }
 
     public function user(): BelongsTo
@@ -29,8 +41,8 @@ class XapiStatement extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function lesson(): BelongsTo
+    public function scormPackage(): BelongsTo
     {
-        return $this->belongsTo(Lesson::class);
+        return $this->belongsTo(ScormPackage::class);
     }
 }

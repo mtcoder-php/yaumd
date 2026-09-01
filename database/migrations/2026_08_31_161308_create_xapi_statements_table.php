@@ -10,18 +10,22 @@ return new class extends Migration
     {
         Schema::create('xapi_statements', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('scorm_package_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('lesson_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('lesson_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('statement_id', 100)->unique(); // UUID
-            $table->string('verb', 255);                   // experienced, completed, passed, failed
-            $table->string('object_id', 500);              // activity IRI
-            $table->string('object_type', 100)->nullable();
-            $table->json('actor')->nullable();
-            $table->json('result')->nullable();
-            $table->json('context')->nullable();
-            $table->json('raw')->nullable();               // to'liq statement
-            $table->timestamp('stored_at')->useCurrent();
+            $table->string('statement_id', 100)->nullable(); // xAPI statement id (klient tomonidan berilishi mumkin)
+            $table->string('verb_id', 255)->nullable();      // masalan https://w3id.org/xapi/verbs/completed
+            $table->string('verb_display', 255)->nullable();
+            $table->string('object_id', 500)->nullable();    // activity IRI
+            $table->boolean('result_completion')->nullable();
+            $table->boolean('result_success')->nullable();
+            $table->decimal('result_score_scaled', 5, 4)->nullable();
+            $table->decimal('result_score_raw', 8, 2)->nullable();
+            $table->string('result_duration', 50)->nullable(); // ISO 8601 duration
+            $table->json('raw'); // to'liq statement (audit/keyingi tahlil uchun)
             $table->timestamps();
+
+            $table->index(['lesson_id', 'user_id']);
         });
     }
 

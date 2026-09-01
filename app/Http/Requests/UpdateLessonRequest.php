@@ -17,7 +17,7 @@ class UpdateLessonRequest extends FormRequest
             'title_uz'     => 'required|string|max:255',
             'title_ru'     => 'nullable|string|max:255',
             'description'  => 'nullable|string',
-            'type'         => 'required|in:video,pdf,text',
+            'type'         => 'required|in:video,pdf,text,scorm',
             'order'        => 'nullable|integer|min:0',
             'duration'     => 'nullable|integer|min:0',
             'is_free'      => 'boolean',
@@ -27,6 +27,9 @@ class UpdateLessonRequest extends FormRequest
             'video_source' => 'nullable|in:upload,youtube,vimeo',
             'video_url'    => 'nullable|url|max:500',
             'video_file'   => 'nullable|file|mimetypes:video/mp4,video/webm,video/ogg|max:512000',
+            // Tahrirlashda ham ixtiyoriy — yangi fayl tanlanmasa, mavjud
+            // SCORM/xAPI paket o'zgarishsiz qoladi.
+            'scorm_file'   => 'nullable|file|mimes:zip|max:512000',
             'files'        => 'nullable|array',
             'files.*'      => 'file|max:51200',
         ];
@@ -40,6 +43,8 @@ class UpdateLessonRequest extends FormRequest
             'video_url.url'        => "To'g'ri havola kiriting (https://...)",
             'video_file.mimetypes' => "Video fayl formati noto'g'ri (mp4, webm yoki ogg bo'lishi kerak)",
             'video_file.max'       => "Video hajmi 500 MB dan oshmasligi kerak",
+            'scorm_file.mimes'     => "Fayl .zip formatida bo'lishi kerak",
+            'scorm_file.max'       => "Paket hajmi 500 MB dan oshmasligi kerak",
             'files.*.max'          => "Har bir fayl hajmi 50 MB dan oshmasligi kerak",
         ];
     }

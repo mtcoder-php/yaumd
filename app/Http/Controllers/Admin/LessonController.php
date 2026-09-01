@@ -9,13 +9,19 @@ use App\Models\Course;
 use App\Models\CourseModule;
 use App\Models\Lesson;
 use App\Models\LessonAttachment;
+use App\Services\ScormPackageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 class LessonController extends Controller
 {
+    public function __construct(private ScormPackageService $scormPackages)
+    {
+    }
+
     public function create(int $courseId, int $moduleId): Response
     {
         return Inertia::render('Admin/Lessons/Create', [
@@ -29,13 +35,21 @@ class LessonController extends Controller
         $module = CourseModule::where('course_id', $courseId)->findOrFail($moduleId);
 
         $data = $request->validated();
-        unset($data['video_source'], $data['video_url'], $data['video_file'], $data['files']);
+        unset($data['video_source'], $data['video_url'], $data['video_file'], $data['files'], $data['scorm_file']);
         $data['order'] = $data['order'] ?? (($module->lessons()->max('order') ?? 0) + 1);
 
         $lesson = $module->lessons()->create($data);
 
         if ($lesson->type === 'video') {
             $this->saveVideo($lesson, $request);
+        }
+        if ($lesson->type === 'scorm' && $request->hasFile('scorm_file')) {
+            try {
+                $this->saveScormPackage($lesson, $request);
+            } catch (Throwable $e) {
+                return redirect()->route('admin.courses.show', $courseId)
+                    ->with('error', "Dars qo'shildi, lekin SCORM/xAPI paketini ochishda xatolik: {$e->getMessage()}");
+            }
         }
         $this->saveFiles($lesson, $request);
 
@@ -45,7 +59,7 @@ class LessonController extends Controller
 
     public function edit(int $courseId, int $lessonId): Response
     {
-        $lesson = Lesson::with(['video', 'attachments'])
+        $lesson = Lesson::with(['video', 'attachments', 'scormPackage'])
             ->whereHas('module', fn ($q) => $q->where('course_id', $courseId))
             ->findOrFail($lessonId);
 
@@ -58,14 +72,24 @@ class LessonController extends Controller
 
     public function update(UpdateLessonRequest $request, int $courseId, int $lessonId)
     {
-        $lesson = Lesson::whereHas('module', fn ($q) => $q->where('course_id', $courseId))->findOrFail($lessonId);
+        $lesson = Lesson::with('scormPackage')
+            ->whereHas('module', fn ($q) => $q->where('course_id', $courseId))
+            ->findOrFail($lessonId);
 
         $data = $request->validated();
-        unset($data['video_source'], $data['video_url'], $data['video_file'], $data['files']);
+        unset($data['video_source'], $data['video_url'], $data['video_file'], $data['files'], $data['scorm_file']);
         $lesson->update($data);
 
         if ($lesson->type === 'video' && ($request->hasFile('video_file') || $request->filled('video_url'))) {
             $this->saveVideo($lesson, $request);
+        }
+        if ($lesson->type === 'scorm' && $request->hasFile('scorm_file')) {
+            try {
+                $this->saveScormPackage($lesson, $request);
+            } catch (Throwable $e) {
+                return redirect()->route('admin.courses.show', $courseId)
+                    ->with('error', "Dars yangilandi, lekin SCORM/xAPI paketini ochishda xatolik: {$e->getMessage()}");
+            }
         }
         $this->saveFiles($lesson, $request);
 
@@ -75,7 +99,7 @@ class LessonController extends Controller
 
     public function destroy(int $courseId, int $lessonId)
     {
-        $lesson = Lesson::with(['video', 'attachments'])
+        $lesson = Lesson::with(['video', 'attachments', 'scormPackage'])
             ->whereHas('module', fn ($q) => $q->where('course_id', $courseId))
             ->findOrFail($lessonId);
 
@@ -88,6 +112,9 @@ class LessonController extends Controller
         }
         foreach ($lesson->attachments as $attachment) {
             Storage::disk('public')->delete($attachment->path);
+        }
+        if ($lesson->scormPackage) {
+            $this->scormPackages->delete($lesson->scormPackage);
         }
 
         $lesson->delete();
@@ -118,6 +145,27 @@ class LessonController extends Controller
         }
 
         $lesson->video()->updateOrCreate([], $videoData);
+    }
+
+    /**
+     * SCORM/xAPI ZIP paketini yechib, ScormPackage yozuvini yaratadi va
+     * darsni shunga bog'laydi. Bitta darsda bir vaqtning o'zida faqat
+     * bitta paket bo'lishi mumkin — yangisi yuklansa, eskisi (fayllari
+     * bilan birga) o'chiriladi.
+     */
+    private function saveScormPackage(Lesson $lesson, Request $request): void
+    {
+        if ($lesson->scormPackage) {
+            $this->scormPackages->delete($lesson->scormPackage);
+            $lesson->scorm_package_id = null;
+        }
+
+        $package = $this->scormPackages->importFromZip(
+            $request->file('scorm_file'),
+            $lesson->title_uz
+        );
+
+        $lesson->update(['scorm_package_id' => $package->id]);
     }
 
     private function saveFiles(Lesson $lesson, Request $request): void

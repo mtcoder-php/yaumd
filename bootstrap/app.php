@@ -31,6 +31,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission'         => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
+
+        // xAPI (Tin Can) paketlari ichidagi kutubxona statement'larni
+        // to'g'ridan-to'g'ri o'zining HTTP so'rovi bilan yuboradi — u
+        // Laravel'ning CSRF tokenini bilmaydi va uni yubora olmaydi.
+        // Autentifikatsiya baribir sessiya cookie orqali ta'minlanadi
+        // (iframe bizning o'z domenimizdan ochiladi), shuning uchun bu
+        // xavfsizlikni pasaytirmaydi — faqat shu bitta marshrut turkumi
+        // uchun CSRF tekshiruvi o'chiriladi.
+        $middleware->validateCsrfTokens(except: [
+            'admin/my-courses/*/lessons/*/xapi/statements',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -52,7 +52,24 @@
                 <!-- Matn -->
                 <div v-else-if="lesson.type === 'text'" class="p-6 prose prose-sm max-w-none" v-html="lesson.content" />
 
-                <!-- Quiz / Topshiriq / SCORM — hozircha alohida modul sifatida ishlab chiqilmagan -->
+                <!-- SCORM 1.2 / SCORM 2004 / xAPI -->
+                <div v-else-if="lesson.type === 'scorm'">
+                    <div v-if="scormError" class="p-6 text-sm text-red-600 flex items-center gap-2">
+                        <Icon icon="mdi:alert-circle-outline" class="w-5 h-5 flex-shrink-0" />
+                        {{ scormError }}
+                    </div>
+                    <iframe v-else-if="scormFrameSrc" ref="scormFrameEl" :src="scormFrameSrc"
+                            class="w-full" style="height: 70vh; border: 0" allowfullscreen />
+                    <div v-else class="flex items-center justify-center text-gray-400" style="height: 40vh">
+                        <Icon icon="mdi:loading" class="w-8 h-8 animate-spin" />
+                    </div>
+                    <p class="px-6 py-2 text-xs text-gray-400 border-t border-gray-100">
+                        {{ lesson.scormPackage?.version === 'xapi' ? 'xAPI (Tin Can) paketi' : (lesson.scormPackage?.version === 'scorm2004' ? 'SCORM 2004 paketi' : 'SCORM 1.2 paketi') }}
+                        — natija avtomatik saqlanadi.
+                    </p>
+                </div>
+
+                <!-- Quiz / Topshiriq — hozircha alohida modul sifatida ishlab chiqilmagan -->
                 <div v-else class="p-10 text-center text-gray-400">
                     <Icon :icon="lessonTypeIcon(lesson.type)" class="w-10 h-10 mx-auto mb-2 opacity-40" />
                     <p class="text-sm">{{ lessonTypeLabel(lesson.type) }} — tez kunda</p>
@@ -106,20 +123,24 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import { useToast } from 'vue-toastification'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { createScormRuntime } from '@/scormApi.js'
 
 const props = defineProps({
     enrollment:         { type: Object, required: true },
     lesson:              { type: Object, required: true },
     completedLessonIds: { type: Array,  default: () => [] },
+    scormAttempt:        { type: Object, default: null },
+    xapiLaunch:          { type: Object, default: null },
     prevLesson:          { type: Object, default: null },
     nextLesson:          { type: Object, default: null },
 })
 
+const page = usePage()
 const toast = useToast()
 const completing = ref(false)
 
@@ -165,6 +186,84 @@ const markComplete = () => {
         onFinish: () => { completing.value = false },
     })
 }
+
+// --- SCORM 1.2 / SCORM 2004 / xAPI ---
+//
+// SCORM kontenti API obyektini window.parent zanjiri bo'ylab qidiradi,
+// shuning uchun u iframe ATA oynasiga (shu sahifaning o'ziga), iframe
+// src o'rnatilishidan OLDIN joylashtiriladi. xAPI uchun esa alohida API
+// shart emas — paket ichidagi kutubxona to'g'ridan-to'g'ri bizning
+// statement endpointimizga (query-parametrlar orqali uzatilgan) HTTP
+// so'rov yuboradi (ADL "Launch" konventsiyasi).
+const scormFrameSrc = ref(null)
+const scormError = ref(null)
+
+const buildXapiLaunchUrl = (baseUrl, launch) => {
+    const params = new URLSearchParams()
+    params.set('endpoint', launch.endpoint)
+    params.set('auth', 'Basic ' + btoa('anonymous:anonymous'))
+    params.set('actor', JSON.stringify(launch.actor))
+    params.set('registration', launch.registration)
+    if (launch.activityId) params.set('activity_id', launch.activityId)
+    const sep = baseUrl.includes('?') ? '&' : '?'
+    return baseUrl + sep + params.toString()
+}
+
+onMounted(() => {
+    if (props.lesson.type !== 'scorm') return
+
+    const pkg = props.lesson.scormPackage
+    if (!pkg || !pkg.full_launch_url) {
+        scormError.value = "Paket topilmadi yoki fayllari yo'q. Administratorga xabar bering."
+        return
+    }
+
+    if (pkg.version === 'xapi') {
+        if (!props.xapiLaunch) {
+            scormError.value = "xAPI ishga tushirish ma'lumotlari topilmadi."
+            return
+        }
+        scormFrameSrc.value = buildXapiLaunchUrl(pkg.full_launch_url, props.xapiLaunch)
+        return
+    }
+
+    const runtime = createScormRuntime({
+        version: pkg.version, // 'scorm12' | 'scorm2004'
+        initial: props.scormAttempt || {},
+        student: {
+            id: page.props.auth?.user?.id ?? '',
+            name: page.props.auth?.user?.full_name || '',
+        },
+        attemptId: props.scormAttempt?.attempt_id
+            || (window.crypto?.randomUUID ? window.crypto.randomUUID() : String(Date.now())),
+        onCommit: (payload) => window.axios.post(
+            route('admin.my-courses.lessons.scorm.commit', [props.enrollment.course_id, props.lesson.id]),
+            payload
+        ).then(() => {
+            // Tugallandi/o'tdi deb belgilansa — "Tugatilgan" holatini va
+            // progressni yangilash uchun shu propni qayta so'raymiz (iframe
+            // qayta yuklanmaydi, faqat shu maydon yangilanadi).
+            if (payload.completion_status === 'completed' || payload.success_status === 'passed') {
+                router.reload({ only: ['completedLessonIds'] })
+            }
+        }).catch(() => {
+            toast.error("SCORM natijasini saqlashda xatolik yuz berdi.")
+        }),
+    })
+
+    if (pkg.version === 'scorm2004') {
+        window.API_1484_11 = runtime
+    } else {
+        window.API = runtime
+    }
+
+    scormFrameSrc.value = pkg.full_launch_url
+})
+
+onBeforeUnmount(() => {
+    delete window.API
+    delete window.API_1484_11
+})
 </script>
 
 <style scoped>
