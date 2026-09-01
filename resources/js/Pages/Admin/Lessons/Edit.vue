@@ -53,16 +53,16 @@
 
                 <!-- SCORM / xAPI -->
                 <div v-if="form.type === 'scorm'" class="space-y-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
-                    <div v-if="lesson.scormPackage" class="flex items-center gap-2 text-xs text-gray-500 bg-white rounded-lg px-3 py-2 border border-gray-100">
+                    <div v-if="lesson.scorm_package" class="flex items-center gap-2 text-xs text-gray-500 bg-white rounded-lg px-3 py-2 border border-gray-100">
                         <Icon icon="mdi:check-circle-outline" class="w-4 h-4 text-green-600 flex-shrink-0" />
                         <span class="flex-1">
-                            Paket mavjud: {{ lesson.scormPackage.title }}
-                            ({{ { scorm12: 'SCORM 1.2', scorm2004: 'SCORM 2004', xapi: 'xAPI (Tin Can)' }[lesson.scormPackage.version] || lesson.scormPackage.version }}).
+                            Paket mavjud: {{ lesson.scorm_package.title }}
+                            ({{ { scorm12: 'SCORM 1.2', scorm2004: 'SCORM 2004', xapi: 'xAPI (Tin Can)' }[lesson.scorm_package.version] || lesson.scorm_package.version }}).
                             Yangisini tanlasangiz, eskisi almashtiriladi.
                         </span>
                     </div>
                     <div>
-                        <label class="field-label">{{ lesson.scormPackage ? "Yangi paket fayli (.zip)" : "Paket fayli (.zip)" }} <span v-if="!lesson.scormPackage" class="req">*</span></label>
+                        <label class="field-label">{{ lesson.scorm_package ? "Yangi paket fayli (.zip)" : "Paket fayli (.zip)" }} <span v-if="!lesson.scorm_package" class="req">*</span></label>
                         <input type="file" accept=".zip,application/zip" class="field-input"
                                :class="form.errors.scorm_file ? 'field-error' : ''"
                                @change="form.scorm_file = $event.target.files[0]">

@@ -9,6 +9,7 @@ use App\Models\Course;
 use App\Models\CourseModule;
 use App\Models\Lesson;
 use App\Models\LessonAttachment;
+use App\Services\LmsProgressService;
 use App\Services\ScormPackageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,8 +19,10 @@ use Throwable;
 
 class LessonController extends Controller
 {
-    public function __construct(private ScormPackageService $scormPackages)
-    {
+    public function __construct(
+        private ScormPackageService $scormPackages,
+        private LmsProgressService $progress,
+    ) {
     }
 
     public function create(int $courseId, int $moduleId): Response
@@ -118,6 +121,12 @@ class LessonController extends Controller
         }
 
         $lesson->delete();
+
+        // Dars o'chirilgach, shu kursning BARCHA talabalari uchun
+        // progress-foizni qayta hisoblaymiz — aks holda "Enrollment.progress"
+        // dars o'chirilishidan OLDINGI (endi noto'g'ri) qiymatda qolib
+        // ketadi, chunki u faqat dars TUGALLANGANDA yangilanadi.
+        $this->progress->recalculateCourseEnrollments($courseId);
 
         return back()->with('success', "Dars o'chirildi!");
     }

@@ -64,7 +64,7 @@
                         <Icon icon="mdi:loading" class="w-8 h-8 animate-spin" />
                     </div>
                     <p class="px-6 py-2 text-xs text-gray-400 border-t border-gray-100">
-                        {{ lesson.scormPackage?.version === 'xapi' ? 'xAPI (Tin Can) paketi' : (lesson.scormPackage?.version === 'scorm2004' ? 'SCORM 2004 paketi' : 'SCORM 1.2 paketi') }}
+                        {{ lesson.scorm_package?.version === 'xapi' ? 'xAPI (Tin Can) paketi' : (lesson.scorm_package?.version === 'scorm2004' ? 'SCORM 2004 paketi' : 'SCORM 1.2 paketi') }}
                         — natija avtomatik saqlanadi.
                     </p>
                 </div>
@@ -212,7 +212,10 @@ const buildXapiLaunchUrl = (baseUrl, launch) => {
 onMounted(() => {
     if (props.lesson.type !== 'scorm') return
 
-    const pkg = props.lesson.scormPackage
+    // MUHIM: Laravel Eloquent munosabat (relation) nomini JSON'ga chiqarganda
+    // avtomatik snake_case qiladi — "scormPackage()" metodi natijada
+    // "scorm_package" kaliti bilan keladi (camelCase emas).
+    const pkg = props.lesson.scorm_package
     if (!pkg || !pkg.full_launch_url) {
         scormError.value = "Paket topilmadi yoki fayllari yo'q. Administratorga xabar bering."
         return

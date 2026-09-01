@@ -32,19 +32,42 @@ class LmsProgressService
         $progress->completed_at = now();
         $progress->save();
 
-        $this->recalculateEnrollmentProgress($enrollment, $lesson);
+        $courseId = $lesson->module()->value('course_id');
+        $this->recalculateEnrollment($enrollment, $courseId);
     }
 
-    private function recalculateEnrollmentProgress(Enrollment $enrollment, Lesson $lesson): void
+    /**
+     * Bitta kursning BARCHA ro'yxatdan o'tishlari (Enrollment) uchun
+     * progress-foizni qayta hisoblaydi. Dars o'chirilganda yoki
+     * nashrdan olib tashlanganda albatta chaqirilishi shart — aks holda
+     * "Enrollment.progress" o'sha voqeadan OLDINGI (endi noto'g'ri)
+     * qiymatda "muzlab" qolaveradi (masalan, kursda 6 ta dars bo'lib,
+     * 5 tasi tugallangan holda 4 tasi o'chirilsa, progress hamon eski
+     * "83%" qiymatida qolib ketadi, garchi endi bor-yo'g'i 2 ta dars
+     * qolgan bo'lsa ham).
+     */
+    public function recalculateCourseEnrollments(int $courseId): void
     {
-        $courseId = $lesson->module()->value('course_id');
+        Enrollment::where('course_id', $courseId)->get()->each(
+            fn (Enrollment $enrollment) => $this->recalculateEnrollment($enrollment, $courseId)
+        );
+    }
 
+    private function recalculateEnrollment(Enrollment $enrollment, int $courseId): void
+    {
         $totalLessons = Lesson::where('is_published', true)
             ->whereHas('module', fn ($q) => $q->where('course_id', $courseId)->where('is_published', true))
             ->count();
 
+        // MUHIM: faqat HOZIR mavjud va nashr qilingan darslarga tegishli
+        // "tugallangan" progress yozuvlari hisobga olinadi — aks holda
+        // allaqachon o'chirilgan yoki nashrdan olingan darsning eski
+        // "tugallangan" belgisi progressni haqiqatdan yuqori ko'rsatib
+        // qolaveradi.
         $completedLessons = LessonProgress::where('enrollment_id', $enrollment->id)
             ->where('is_completed', true)
+            ->whereHas('lesson', fn ($q) => $q->where('is_published', true)
+                ->whereHas('module', fn ($qq) => $qq->where('course_id', $courseId)->where('is_published', true)))
             ->count();
 
         $percent = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100, 2) : 0;
