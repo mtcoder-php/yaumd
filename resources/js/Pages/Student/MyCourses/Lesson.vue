@@ -24,7 +24,13 @@
 
                 <!-- Video -->
                 <div v-if="lesson.type === 'video'">
-                    <video v-if="lesson.video?.video_url" :src="lesson.video.video_url" controls class="w-full aspect-video bg-black" />
+                    <!-- YouTube/Vimeo — havola shunchaki veb-sahifa manzili, video fayl
+                         emas, shuning uchun <video> emas, o'sha saytning o'z pleyeri
+                         (iframe) orqali ko'rsatiladi -->
+                    <iframe v-if="embedUrl" :src="embedUrl" class="w-full aspect-video" style="border:0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen />
+                    <video v-else-if="lesson.video?.video_url" :src="lesson.video.video_url" controls class="w-full aspect-video bg-black" />
                     <div v-else class="aspect-video flex items-center justify-center bg-gray-50 text-gray-400">
                         <Icon icon="mdi:video-off-outline" class="w-10 h-10" />
                     </div>
@@ -118,6 +124,24 @@ const toast = useToast()
 const completing = ref(false)
 
 const isDone = computed(() => props.completedLessonIds.includes(props.lesson.id))
+
+// YouTube/Vimeo havolasini o'zining iframe-pleyer manziliga aylantiradi.
+// Masalan "https://www.youtube.com/watch?v=XXXX" yoki "https://youtu.be/XXXX"
+// -> "https://www.youtube.com/embed/XXXX". Bunday havolani to'g'ridan-to'g'ri
+// <video src="..."> ga berib bo'lmaydi — u video fayl emas, veb-sahifa.
+const embedUrl = computed(() => {
+    const video = props.lesson.video
+    if (!video || !['youtube', 'vimeo'].includes(video.source) || !video.url) return null
+
+    if (video.source === 'youtube') {
+        const match = video.url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{6,})/)
+        return match ? `https://www.youtube.com/embed/${match[1]}` : null
+    }
+
+    // vimeo
+    const match = video.url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+    return match ? `https://player.vimeo.com/video/${match[1]}` : null
+})
 
 const lessonTypeLabel = (v) => ({ video: 'Video', pdf: 'Fayl/PDF', text: 'Matn', quiz: 'Test', assignment: 'Topshiriq', scorm: 'SCORM' }[v] || v)
 const lessonTypeIcon = (v) => ({

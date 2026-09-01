@@ -285,7 +285,7 @@ const menus = {
         { type: 'group', label: 'Asosiy' },
         { icon: Squares2X2Icon,            label: 'Dashboard',          href: '/admin/dashboard' },
         { type: 'group', label: "Ta'lim" },
-        { icon: BookOpenIcon,              label: 'Kurslarim',          href: '/admin/courses' },
+        { icon: BookOpenIcon,              label: 'Kurslarim',          href: '/admin/my-courses' },
         { icon: BuildingLibraryIcon,       label: 'Kutubxona',          href: '/admin/library' },
     ],
     'librarian': [
