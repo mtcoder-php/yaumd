@@ -10,6 +10,7 @@ use App\Models\Faculty;
 use App\Models\Region;
 use App\Models\Student;
 use App\Models\TestSession;
+use App\Services\StudentAccountService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,6 +18,8 @@ use App\Models\Contract;
 
 class ApplicantController extends Controller
 {
+    public function __construct(private StudentAccountService $accountService) {}
+
     public function index(Request $request): Response
     {
         $query = Applicant::query()
@@ -282,7 +285,15 @@ class ApplicantController extends Controller
             ? "\"{$student->last_name} {$student->first_name}\" — \"{$applicant->education_type}\" toifasi bo'lgani uchun kursini tekshirib, kerak bo'lsa Talaba tahrirlash sahifasida to'g'irlang (hozircha 1-kurs qilib qo'yildi)."
             : null;
 
-        return ['created' => true, 'message' => $note];
+        // Talaba uchun login (email) + parol (passport seriya) bilan tizimga
+        // kirish hisobini avtomatik yaratamiz (email/passport bo'lmasa —
+        // ogohlantirish bilan o'tkazib yuboriladi, admin keyin to'ldirganda
+        // Talaba tahrirlashni saqlashda qayta urinilib yaratiladi).
+        $account = $this->accountService->provision($student);
+
+        $notes = array_filter([$note, $account['message']]);
+
+        return ['created' => true, 'message' => $notes ? implode(' ', $notes) : null];
     }
 
     private function composeStudentAddress(Applicant $applicant): ?string

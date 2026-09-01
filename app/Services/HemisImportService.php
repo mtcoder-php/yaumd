@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\Contract;
 use App\Models\Direction;
 use App\Models\Student;
+use App\Services\StudentAccountService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -23,6 +24,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
  */
 class HemisImportService
 {
+    public function __construct(private StudentAccountService $accountService) {}
+
     /**
      * Qabul qilinadigan ustun sarlavhalari (kalit => shu kalitga mos keladigan barcha variantlar).
      * Solishtirish paytida harflar kichraytiriladi, bo'sh joylar va tutuq belgisi variantlari olib tashlanadi.
@@ -144,7 +147,7 @@ class HemisImportService
      */
     public function importRows(array $rows, int $academicYearId): array
     {
-        $result = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => []];
+        $result = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'accounts_created' => 0, 'errors' => []];
 
         if (empty($rows)) {
             return $result;
@@ -229,7 +232,7 @@ class HemisImportService
             ];
 
             try {
-                DB::transaction(function () use ($hemisId, $studentNumber, $attributes, &$result) {
+                DB::transaction(function () use ($hemisId, $studentNumber, $attributes, $rowNumber, &$result) {
                     $query = Student::query();
                     if ($hemisId) {
                         $query->where('hemis_id', $hemisId);
@@ -260,6 +263,16 @@ class HemisImportService
                             'payment_type'    => 'contract',
                             'status'          => 'draft',
                         ]);
+                    }
+
+                    // Talaba uchun login (email) + parol (passport seriya)
+                    // bilan tizimga kirish hisobini avtomatik yaratamiz.
+                    $account = $this->accountService->provision($student);
+
+                    if ($account['created']) {
+                        $result['accounts_created']++;
+                    } elseif ($account['message']) {
+                        $result['errors'][] = "{$rowNumber}-qator: {$account['message']}";
                     }
                 });
             } catch (\Throwable $e) {

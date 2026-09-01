@@ -36,10 +36,15 @@
                     </div>
 
                     <!-- Parol -->
-                    <div class="mb-6">
-                        <label class="block text-sm text-gray-600 mb-1.5">
-                            Parol
-                        </label>
+                    <div class="mb-3">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-sm text-gray-600">
+                                Parol
+                            </label>
+                            <Link :href="route('password.request')" class="text-xs text-gray-500 hover:text-gray-800">
+                                Parolni unutdingizmi?
+                            </Link>
+                        </div>
                         <div class="relative">
                             <input
                                 v-model="form.password"
@@ -65,7 +70,7 @@
                     </div>
 
                     <!-- Eslab qolish -->
-                    <div class="flex items-center gap-2 mb-6">
+                    <div class="flex items-center gap-2 mb-6 mt-3">
                         <input
                             v-model="form.remember"
                             type="checkbox"
@@ -94,7 +99,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useForm, usePage } from '@inertiajs/vue3'
+import { useForm, usePage, Link } from '@inertiajs/vue3'
 
 const showPassword = ref(false)
 

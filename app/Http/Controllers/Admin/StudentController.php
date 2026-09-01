@@ -11,13 +11,17 @@ use App\Models\Department;
 use App\Models\Direction;
 use App\Models\Student;
 use App\Services\HemisImportService;
+use App\Services\StudentAccountService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class StudentController extends Controller
 {
-    public function __construct(private HemisImportService $importService) {}
+    public function __construct(
+        private HemisImportService $importService,
+        private StudentAccountService $accountService,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -70,8 +74,10 @@ class StudentController extends Controller
             $this->createContractForStudent($student);
         }
 
+        $account = $this->accountService->provision($student);
+
         return redirect()->route('admin.students.index')
-            ->with('success', 'Talaba yaratildi!');
+            ->with('success', $this->appendAccountNote('Talaba yaratildi!', $account['message']));
     }
 
     public function edit(int $id): Response
@@ -93,8 +99,13 @@ class StudentController extends Controller
             $this->createContractForStudent($student);
         }
 
+        // Talaba avval email/passport bo'lmagani uchun hisobsiz qolgan
+        // bo'lishi mumkin — endi to'ldirilgan bo'lsa, shu yerda yaratiladi
+        // (metod idempotent, allaqachon hisobi bo'lsa hech narsa qilmaydi).
+        $account = $this->accountService->provision($student);
+
         return redirect()->route('admin.students.index')
-            ->with('success', 'Talaba ma\'lumotlari yangilandi!');
+            ->with('success', $this->appendAccountNote("Talaba ma'lumotlari yangilandi!", $account['message']));
     }
 
     public function destroy(int $id)
@@ -130,6 +141,11 @@ class StudentController extends Controller
         ]);
     }
 
+    private function appendAccountNote(string $message, ?string $note): string
+    {
+        return $note ? "{$message} {$note}" : $message;
+    }
+
     public function template()
     {
         return response($this->importService->template(), 200, [
@@ -157,8 +173,12 @@ class StudentController extends Controller
             ])->with('importErrors', $result['errors']);
         }
 
+        $accountsNote = ($result['accounts_created'] ?? 0) > 0
+            ? " {$result['accounts_created']} ta talabaga login-parol yaratildi."
+            : '';
+
         return redirect()->route('admin.students.index')
-            ->with('success', "Import yakunlandi: {$result['created']} ta yangi, {$result['updated']} ta yangilandi, {$result['skipped']} ta o'tkazib yuborildi.")
+            ->with('success', "Import yakunlandi: {$result['created']} ta yangi, {$result['updated']} ta yangilandi, {$result['skipped']} ta o'tkazib yuborildi.{$accountsNote}")
             ->with('importErrors', $result['errors']);
     }
 }
