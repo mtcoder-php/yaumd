@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,6 +22,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Super Admin — har doim, hatto kelajakda yangi permission qo'shilib,
+        // lekin seeder hali qayta ishlab chiqarilmagan holatda ham, barcha
+        // "permission:" tekshiruvlaridan xavfsiz o'tadi. Bu Spatie'ning
+        // rasman tavsiya qilgan "super-admin bypass" usuli — rol nomiga
+        // (havola: RolePermissionSeeder'dagi 'super-admin') qattiq bog'langan.
+        Gate::before(function ($user, string $ability) {
+            return $user && $user->hasRole('super-admin') ? true : null;
+        });
+
         // Laravel'ning standart "Parolni tiklash" xatini o'zbekcha va
         // loyihaning umumiy uslubiga moslashtiramiz (LoginCodeNotification
         // bilan bir xil ohangda).

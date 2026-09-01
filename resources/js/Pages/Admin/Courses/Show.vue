@@ -19,10 +19,16 @@
                         <p class="text-sm text-gray-500 mt-0.5">{{ course.category?.name_uz || 'Kategoriyasiz' }}</p>
                     </div>
                 </div>
-                <Link :href="route('admin.courses.edit', course.id)" class="btn-secondary">
-                    <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
-                    Tahrirlash
-                </Link>
+                <div class="flex items-center gap-2">
+                    <Link :href="route('admin.courses.enrollments.index', course.id)" class="btn-secondary">
+                        <Icon icon="mdi:account-group-outline" class="w-4 h-4" />
+                        O'quvchilarni boshqarish
+                    </Link>
+                    <Link :href="route('admin.courses.edit', course.id)" class="btn-secondary">
+                        <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
+                        Tahrirlash
+                    </Link>
+                </div>
             </div>
 
             <!-- Ma'lumot kartasi -->

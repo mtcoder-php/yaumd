@@ -17,10 +17,6 @@
                     Ro'yxatdan o'tgan email manzilingizni kiriting — sizga parolni tiklash havolasi yuboriladi.
                 </p>
 
-                <div v-if="status" class="mb-5 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
-                    {{ status }}
-                </div>
-
                 <form @submit.prevent="submit">
                     <div class="mb-6">
                         <label class="block text-sm text-gray-600 mb-1.5">Email</label>
@@ -30,13 +26,13 @@
                             placeholder="email@yaumd.uz"
                             autofocus
                             class="w-full px-3.5 py-2.5 rounded-lg border text-sm outline-none transition"
-                            :class="errors.email
+                            :class="form.errors.email
                                 ? 'border-red-400 bg-red-50 focus:border-red-400'
                                 : 'border-gray-200 focus:border-gray-400'"
                             autocomplete="email"
                         />
-                        <p v-if="errors.email" class="text-red-500 text-xs mt-1.5">
-                            {{ errors.email }}
+                        <p v-if="form.errors.email" class="text-red-500 text-xs mt-1.5">
+                            {{ form.errors.email }}
                         </p>
                     </div>
 
@@ -61,14 +57,20 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useForm, usePage, Link } from '@inertiajs/vue3'
+import { useForm, Link } from '@inertiajs/vue3'
+import { useToast } from 'vue-toastification'
 
+const toast = useToast()
 const form = useForm({ email: '' })
-const errors = usePage().props.errors
-const status = computed(() => usePage().props.flash?.success)
 
 const submit = () => {
-    form.post(route('password.email'))
+    form.post(route('password.email'), {
+        onSuccess: (page) => {
+            if (page.props.flash?.success) toast.success(page.props.flash.success)
+        },
+        onError: (errors) => {
+            if (errors.email) toast.error(errors.email)
+        },
+    })
 }
 </script>

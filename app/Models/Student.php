@@ -59,7 +59,7 @@ class Student extends Model
 
     public function groups(): BelongsToMany
     {
-        return $this->belongsToMany(StudentGroup::class, 'group_students');
+        return $this->belongsToMany(StudentGroup::class, 'group_students')->withTimestamps();
     }
 
     public function enrollments(): HasMany

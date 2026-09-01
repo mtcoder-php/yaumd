@@ -98,31 +98,34 @@
                         <p v-if="form.errors.password_confirmation" class="err">{{ form.errors.password_confirmation }}</p>
                     </div>
 
-                    <!-- Rol -->
+                    <!-- Rollar (bir nechtasini tanlash mumkin) -->
                     <div>
-                        <label class="field-label">Rol <span class="req">*</span></label>
+                        <label class="field-label">
+                            Rollar <span class="req">*</span>
+                            <span class="text-gray-400 font-normal ml-1">(bir nechtasini tanlash mumkin)</span>
+                        </label>
                         <div class="grid grid-cols-2 gap-2">
                             <button
                                 v-for="role in roles"
                                 :key="role.name"
                                 type="button"
-                                @click="form.role = role.name"
+                                @click="toggleRole(role.name)"
                                 class="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left"
-                                :style="form.role === role.name
+                                :style="form.roles.includes(role.name)
                                     ? 'border-color:#0f3460; background:linear-gradient(135deg,#eff6ff,#f5f3ff)'
                                     : 'border-color:#e5e7eb; background:#fafafa'"
                             >
                                 <Icon :icon="roleIcon(role.name)" class="w-4 h-4 flex-shrink-0"
-                                      :style="form.role === role.name ? 'color:#0f3460' : 'color:#9ca3af'" />
+                                      :style="form.roles.includes(role.name) ? 'color:#0f3460' : 'color:#9ca3af'" />
                                 <span class="text-sm font-medium"
-                                      :style="form.role === role.name ? 'color:#0f3460' : 'color:#374151'">
+                                      :style="form.roles.includes(role.name) ? 'color:#0f3460' : 'color:#374151'">
                                     {{ roleLabel(role.name) }}
                                 </span>
-                                <Icon v-if="form.role === role.name" icon="mdi:check" class="w-3.5 h-3.5 ml-auto"
+                                <Icon v-if="form.roles.includes(role.name)" icon="mdi:check" class="w-3.5 h-3.5 ml-auto"
                                       style="color:#0f3460" />
                             </button>
                         </div>
-                        <p v-if="form.errors.role" class="err">{{ form.errors.role }}</p>
+                        <p v-if="form.errors.roles" class="err">{{ form.errors.roles }}</p>
                     </div>
 
                 </div>
@@ -172,7 +175,9 @@ const form = useForm({
     email:                props.user?.email                || '',
     password:             '',
     password_confirmation:'',
-    role:                 props.user?.roles?.[0]?.name     || '',
+    // Bitta foydalanuvchida bir nechta rol bo'lishi mumkin (masalan
+    // "admin" + "moliya xodimi") — shuning uchun massiv sifatida saqlanadi.
+    roles:                props.user?.roles?.map(r => r.name) || [],
 })
 
 const roleLabels = [
@@ -187,6 +192,15 @@ const roleLabels = [
 
 const roleLabel = (name) => roleLabels.find(r => r.value === name)?.label || name
 const roleIcon  = (name) => roleLabels.find(r => r.value === name)?.icon  || 'mdi:account-outline'
+
+const toggleRole = (name) => {
+    const idx = form.roles.indexOf(name)
+    if (idx === -1) {
+        form.roles.push(name)
+    } else {
+        form.roles.splice(idx, 1)
+    }
+}
 
 const submit = () => {
     if (isEdit.value) {

@@ -64,37 +64,10 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <!-- Rol almashtirgich -->
-                    <div class="relative">
-                        <button
-                            @click="roleSwitcherOpen = !roleSwitcherOpen"
-                            class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition text-xs text-gray-600"
-                        >
-                            <ShieldCheckIcon class="w-3.5 h-3.5" />
-                            <span>{{ currentRole }}</span>
-                            <ChevronDownIcon class="w-3 h-3" />
-                        </button>
-
-                        <div
-                            v-if="roleSwitcherOpen"
-                            class="absolute right-0 mt-2 w-52 bg-white rounded-xl border border-gray-200 shadow-sm py-1 z-50"
-                        >
-                            <p class="text-xs text-gray-400 px-4 py-2 border-b border-gray-100">
-                                Rolni almashtirish (test)
-                            </p>
-                            <button
-                                v-for="r in allRoles"
-                                :key="r.value"
-                                @click="switchRole(r.value)"
-                                class="w-full text-left px-4 py-2 text-sm transition flex items-center justify-between"
-                                :class="activeRole === r.value
-                                    ? 'text-gray-900 font-medium bg-gray-50'
-                                    : 'text-gray-600 hover:bg-gray-50'"
-                            >
-                                <span>{{ r.label }}</span>
-                                <CheckIcon v-if="activeRole === r.value" class="w-3.5 h-3.5 text-gray-900" />
-                            </button>
-                        </div>
+                    <!-- Joriy rol (faqat ko'rsatish uchun — haqiqiy rol, bazadan) -->
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600">
+                        <ShieldCheckIcon class="w-3.5 h-3.5" />
+                        <span>{{ currentRole }}</span>
                     </div>
 
                     <!-- User -->
@@ -146,8 +119,6 @@ import { Link, router, usePage } from '@inertiajs/vue3'
 import { useToast } from 'vue-toastification'
 import {
     Bars3Icon,
-    ChevronDownIcon,
-    CheckIcon,
     ShieldCheckIcon,
     Squares2X2Icon,
     UsersIcon,
@@ -182,32 +153,47 @@ watch(() => page.props.flash, (flash) => {
 
 const sidebarOpen  = ref(false)
 const userMenuOpen = ref(false)
-const roleSwitcherOpen = ref(false)
 
 const auth = computed(() => page.props.auth)
 
-// Rol almashtirgich — localStorage da saqlanadi
-const activeRole = ref(localStorage.getItem('devRole') || auth.value?.user?.roles?.[0] || 'super-admin')
+const ROLE_LABELS = {
+    'super-admin': 'Super Admin',
+    'admin':       'Admin',
+    'admission':   "Qabul xodimi",
+    'teacher':     "O'qituvchi",
+    'student':     'Talaba',
+    'librarian':   'Kutubxonachi',
+    'finance':     'Moliya xodimi',
+}
 
-const allRoles = [
-    { value: 'super-admin', label: 'Super Admin' },
-    { value: 'admin',       label: 'Admin' },
-    { value: 'admission',   label: "Qabul xodimi" },
-    { value: 'teacher',     label: "O'qituvchi" },
-    { value: 'student',     label: 'Talaba' },
-    { value: 'librarian',   label: 'Kutubxonachi' },
-    { value: 'finance',     label: 'Moliya xodimi' },
-]
+// MUHIM: bular faqat qaysi havolalar menyuda ko'rinishini belgilaydi —
+// haqiqiy ruxsat har doim serverda (routes/admin.php'dagi `permission:`
+// middleware) alohida tekshiriladi. Avval bu yerda "Rolni almashtirish
+// (test)" degan sof interfeys almashtirgichi bor edi (localStorage'da
+// saqlanardi) — u hisobning haqiqiy roliga aslo ta'sir qilmagani uchun
+// chalkashlik keltirib chiqargan. Endi menyu to'g'ridan-to'g'ri haqiqiy
+// rol(lar)dan olinadi.
+//
+// Bir foydalanuvchida BIR NECHTA rol bo'lishi mumkin (masalan "admin" +
+// "moliya xodimi") — shuning uchun pastda faqat bitta rolning menyusi emas,
+// balki foydalanuvchiga biriktirilgan BARCHA rollarning menyulari
+// birlashtiriladi, shunda bitta hisob bilan o'ziga tegishli barcha
+// bo'limlarda bitta sahifada ishlash mumkin bo'ladi.
+const ROLE_PRIORITY = ['super-admin', 'admin', 'admission', 'teacher', 'finance', 'librarian', 'student']
+
+const userRoles = computed(() => {
+    const roles = auth.value?.user?.roles || []
+    if (!roles.length) return ['student']
+    // Ko'rsatish tartibi barqaror bo'lishi uchun (masalan har doim
+    // "Super Admin, Moliya xodimi" — teskarisi emas) ustuvorlik bo'yicha
+    // saralanadi; ro'yxatda yo'q rol bo'lsa ham oxiriga qo'shiladi.
+    return ROLE_PRIORITY.filter(r => roles.includes(r))
+        .concat(roles.filter(r => !ROLE_PRIORITY.includes(r)))
+})
 
 const currentRole = computed(() =>
-    allRoles.find(r => r.value === activeRole.value)?.label || activeRole.value
+    userRoles.value.map(r => ROLE_LABELS[r] || r).join(', ')
 )
-
-const switchRole = (role) => {
-    activeRole.value = role
-    localStorage.setItem('devRole', role)
-    roleSwitcherOpen.value = false
-}
 
 const initials = computed(() => {
     const name = auth.value?.user?.full_name || ''
@@ -221,11 +207,10 @@ const isActive = (href) => {
 
 const logout = () => {
     userMenuOpen.value = false
-    localStorage.removeItem('devRole')
     router.post('/logout')
 }
 
-// Menyu — rolga qarab
+// Menyu — haqiqiy rolga qarab
 const menus = {
     'super-admin': [
         { type: 'group', label: 'Asosiy' },
@@ -318,5 +303,21 @@ const menus = {
     ],
 }
 
-const menuItems = computed(() => menus[activeRole.value] || menus['super-admin'])
+const menuItems = computed(() => {
+    const seen = new Set()
+    const merged = []
+
+    userRoles.value.forEach((role) => {
+        (menus[role] || []).forEach((item) => {
+            // Guruh sarlavhasi ("Moliya" kabi) yoki havola ("/admin/payments"
+            // kabi) ikkinchi rolda qayta uchrasa — takrorlanmasin.
+            const key = item.type === 'group' ? `group:${item.label}` : `link:${item.href}`
+            if (seen.has(key)) return
+            seen.add(key)
+            merged.push(item)
+        })
+    })
+
+    return merged.length ? merged : menus['student']
+})
 </script>

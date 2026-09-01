@@ -42,13 +42,21 @@ class RolePermissionSeeder extends Seeder
             // Kontrakt
             'contract.view', 'contract.create', 'contract.edit', 'contract.delete',
             // To'lov
-            'payment.view', 'payment.create', 'payment.edit',
+            'payment.view', 'payment.create', 'payment.edit', 'payment.delete',
             // LMS
             'lms.view', 'lms.create', 'lms.edit', 'lms.delete',
             // Kutubxona
             'library.view', 'library.create', 'library.edit', 'library.delete',
             // Hisobot
             'report.view', 'report.export',
+            // O'quv tuzilmasi/katalogi (fakultet, yo'nalish, kafedra, o'quv yili)
+            'academic.view', 'academic.create', 'academic.edit', 'academic.delete',
+            // Talabalar
+            'student.view', 'student.create', 'student.edit', 'student.delete',
+            // Guruhlar
+            'group.view', 'group.create', 'group.edit', 'group.delete',
+            // Audit log
+            'audit.view',
         ];
 
         foreach ($permissions as $permission) {
@@ -73,6 +81,10 @@ class RolePermissionSeeder extends Seeder
             'lms.view', 'lms.create', 'lms.edit',
             'library.view', 'library.create', 'library.edit',
             'report.view', 'report.export',
+            'academic.view', 'academic.create', 'academic.edit',
+            'student.view', 'student.create', 'student.edit',
+            'group.view', 'group.create', 'group.edit',
+            'audit.view',
         ]);
 
         // Qabul xodimi
@@ -81,6 +93,10 @@ class RolePermissionSeeder extends Seeder
             'admission.view', 'admission.create', 'admission.edit',
             'test.view', 'contract.view', 'contract.create',
             'payment.view',
+            // Ariza jarayonida yo'nalish/fakultet/o'quv yilini ko'rish va
+            // "Ro'yxatga olindi" statusiga o'tgach avtomatik yaratilgan
+            // talaba yozuvini ko'rish uchun (faqat ko'rish — CRUD emas)
+            'academic.view', 'student.view',
         ]);
 
         // O'qituvchi
@@ -88,6 +104,8 @@ class RolePermissionSeeder extends Seeder
         $teacher->givePermissionTo([
             'lms.view', 'lms.create', 'lms.edit',
             'report.view',
+            // O'z kursiga biriktirilgan talaba/guruhlarni ko'rish uchun
+            'student.view', 'group.view',
         ]);
 
         // Talaba
@@ -109,12 +127,18 @@ class RolePermissionSeeder extends Seeder
             'contract.view', 'report.view', 'report.export',
         ]);
 
-        // Super Admin foydalanuvchi yaratish
-        $user = User::firstOrCreate(
-            ['email' => 'admin@yaumd.uz'],
+        // Super Admin foydalanuvchi yaratish/yangilash.
+        // updateOrCreate ishlatilgan — chunki firstOrCreate faqat email
+        // TOPILMAGANDA yangi qator yaratadi; agar shu email bilan qator
+        // allaqachon bazada bo'lsa, ikkinchi argumentdagi (parol va h.k.)
+        // qiymatlarni butunlay E'TIBORGA OLMAYDI va eskisini o'zgartirmasdan
+        // qaytaradi. Aynan shu sabab bilan email/parolni o'zgartirib
+        // seederni qayta ishga tushirganingizda o'zgarish kuchga kirmagan.
+        $user = User::updateOrCreate(
+            ['email' => 'mukhtorturdiyev@gmail.com'],
             [
-                'full_name' => 'Super Administrator',
-                'password'  => bcrypt('Admin@12345'),
+                'full_name' => 'Mukhtor Turdiyev',
+                'password'  => bcrypt('Muxtor_2026'),
                 'is_active' => true,
             ]
         );
@@ -122,6 +146,6 @@ class RolePermissionSeeder extends Seeder
         $user->assignRole('super-admin');
 
         $this->command->info('Rollar va permissionlar yaratildi!');
-        $this->command->info('Super Admin: admin@yaumd.uz | Admin@12345');
+        $this->command->info("Super Admin: {$user->email} (parol — yuqoridagi bcrypt() qatorida ko'rsatilgan)");
     }
 }

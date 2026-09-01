@@ -25,13 +25,13 @@
                             type="email"
                             placeholder="admin@yaumd.uz"
                             class="w-full px-3.5 py-2.5 rounded-lg border text-sm outline-none transition"
-                            :class="errors.email
+                            :class="form.errors.email
                                 ? 'border-red-400 bg-red-50 focus:border-red-400'
                                 : 'border-gray-200 focus:border-gray-400'"
                             autocomplete="email"
                         />
-                        <p v-if="errors.email" class="text-red-500 text-xs mt-1.5">
-                            {{ errors.email }}
+                        <p v-if="form.errors.email" class="text-red-500 text-xs mt-1.5">
+                            {{ form.errors.email }}
                         </p>
                     </div>
 
@@ -51,7 +51,7 @@
                                 :type="showPassword ? 'text' : 'password'"
                                 placeholder="••••••••"
                                 class="w-full px-3.5 py-2.5 rounded-lg border text-sm outline-none transition pr-10"
-                                :class="errors.password
+                                :class="form.errors.password
                                     ? 'border-red-400 bg-red-50 focus:border-red-400'
                                     : 'border-gray-200 focus:border-gray-400'"
                                 autocomplete="current-password"
@@ -64,8 +64,8 @@
                                 <span class="text-xs">{{ showPassword ? 'Yashir' : 'Ko\'rsat' }}</span>
                             </button>
                         </div>
-                        <p v-if="errors.password" class="text-red-500 text-xs mt-1.5">
-                            {{ errors.password }}
+                        <p v-if="form.errors.password" class="text-red-500 text-xs mt-1.5">
+                            {{ form.errors.password }}
                         </p>
                     </div>
 
@@ -98,10 +98,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useForm, usePage, Link } from '@inertiajs/vue3'
+import { ref, onMounted } from 'vue'
+import { useForm, usePage } from '@inertiajs/vue3'
+import { useToast } from 'vue-toastification'
 
 const showPassword = ref(false)
+const toast = useToast()
 
 const form = useForm({
     email: '',
@@ -109,12 +111,20 @@ const form = useForm({
     remember: false,
 })
 
-const errors = usePage().props.errors
+// Masalan parolni tiklashdan keyin shu sahifaga muvaffaqiyat xabari bilan
+// qaytarilganda (redirect()->route('login')->with('success', ...)) — buni
+// ko'rsatamiz. Sahifa har safar yangidan ochilgani uchun bu yerda bir marta
+// o'qish yetarli (usePage().props'ni keyinroq reaktiv kuzatishning hojati yo'q).
+onMounted(() => {
+    const flash = usePage().props.flash
+    if (flash?.success) toast.success(flash.success)
+})
 
 const submit = () => {
     form.post('/login', {
-        onError: () => {
+        onError: (errors) => {
             form.reset('password')
+            if (errors.email) toast.error(errors.email)
         },
     })
 }

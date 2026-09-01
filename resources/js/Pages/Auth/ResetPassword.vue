@@ -27,8 +27,8 @@
                             readonly
                             class="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-500 outline-none"
                         />
-                        <p v-if="errors.email" class="text-red-500 text-xs mt-1.5">
-                            {{ errors.email }}
+                        <p v-if="form.errors.email" class="text-red-500 text-xs mt-1.5">
+                            {{ form.errors.email }}
                         </p>
                     </div>
 
@@ -41,13 +41,13 @@
                             placeholder="••••••••"
                             autofocus
                             class="w-full px-3.5 py-2.5 rounded-lg border text-sm outline-none transition"
-                            :class="errors.password
+                            :class="form.errors.password
                                 ? 'border-red-400 bg-red-50 focus:border-red-400'
                                 : 'border-gray-200 focus:border-gray-400'"
                             autocomplete="new-password"
                         />
-                        <p v-if="errors.password" class="text-red-500 text-xs mt-1.5">
-                            {{ errors.password }}
+                        <p v-if="form.errors.password" class="text-red-500 text-xs mt-1.5">
+                            {{ form.errors.password }}
                         </p>
                     </div>
 
@@ -78,7 +78,10 @@
 </template>
 
 <script setup>
-import { useForm, usePage } from '@inertiajs/vue3'
+import { useForm } from '@inertiajs/vue3'
+import { useToast } from 'vue-toastification'
+
+const toast = useToast()
 
 const props = defineProps({
     token: { type: String, required: true },
@@ -92,11 +95,13 @@ const form = useForm({
     password_confirmation: '',
 })
 
-const errors = usePage().props.errors
-
 const submit = () => {
     form.post(route('password.update'), {
-        onError: () => form.reset('password', 'password_confirmation'),
+        onError: (errors) => {
+            form.reset('password', 'password_confirmation')
+            if (errors.email) toast.error(errors.email)
+            if (errors.password) toast.error(errors.password)
+        },
     })
 }
 </script>

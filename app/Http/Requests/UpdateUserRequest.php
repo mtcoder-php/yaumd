@@ -19,7 +19,10 @@ class UpdateUserRequest extends FormRequest
             'full_name' => 'required|string|max:255',
             'email'     => 'required|email|unique:users,email,' . $id,
             'password'  => 'nullable|string|min:8|confirmed',
-            'role'      => 'required|string|exists:roles,name',
+            // Bitta foydalanuvchiga bir nechta rol biriktirilishi mumkin
+            // (masalan "admin" + "moliya xodimi") — shuning uchun massiv.
+            'roles'     => 'required|array|min:1',
+            'roles.*'   => 'string|exists:roles,name',
         ];
     }
 
@@ -31,7 +34,8 @@ class UpdateUserRequest extends FormRequest
             'email.unique'       => 'Bu email allaqachon mavjud',
             'password.min'       => 'Parol kamida 8 ta belgi bo\'lishi kerak',
             'password.confirmed' => 'Parollar mos kelmadi',
-            'role.required'      => 'Rolni tanlang',
+            'roles.required'     => 'Kamida bitta rolni tanlang',
+            'roles.min'          => 'Kamida bitta rolni tanlang',
         ];
     }
 }

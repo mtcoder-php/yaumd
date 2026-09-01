@@ -38,7 +38,9 @@ class UserController extends Controller
             'password'  => Hash::make($request->password),
         ]);
 
-        $user->assignRole($request->role);
+        // syncRoles — aynan yuborilgan rollar to'plami bilan biriktiradi
+        // (bitta foydalanuvchida bir nechta rol bo'lishi mumkin).
+        $user->syncRoles($request->roles);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Foydalanuvchi yaratildi!');
@@ -64,7 +66,7 @@ class UserController extends Controller
                 : [],
         ]);
 
-        $user->syncRoles([$request->role]);
+        $user->syncRoles($request->roles);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Foydalanuvchi yangilandi!');

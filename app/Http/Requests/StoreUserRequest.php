@@ -17,7 +17,10 @@ class StoreUserRequest extends FormRequest
             'full_name' => 'required|string|max:255',
             'email'     => 'required|email|unique:users,email',
             'password'  => 'required|string|min:8|confirmed',
-            'role'      => 'required|string|exists:roles,name',
+            // Bitta foydalanuvchiga bir nechta rol biriktirilishi mumkin
+            // (masalan "admin" + "moliya xodimi") — shuning uchun massiv.
+            'roles'     => 'required|array|min:1',
+            'roles.*'   => 'string|exists:roles,name',
         ];
     }
 
@@ -30,7 +33,8 @@ class StoreUserRequest extends FormRequest
             'password.required'  => 'Parol kiriting',
             'password.min'       => 'Parol kamida 8 ta belgi bo\'lishi kerak',
             'password.confirmed' => 'Parollar mos kelmadi',
-            'role.required'      => 'Rolni tanlang',
+            'roles.required'     => 'Kamida bitta rolni tanlang',
+            'roles.min'          => 'Kamida bitta rolni tanlang',
         ];
     }
 }
