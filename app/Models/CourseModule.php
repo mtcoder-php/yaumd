@@ -25,6 +25,12 @@ class CourseModule extends Model
 
     public function lessons(): HasMany
     {
-        return $this->hasMany(Lesson::class)->orderBy('order');
+        // Diqqat: `lessons` jadvalidagi haqiqiy ustun nomi `module_id`
+        // (migratsiyaga qarang), lekin hasMany() standart bo'yicha
+        // "course_module_id" deb taxmin qiladi (chunki bu yerdagi model
+        // "CourseModule" deb nomlangan) — shu nomuvofiqlik "Unknown column
+        // lessons.course_module_id" xatosiga sabab bo'lgan. Shuning uchun
+        // to'g'ri ustun nomi qo'lda ko'rsatilgan.
+        return $this->hasMany(Lesson::class, 'module_id')->orderBy('order');
     }
 }
