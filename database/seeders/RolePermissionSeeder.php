@@ -109,9 +109,19 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Talaba
+        // MUHIM: bu yerda syncPermissions() ishlatilgan (givePermissionTo()
+        // emas) — chunki avval talabaga 'lms.view' berilgan edi, bu esa
+        // /admin/courses/{id} (kurs QURUVCHI — admin/o'qituvchi sahifasi)
+        // ni ham talabaga ochib qo'ygan edi ("Kurslarim" o'zining
+        // /admin/my-courses sahifasi uchun endi umuman permission talab
+        // qilmaydi, qarang routes/admin.php). givePermissionTo() faqat
+        // QO'SHADI, hech qachon olib tashlamaydi — shuning uchun 'lms.view'ni
+        // shu ro'yxatdan shunchaki o'chirish, seederni qayta ishga
+        // tushirsangiz ham, eskisini bazadan olib tashlamas edi.
+        // syncPermissions() esa ro'yxatni ANIQ shunga TENGLASHTIRADI.
         $student = Role::findByName('student');
-        $student->givePermissionTo([
-            'lms.view', 'library.view',
+        $student->syncPermissions([
+            'library.view',
         ]);
 
         // Kutubxonachi

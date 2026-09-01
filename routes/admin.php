@@ -229,11 +229,16 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // "Kurslarim" — joriy foydalanuvchining o'ziga yozilgan (Enrollment)
     // kurslarini ko'rishi va darslarni o'tishi. Ma'lumotlar har doim
-    // auth()->id() bilan cheklanadi (StudentCourseController ichida) —
-    // shuning uchun bu yerda alohida "faqat talaba" tekshiruvi shart emas,
-    // 'lms.view' yetarli (admin/super-admin/teacher ham o'zining
-    // "yozilgan" kurslari bo'lsa shu yerdan ko'radi).
-    Route::prefix('my-courses')->name('my-courses.')->middleware('permission:lms.view')->group(function () {
+    // auth()->id() bilan cheklanadi (StudentCourseController ichida), shu
+    // sabab bu yerga hech qanday 'permission:' qo'yilmagan — faqat login
+    // qilingan bo'lish (tashqi guruhdagi 'auth') yetarli.
+    //
+    // MUHIM: avval bu yerda ham 'permission:lms.view' bor edi — bu esa
+    // yuqoridagi /admin/courses/{id} (kurs QURUVCHI, ya'ni admin/o'qituvchi
+    // sahifasi, xuddi shu 'lms.view' bilan himoyalangan) sahifasini ham
+    // talabaga ochib qo'ygan edi, chunki 'student' roliga "Kurslarim"
+    // ishlashi uchun 'lms.view' berilgan edi. Endi ikkalasi mustaqil.
+    Route::prefix('my-courses')->name('my-courses.')->group(function () {
         Route::get('/',                              [StudentCourseController::class, 'index'])->name('index');
         Route::get('/{id}',                          [StudentCourseController::class, 'show'])->name('show');
         Route::get('/{id}/lessons/{lessonId}',       [StudentCourseController::class, 'lesson'])->name('lesson');
