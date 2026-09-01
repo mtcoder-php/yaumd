@@ -31,16 +31,29 @@ return new class extends Migration
             $table->enum('study_form', ['full_time', 'evening', 'distance'])->default('full_time');
             $table->tinyInteger('course_year')->default(1);
             $table->enum('status', ['active', 'academic_leave', 'expelled', 'graduated', 'transferred'])->default('active');
+            $table->enum('funding_type', ['grant', 'contract'])->default('contract');
             $table->string('photo')->nullable();
             $table->text('address')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });
+
+        // contracts.student_id ustuni yuqoridagi jadvaldan oldin (2026_04_20)
+        // yaratilgan, chunki o'sha paytda "students" jadvali hali mavjud
+        // emas edi — tashqi kalit cheklovini shu yerda, students yaratilgach
+        // qo'shamiz.
+        Schema::table('contracts', function (Blueprint $table) {
+            $table->foreign('student_id')->references('id')->on('students')->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('contracts', function (Blueprint $table) {
+            $table->dropForeign(['student_id']);
+        });
+
         Schema::dropIfExists('students');
     }
 };

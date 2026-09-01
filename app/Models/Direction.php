@@ -12,7 +12,7 @@ class Direction extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'faculty_id', 'hemis_code',
+        'faculty_id', 'department_id', 'hemis_code',
         'name_uz', 'name_ru', 'name_en',
         'degree', 'duration_years',
         'quota_grant', 'quota_contract',

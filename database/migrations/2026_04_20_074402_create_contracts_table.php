@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('contracts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('applicant_id')->constrained()->cascadeOnDelete();
+            // Kontrakt Abituriyentlar oqimi orqali (applicant_id) yoki talaba
+            // to'g'ridan-to'g'ri kiritilganda/import qilinganda (student_id)
+            // yaratilishi mumkin — shu sababli ikkalasi ham ixtiyoriy.
+            // student_id uchun tashqi kalit cheklovi bu yerda qo'shilmaydi,
+            // chunki "students" jadvali hali yaratilmagan (pastdagi
+            // create_students_table migratsiyasida qo'shiladi).
+            $table->foreignId('applicant_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('student_id')->nullable();
             $table->foreignId('direction_id')->constrained();
             $table->string('contract_number', 30)->unique();
             $table->decimal('amount', 12, 2);

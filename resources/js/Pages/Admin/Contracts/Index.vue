@@ -102,9 +102,9 @@
                             <!-- Abituriyent -->
                             <td class="px-4 py-3">
                                 <p class="text-sm font-medium text-gray-900">
-                                    {{ c.applicant?.last_name }} {{ c.applicant?.first_name }}
+                                    {{ personOf(c)?.last_name }} {{ personOf(c)?.first_name }}
                                 </p>
-                                <p class="text-xs text-gray-400 font-mono">{{ c.applicant?.passport_series }}</p>
+                                <p class="text-xs text-gray-400 font-mono">{{ personOf(c)?.passport_series }}</p>
                             </td>
 
                             <!-- Yo'nalish -->
@@ -221,6 +221,10 @@ const props = defineProps({
     filters:   { type: Object, default: () => ({}) },
     stats:     { type: Object, default: () => ({}) },
 })
+
+// Kontrakt Abituriyentlar oqimi orqali (applicant) yoki talaba
+// to'g'ridan-to'g'ri kiritilganda (student) yaratilgan bo'lishi mumkin
+const personOf = (c) => c.applicant ?? c.student
 
 const deleteTarget = ref(null)
 

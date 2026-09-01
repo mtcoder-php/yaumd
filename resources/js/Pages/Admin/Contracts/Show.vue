@@ -48,38 +48,35 @@
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
                             <Icon icon="mdi:account-outline" class="w-4 h-4 text-[#0f3460]" />
-                            Abituriyent ma'lumotlari
+                            {{ contract.applicant ? "Abituriyent ma'lumotlari" : "Talaba ma'lumotlari" }}
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="info-label">Familiya</p>
-                                <p class="info-value">{{ contract.applicant?.first_name }}</p>
+                                <p class="info-value">{{ person?.last_name }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Ism</p>
-                                <p class="info-value">{{ contract.applicant?.last_name }}</p>
+                                <p class="info-value">{{ person?.first_name }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Otasining ismi</p>
-                                <p class="info-value">{{ contract.applicant?.middle_name }}</p>
+                                <p class="info-value">{{ person?.middle_name }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Pasport seriyasi</p>
-                                <p class="info-value font-mono font-semibold">{{ contract.applicant?.passport_series }}</p>
+                                <p class="info-value font-mono font-semibold">{{ person?.passport_series }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Telefon</p>
-                                <a :href="`tel:${contract.applicant?.phone}`"
+                                <a :href="`tel:${person?.phone}`"
                                    class="info-value text-[#0f3460] hover:underline">
-                                    {{ contract.applicant?.phone }}
+                                    {{ person?.phone }}
                                 </a>
                             </div>
                             <div>
                                 <p class="info-label">Manzil</p>
-                                <p class="info-value">
-                                    {{ contract.applicant?.region?.name_uz }}
-                                    {{ contract.applicant?.district?.name_uz ? ', ' + contract.applicant.district.name_uz : '' }}
-                                </p>
+                                <p class="info-value">{{ personAddress }}</p>
                             </div>
                         </div>
                     </div>
@@ -175,6 +172,17 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 const props = defineProps({
     contract: { type: Object, required: true },
 })
+
+// Kontrakt Abituriyentlar oqimi orqali (applicant) yoki talaba
+// to'g'ridan-to'g'ri kiritilganda (student) yaratilgan bo'lishi mumkin
+const person = props.contract.applicant ?? props.contract.student
+
+// Applicant'da manzil viloyat/tuman + matn ko'rinishida, Student'da esa
+// yagona matn maydonida saqlanadi
+const personAddress = props.contract.applicant
+    ? [props.contract.applicant.region?.name_uz, props.contract.applicant.district?.name_uz]
+        .filter(Boolean).join(', ')
+    : (props.contract.student?.address || '')
 
 const statuses = [
     { value: 'draft',     label: 'Qoralama',  icon: 'mdi:file-outline',         class: 'bg-yellow-50 text-yellow-700' },

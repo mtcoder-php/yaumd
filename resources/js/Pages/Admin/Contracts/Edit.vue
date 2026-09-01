@@ -22,14 +22,14 @@
 
                 <div class="space-y-5">
 
-                    <!-- Abituriyent (o'zgartirilmaydi) -->
+                    <!-- Abituriyent / Talaba (o'zgartirilmaydi) -->
                     <div>
-                        <label class="field-label">Abituriyent</label>
+                        <label class="field-label">{{ contract.applicant ? 'Abituriyent' : 'Talaba' }}</label>
                         <div class="px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
                             <Icon icon="mdi:account-outline" class="w-4 h-4 text-gray-400" />
-                            {{ contract.applicant?.last_name }} {{ contract.applicant?.first_name }}
+                            {{ person?.last_name }} {{ person?.first_name }}
                             <span class="font-mono text-gray-400 text-xs ml-1">
-                                ({{ contract.applicant?.passport_series }})
+                                ({{ person?.passport_series }})
                             </span>
                         </div>
                     </div>
@@ -160,6 +160,10 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 const props = defineProps({
     contract: { type: Object, required: true },
 })
+
+// Kontrakt Abituriyentlar oqimi orqali (applicant) yoki talaba
+// to'g'ridan-to'g'ri kiritilganda (student) yaratilgan bo'lishi mumkin
+const person = props.contract.applicant ?? props.contract.student
 
 const form = useForm({
     amount:       props.contract.amount       || 0,

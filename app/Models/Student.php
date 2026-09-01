@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Student extends Model
 {
@@ -17,7 +18,7 @@ class Student extends Model
         'hemis_id', 'student_number', 'first_name', 'last_name', 'middle_name',
         'passport_series', 'jshshir', 'phone', 'email',
         'birth_day', 'birth_month', 'birth_year', 'gender',
-        'degree', 'study_form', 'course_year', 'status',
+        'degree', 'study_form', 'course_year', 'status', 'funding_type',
         'photo', 'address', 'user_id',
     ];
 
@@ -29,6 +30,16 @@ class Student extends Model
     public function applicant(): BelongsTo
     {
         return $this->belongsTo(Applicant::class);
+    }
+
+    /**
+     * Abituriyentlar oqimidan o'tmagan (to'g'ridan-to'g'ri kiritilgan/import
+     * qilingan) talabaning o'ziga tegishli kontrakti — bunday holatda
+     * kontrakt applicant_id emas, student_id orqali bog'lanadi.
+     */
+    public function contract(): HasOne
+    {
+        return $this->hasOne(Contract::class);
     }
 
     public function academicYear(): BelongsTo

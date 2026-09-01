@@ -57,7 +57,7 @@
     <table class="info-table">
         <tr>
             <td style="width:40%">Ta'lim bosqichi:</td>
-            <td class="bold">{{ $applicant->education_type === 'bachelor' ? 'Bakalavr' : 'Magistr' }}</td>
+            <td class="bold">{{ $degreeLabel }}</td>
         </tr>
         <tr>
             <td>Ta'lim shakli:</td>
@@ -117,7 +117,7 @@
     <p class="section-title">III. O'ZARO HISOB-KITOB</p>
 
     <p>3.1. Joriy o'quv yili uchun universitetda talabaning to'lov-kontrakt asosida bir yillik o'qitish qiymati
-        {{ $applicant->education_type === 'bachelor' ? 'Bakalavr' : 'Magistr' }} bosqichi bo'yicha ta'limning
+        {{ $degreeLabel }} bosqichi bo'yicha ta'limning
         {{ $applicant->study_form === 'full_time' ? 'Kunduzgi' : ($applicant->study_form === 'evening' ? 'Kechki' : 'Sirtqi') }} shakli bo'yicha
         <span class="bold">{{ number_format($contract->amount, 0, '.', ' ') }} ({{ $amountInWords }}) so'm</span>, etib belgilangan.</p>
 

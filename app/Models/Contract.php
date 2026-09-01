@@ -12,13 +12,15 @@ class Contract extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'applicant_id', 'direction_id', 'contract_number',
+        'applicant_id', 'student_id', 'direction_id', 'contract_number',
         'amount', 'payment_type', 'status',
         'pdf_path', 'qr_code', 'otp_code',
         'otp_expires_at', 'signed_at',
     ];
 
     protected $hidden = ['otp_code'];
+
+    protected $appends = ['person'];
 
     protected function casts(): array
     {
@@ -32,6 +34,31 @@ class Contract extends Model
     public function applicant(): BelongsTo
     {
         return $this->belongsTo(Applicant::class);
+    }
+
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class);
+    }
+
+    /**
+     * Kontrakt Abituriyentlar oqimi orqali (applicant_id to'ldirilgan) yoki
+     * talaba to'g'ridan-to'g'ri kiritilganda (student_id to'ldirilgan)
+     * yaratilishi mumkin. Shaxs ma'lumotlarini ikkala holatda ham bir xil
+     * nom orqali olish uchun.
+     */
+    public function getPersonAttribute(): Applicant|Student|null
+    {
+        return $this->applicant ?? $this->student;
+    }
+
+    public static function generateNumber(): string
+    {
+        do {
+            $number = 'BK' . random_int(100000000, 999999999);
+        } while (self::withTrashed()->where('contract_number', $number)->exists());
+
+        return $number;
     }
 
     public function direction(): BelongsTo

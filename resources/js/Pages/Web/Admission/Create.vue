@@ -148,18 +148,18 @@
                             <div class="grid grid-cols-1 gap-4">
                                 <div>
                                     <label class="field-label">Familiyangiz (lotin alifbosida) <span class="req">*</span></label>
-                                    <input v-model="form.first_name" type="text" placeholder="PASSPORTDAGIDEK"
-                                           class="field-input" :class="errors.first_name ? 'field-error' : ''"
-                                           @input="form.first_name = form.first_name.toUpperCase()">
-                                    <p v-if="errors.first_name" class="err">{{ errors.first_name }}</p>
-                                </div>
-
-                                <div>
-                                    <label class="field-label">Ismingiz (lotin alifbosida) <span class="req">*</span></label>
                                     <input v-model="form.last_name" type="text" placeholder="PASSPORTDAGIDEK"
                                            class="field-input" :class="errors.last_name ? 'field-error' : ''"
                                            @input="form.last_name = form.last_name.toUpperCase()">
                                     <p v-if="errors.last_name" class="err">{{ errors.last_name }}</p>
+                                </div>
+
+                                <div>
+                                    <label class="field-label">Ismingiz (lotin alifbosida) <span class="req">*</span></label>
+                                    <input v-model="form.first_name" type="text" placeholder="PASSPORTDAGIDEK"
+                                           class="field-input" :class="errors.first_name ? 'field-error' : ''"
+                                           @input="form.first_name = form.first_name.toUpperCase()">
+                                    <p v-if="errors.first_name" class="err">{{ errors.first_name }}</p>
                                 </div>
 
                                 <div>
@@ -565,8 +565,8 @@ const nextStep = () => {
 
     if (currentStep.value === 3) {
         let ok = true
-        if (!form.first_name)  { form.setError('first_name', "Familiyangizni kiriting"); ok = false }
-        if (!form.last_name)   { form.setError('last_name', "Ismingizni kiriting"); ok = false }
+        if (!form.last_name)   { form.setError('last_name', "Familiyangizni kiriting"); ok = false }
+        if (!form.first_name)  { form.setError('first_name', "Ismingizni kiriting"); ok = false }
         if (!form.middle_name) { form.setError('middle_name', "Otangizning ismini kiriting"); ok = false }
         if (!form.birth_year)  { form.setError('birth_year', "Yilni kiriting"); ok = false }
         if (!form.birth_month) { form.setError('birth_month', "Oyni tanlang"); ok = false }

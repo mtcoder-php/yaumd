@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateAdmissionRequest;
+use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\Faculty;
 use App\Models\Region;
+use App\Models\Student;
 use App\Models\TestSession;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -105,7 +107,7 @@ class ApplicantController extends Controller
             'status' => 'required|in:new,accepted,interview,tested,contracted,enrolled,rejected',
         ]);
 
-        $applicant = Applicant::findOrFail($id);
+        $applicant = Applicant::with(['direction', 'contract'])->findOrFail($id);
         $oldStatus = $applicant->status;
         $applicant->update(['status' => $request->status]);
 
@@ -116,6 +118,24 @@ class ApplicantController extends Controller
         // Kontrakt statusiga o'tganda avtomatik kontrakt yaratish
         if ($request->status === 'contracted' && $oldStatus !== 'contracted') {
             $this->createContract($applicant);
+            $applicant->load('contract');
+        }
+
+        // Ro'yxatga olindi statusiga o'tganda abituriyentni avtomatik
+        // Talabalar jadvaliga qo'shamiz
+        if ($request->status === 'enrolled' && $oldStatus !== 'enrolled') {
+            $result = $this->createStudentFromApplicant($applicant);
+
+            if (! $result['created'] && $result['message']) {
+                return back()->with('error', $result['message']);
+            }
+
+            $message = "Status yangilandi! Talaba Talabalar jadvaliga qo'shildi.";
+            if ($result['message']) {
+                $message .= ' ' . $result['message'];
+            }
+
+            return back()->with('success', $message);
         }
 
         return back()->with('success', 'Status yangilandi!');
@@ -127,14 +147,10 @@ class ApplicantController extends Controller
             return;
         }
 
-        do {
-            $number = 'BK' . random_int(100000000, 999999999);
-        } while (Contract::withTrashed()->where('contract_number', $number)->exists());
-
         Contract::create([
             'applicant_id'    => $applicant->id,
             'direction_id'    => $applicant->direction_id,
-            'contract_number' => $number,
+            'contract_number' => Contract::generateNumber(),
             'amount'          => $applicant->direction?->annual_fee ?? 0,
             'payment_type'    => 'contract',
             'status'          => 'draft',
@@ -149,7 +165,8 @@ class ApplicantController extends Controller
             'status' => 'required|in:new,accepted,interview,tested,contracted,enrolled,rejected',
         ]);
 
-        $applicants = Applicant::whereIn('id', $request->ids)->get();
+        $applicants = Applicant::with(['direction', 'contract'])->whereIn('id', $request->ids)->get();
+        $warnings = [];
 
         foreach ($applicants as $applicant) {
             $oldStatus = $applicant->status;
@@ -158,9 +175,125 @@ class ApplicantController extends Controller
             if ($request->status === 'tested' && $oldStatus !== 'tested') {
                 $this->createTestSession($applicant);
             }
+
+            if ($request->status === 'enrolled' && $oldStatus !== 'enrolled') {
+                $result = $this->createStudentFromApplicant($applicant);
+                if ($result['message']) {
+                    $warnings[] = $result['message'];
+                }
+            }
         }
 
-        return back()->with('success', count($request->ids) . ' ta abituriyent statusi yangilandi!');
+        $message = count($request->ids) . ' ta abituriyent statusi yangilandi!';
+
+        if ($warnings) {
+            return back()->with('success', $message)->with('error', implode(' | ', $warnings));
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
+     * "Ro'yxatga olindi" (enrolled) statusiga o'tgan abituriyentni Talabalar
+     * jadvaliga (students) ko'chiradi. Applicant.direction'dagi 'degree'
+     * qiymati aynan shu yo'nalish uchun to'g'ri bo'lgani sababli (Yo'nalish
+     * o'ziga xos ravishda bakalavr yoki magistr bo'ladi), degree'ni
+     * education_type emas, direction'dan olamiz — bu ko'chirilgan (transfer)
+     * yoki ikkinchi oliy toifasidagi abituriyentlar uchun ham to'g'ri ishlaydi.
+     *
+     * @return array{created: bool, message: ?string}
+     */
+    private function createStudentFromApplicant(Applicant $applicant): array
+    {
+        // Allaqachon talabaga aylantirilgan bo'lsa — qayta yaratmaymiz
+        if (Student::where('applicant_id', $applicant->id)->exists()) {
+            return ['created' => false, 'message' => null];
+        }
+
+        if (! $applicant->direction_id) {
+            return [
+                'created' => false,
+                'message' => "{$applicant->last_name} {$applicant->first_name}: yo'nalishi belgilanmagan, talaba yaratilmadi. Avval abituriyentga yo'nalish tayinlang.",
+            ];
+        }
+
+        $academicYear = AcademicYear::where('is_active', true)->first();
+
+        if (! $academicYear) {
+            return [
+                'created' => false,
+                'message' => "Joriy (faol) o'quv yili topilmadi. Akademik yillar bo'limida joriy o'quv yilini faollashtiring, so'ng statusni qayta saqlang.",
+            ];
+        }
+
+        $direction = $applicant->direction;
+
+        // Talaba raqami sifatida shu abituriyentga tuzilgan kontrakt raqamidan
+        // foydalanamiz (mas. "BK885863338") — bu talaba uchun allaqachon
+        // tanish, hujjatlarda ko'rsatiladigan yagona raqam. Juda kam ehtimol
+        // bo'lsa-da, band bo'lib qolgan taqdirda bo'sh qoldiramiz — admin
+        // Talaba tahrirlash sahifasida qo'lda to'ldiradi.
+        $studentNumber = $applicant->contract?->contract_number;
+        if ($studentNumber && Student::where('student_number', $studentNumber)->exists()) {
+            $studentNumber = null;
+        }
+
+        $student = Student::create([
+            'applicant_id'     => $applicant->id,
+            'academic_year_id' => $academicYear->id,
+            'direction_id'     => $applicant->direction_id,
+            'department_id'    => $direction?->department_id,
+            'student_number'   => $studentNumber,
+            'first_name'       => $applicant->first_name,
+            'last_name'        => $applicant->last_name,
+            'middle_name'      => $applicant->middle_name,
+            'passport_series'  => $applicant->passport_series,
+            'jshshir'          => $applicant->jshshir,
+            'phone'            => $applicant->phone,
+            'email'            => $applicant->email,
+            'birth_day'        => $applicant->birth_day,
+            'birth_month'      => $applicant->birth_month,
+            'birth_year'       => $applicant->birth_year,
+            'gender'           => $applicant->gender,
+            'degree'           => $direction?->degree ?? ($applicant->education_type === 'master' ? 'master' : 'bachelor'),
+            'study_form'       => $applicant->study_form,
+            'course_year'      => 1,
+            'status'           => 'active',
+            // Kontrakt bosqichi (contracted) allaqachon o'tilgan bo'lsa —
+            // demak bu kontrakt (pullik) talaba; aks holda grant deb
+            // belgilanadi (admin keyin xohlasa Talaba tahrirlashda o'zgartira oladi)
+            'funding_type'     => $applicant->contract ? 'contract' : 'grant',
+            'address'          => $this->composeStudentAddress($applicant),
+            'user_id'          => $applicant->user_id,
+        ]);
+
+        // Mavjud kontraktni yangi talaba yozuviga ham bog'laymiz — shunda
+        // Talaba profilida ($student->contract) kontrakt qaysi yo'l bilan
+        // (Abituriyent oqimi yoki to'g'ridan-to'g'ri) yaratilganidan qat'i
+        // nazar bir xilda ko'rinadi.
+        if ($applicant->contract) {
+            $applicant->contract->update(['student_id' => $student->id]);
+        }
+
+        // Ko'chirilgan (transfer) yoki ikkinchi oliy toifasidagi abituriyentlar
+        // har doim ham 1-kursdan boshlamaydi — bu avtomatik yaratishda
+        // aniqlab bo'lmaydigan narsa, shuning uchun adminni ogohlantiramiz
+        $note = in_array($applicant->education_type, ['transfer', 'second'], true)
+            ? "\"{$student->last_name} {$student->first_name}\" — \"{$applicant->education_type}\" toifasi bo'lgani uchun kursini tekshirib, kerak bo'lsa Talaba tahrirlash sahifasida to'g'irlang (hozircha 1-kurs qilib qo'yildi)."
+            : null;
+
+        return ['created' => true, 'message' => $note];
+    }
+
+    private function composeStudentAddress(Applicant $applicant): ?string
+    {
+        $parts = array_filter([
+            $applicant->region?->name_uz,
+            $applicant->district?->name_uz,
+            $applicant->address,
+        ]);
+
+        return $parts ? implode(', ', $parts) : null;
     }
 
     private function createTestSession(Applicant $applicant): void

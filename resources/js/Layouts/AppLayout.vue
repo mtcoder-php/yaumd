@@ -161,6 +161,7 @@ import {
     RectangleStackIcon,
     CommandLineIcon,
     BookmarkSquareIcon,
+    UserGroupIcon,
 } from '@heroicons/vue/24/outline'
 
 defineProps({
@@ -237,6 +238,9 @@ const menus = {
         { icon: BookOpenIcon,              label: 'Fanlar',             href: '/admin/subjects' },
         { icon: RectangleStackIcon,        label: "Fanlar bloki",       href: '/admin/direction-subjects' },
         { icon: ShieldCheckIcon,           label: 'Audit log',          href: '/admin/audit-logs' },
+        { type: 'group', label: 'Talabalar' },
+        { icon: CalendarDaysIcon,          label: 'Akademik yillar',    href: '/admin/academic-years' },
+        { icon: UserGroupIcon,             label: 'Talabalar',          href: '/admin/students' },
         { type: 'group', label: 'Qabul' },
         { icon: ClipboardDocumentListIcon, label: 'Abituriyentlar',     href: '/admin/applicants' },
         { icon: CalendarDaysIcon,          label: 'Suhbatlar',          href: '/admin/interviews' },
@@ -258,6 +262,9 @@ const menus = {
         { icon: RectangleStackIcon,        label: "Yo'nalishlar",       href: '/admin/directions' },
         { icon: BookOpenIcon,              label: 'Fanlar',             href: '/admin/subjects' },
         { icon: RectangleStackIcon,        label: "Yo'nalish-fanlar",   href: '/admin/direction-subjects' },
+        { type: 'group', label: 'Talabalar' },
+        { icon: CalendarDaysIcon,          label: 'Akademik yillar',    href: '/admin/academic-years' },
+        { icon: UserGroupIcon,             label: 'Talabalar',          href: '/admin/students' },
         { type: 'group', label: 'Qabul' },
         { icon: ClipboardDocumentListIcon, label: 'Abituriyentlar',     href: '/admin/applicants' },
         { icon: CalendarDaysIcon,          label: 'Suhbatlar',          href: '/admin/interviews' },

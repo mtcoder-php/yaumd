@@ -17,7 +17,7 @@ class ContractController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Contract::with(['applicant', 'direction.faculty'])
+        $query = Contract::with(['applicant', 'student', 'direction.faculty'])
             ->latest();
 
         if ($request->filled('status')) {
@@ -33,6 +33,11 @@ class ContractController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('contract_number', 'like', "%{$search}%")
                     ->orWhereHas('applicant', fn($q) => $q
+                        ->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('passport_series', 'like', "%{$search}%")
+                    )
+                    ->orWhereHas('student', fn($q) => $q
                         ->where('first_name', 'like', "%{$search}%")
                         ->orWhere('last_name', 'like', "%{$search}%")
                         ->orWhere('passport_series', 'like', "%{$search}%")
@@ -94,7 +99,7 @@ class ContractController extends Controller
 
     public function show(int $id): Response
     {
-        $contract = Contract::with(['applicant.region', 'applicant.district', 'direction.faculty'])
+        $contract = Contract::with(['applicant.region', 'applicant.district', 'student', 'direction.faculty'])
             ->findOrFail($id);
 
         return Inertia::render('Admin/Contracts/Show', [
@@ -103,7 +108,7 @@ class ContractController extends Controller
     }
     public function edit(int $id): Response
     {
-        $contract = Contract::with(['applicant.region', 'applicant.district', 'direction.faculty'])
+        $contract = Contract::with(['applicant.region', 'applicant.district', 'student', 'direction.faculty'])
             ->findOrFail($id);
 
         return Inertia::render('Admin/Contracts/Edit', [
@@ -128,9 +133,25 @@ class ContractController extends Controller
 
     public function generatePdf(int $id)
     {
-        $contract  = Contract::with(['applicant.region', 'applicant.district', 'direction'])->findOrFail($id);
-        $applicant = $contract->applicant;
+        $contract  = Contract::with(['applicant.region', 'applicant.district', 'student', 'direction'])->findOrFail($id);
+
+        // Kontrakt Abituriyentlar oqimi orqali (applicant) yoki talaba
+        // to'g'ridan-to'g'ri kiritilganda (student) yaratilgan bo'lishi
+        // mumkin — PDF shablon ikkalasi uchun ham bir xil maydon nomlaridan
+        // (first_name, last_name, passport_series va h.k.) foydalanadi.
+        $applicant = $contract->applicant ?? $contract->student;
         $direction = $contract->direction;
+
+        if (! $applicant) {
+            abort(404, 'Kontrakt uchun shaxs maʼlumotlari topilmadi.');
+        }
+
+        // Applicant'da "education_type" (bachelor/master/transfer/second),
+        // Student'da esa to'g'ridan-to'g'ri "degree" (bachelor/master) bor —
+        // shablon uchun ikkalasini bitta belgiga tenglaymiz.
+        $degreeLabel = ($contract->applicant?->education_type ?? $contract->student?->degree) === 'master'
+            ? 'Magistr'
+            : 'Bakalavr';
 
         // QR kod URL
         $qrUrl = url('/contracts/' . $contract->contract_number);
@@ -142,7 +163,7 @@ class ContractController extends Controller
         $amountInWords = $this->numberToWords((int) $contract->amount);
 
         $pdf = Pdf::loadView('pdf.contract', compact(
-            'contract', 'applicant', 'direction', 'qrCode1', 'qrCode2', 'amountInWords'
+            'contract', 'applicant', 'direction', 'qrCode1', 'qrCode2', 'amountInWords', 'degreeLabel'
         ))->setPaper('a4', 'portrait');
 
         return $pdf->download("kontrakt-{$contract->contract_number}.pdf");

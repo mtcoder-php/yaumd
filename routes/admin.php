@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\FacultyController;
 use App\Http\Controllers\Admin\DirectionController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\InterviewController;
+use App\Http\Controllers\Admin\AcademicYearController;
+use App\Http\Controllers\Admin\StudentController;
 
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -128,5 +130,28 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::prefix('interviews')->name('interviews.')->group(function () {
         Route::get('/',      [InterviewController::class, 'index'])->name('index');
         Route::post('/',     [InterviewController::class, 'store'])->name('store');
+    });
+
+    // Talabalar — Akademik yillar
+    Route::prefix('academic-years')->name('academic-years.')->group(function () {
+        Route::get('/',          [AcademicYearController::class, 'index'])->name('index');
+        Route::get('/create',    [AcademicYearController::class, 'create'])->name('create');
+        Route::post('/',         [AcademicYearController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AcademicYearController::class, 'edit'])->name('edit');
+        Route::put('/{id}',      [AcademicYearController::class, 'update'])->name('update');
+        Route::delete('/{id}',   [AcademicYearController::class, 'destroy'])->name('destroy');
+    });
+
+    // Talabalar — Talabalar ro'yxati + HEMIS Excel import
+    Route::prefix('students')->name('students.')->group(function () {
+        Route::get('/',           [StudentController::class, 'index'])->name('index');
+        Route::get('/create',     [StudentController::class, 'create'])->name('create');
+        Route::post('/',          [StudentController::class, 'store'])->name('store');
+        Route::get('/template',   [StudentController::class, 'template'])->name('template');
+        Route::post('/import',    [StudentController::class, 'import'])->name('import');
+        Route::get('/{id}',       [StudentController::class, 'show'])->name('show');
+        Route::get('/{id}/edit',  [StudentController::class, 'edit'])->name('edit');
+        Route::put('/{id}',       [StudentController::class, 'update'])->name('update');
+        Route::delete('/{id}',    [StudentController::class, 'destroy'])->name('destroy');
     });
 });
