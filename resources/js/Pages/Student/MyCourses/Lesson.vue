@@ -63,7 +63,13 @@
                     <div v-else class="flex items-center justify-center text-gray-400" style="height: 40vh">
                         <Icon icon="mdi:loading" class="w-8 h-8 animate-spin" />
                     </div>
-                    <p class="px-6 py-2 text-xs text-gray-400 border-t border-gray-100">
+                    <!-- MUHIM: bu yozuv faqat paket haqiqatan topilgan holatda
+                         ko'rsatiladi (v-if="!scormError") — aks holda, paket
+                         topilmagan taqdirda ham (masalan admin ZIP fayl
+                         biriktirmasdan darsni saqlab qo'yganida) bu yerda
+                         "SCORM 1.2 paketi" degan noto'g'ri yozuv chiqib,
+                         xatoni chalkashtirib yuborar edi. -->
+                    <p v-if="!scormError" class="px-6 py-2 text-xs text-gray-400 border-t border-gray-100">
                         {{ lesson.scorm_package?.version === 'xapi' ? 'xAPI (Tin Can) paketi' : (lesson.scorm_package?.version === 'scorm2004' ? 'SCORM 2004 paketi' : 'SCORM 1.2 paketi') }}
                         — natija avtomatik saqlanadi.
                     </p>
