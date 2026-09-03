@@ -26,6 +26,10 @@ use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Controllers\Admin\StudentCourseController;
 use App\Http\Controllers\Admin\ScormRuntimeController;
 use App\Http\Controllers\Admin\XapiController;
+use App\Http\Controllers\Admin\LibraryCategoryController;
+use App\Http\Controllers\Admin\LibraryBookController;
+use App\Http\Controllers\Admin\BookCopyController;
+use App\Http\Controllers\Admin\StudentLibraryController;
 
 
 // Har bir marshrutga qo'yilgan 'permission:...' RolePermissionSeeder'dagi
@@ -229,6 +233,36 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('/{id}/enrollments/{enrollmentId}', [EnrollmentController::class, 'destroy'])->name('enrollments.destroy')->middleware('permission:lms.delete');
     });
 
+    // Kutubxona kategoriyalari
+    Route::prefix('library-categories')->name('library-categories.')->group(function () {
+        Route::get('/',          [LibraryCategoryController::class, 'index'])->name('index')->middleware('permission:library.view');
+        Route::get('/create',    [LibraryCategoryController::class, 'create'])->name('create')->middleware('permission:library.create');
+        Route::post('/',         [LibraryCategoryController::class, 'store'])->name('store')->middleware('permission:library.create');
+        Route::get('/{id}/edit', [LibraryCategoryController::class, 'edit'])->name('edit')->middleware('permission:library.edit');
+        Route::put('/{id}',      [LibraryCategoryController::class, 'update'])->name('update')->middleware('permission:library.edit');
+        Route::delete('/{id}',   [LibraryCategoryController::class, 'destroy'])->name('destroy')->middleware('permission:library.delete');
+    });
+
+    // Kutubxona — kitoblar katalogi (bibliografik yozuv) + har bir kitobning
+    // fizik nusxalari (inventar birliklari). Bu — Axborot resurs markazini
+    // raqamlashtirish loyihasining 1-bosqichi (asosiy katalog): nusxa
+    // berish/qaytarish (abonement) va Telegram bot bildirishnomalari
+    // keyingi bosqichda qo'shiladi.
+    Route::prefix('library')->name('library.')->group(function () {
+        Route::get('/',           [LibraryBookController::class, 'index'])->name('index')->middleware('permission:library.view');
+        Route::get('/create',     [LibraryBookController::class, 'create'])->name('create')->middleware('permission:library.create');
+        Route::post('/',          [LibraryBookController::class, 'store'])->name('store')->middleware('permission:library.create');
+        Route::get('/{id}',       [LibraryBookController::class, 'show'])->name('show')->middleware('permission:library.view');
+        Route::get('/{id}/edit',  [LibraryBookController::class, 'edit'])->name('edit')->middleware('permission:library.edit');
+        Route::put('/{id}',       [LibraryBookController::class, 'update'])->name('update')->middleware('permission:library.edit');
+        Route::delete('/{id}',    [LibraryBookController::class, 'destroy'])->name('destroy')->middleware('permission:library.delete');
+
+        // Fizik nusxalar (inventar birliklari) — kitob ichida boshqariladi
+        Route::post('/{id}/copies',            [BookCopyController::class, 'store'])->name('copies.store')->middleware('permission:library.create');
+        Route::put('/{id}/copies/{copyId}',    [BookCopyController::class, 'update'])->name('copies.update')->middleware('permission:library.edit');
+        Route::delete('/{id}/copies/{copyId}', [BookCopyController::class, 'destroy'])->name('copies.destroy')->middleware('permission:library.delete');
+    });
+
     // "Kurslarim" — joriy foydalanuvchining o'ziga yozilgan (Enrollment)
     // kurslarini ko'rishi va darslarni o'tishi. Ma'lumotlar har doim
     // auth()->id() bilan cheklanadi (StudentCourseController ichida), shu
@@ -262,5 +296,16 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         // bilmaydi — autentifikatsiya sessiya cookie orqali amalga oshadi.
         Route::match(['post', 'put'], '/{id}/lessons/{lessonId}/xapi/statements', [XapiController::class, 'store'])->name('lessons.xapi.statements.store');
         Route::get('/{id}/lessons/{lessonId}/xapi/statements', [XapiController::class, 'index'])->name('lessons.xapi.statements.index');
+    });
+
+    // "Mening kutubxonam" — talaba (va boshqa har qanday login qilgan
+    // foydalanuvchi) uchun kutubxona katalogini FAQAT KO'RISH. Yuqoridagi
+    // "Kurslarim" bilan bir xil sabab bilan bu yerga 'permission:' qo'yilmagan:
+    // bu sof o'qish sahifasi, CRUD emas — shu bilan yuqoridagi /admin/library
+    // (kutubxonachi/admin kitob QURUVCHI sahifasi) bilan hech qanday
+    // permission ziddiyati bo'lmaydi.
+    Route::prefix('my-library')->name('my-library.')->group(function () {
+        Route::get('/',     [StudentLibraryController::class, 'index'])->name('index');
+        Route::get('/{id}', [StudentLibraryController::class, 'show'])->name('show');
     });
 });

@@ -202,7 +202,14 @@ const initials = computed(() => {
 
 const isActive = (href) => {
     if (!href) return false
-    return page.url.startsWith(href)
+    // MUHIM: oddiy startsWith(href) noto'g'ri edi — masalan
+    // '/admin/library-categories' manzili '/admin/library' bilan
+    // BOSHLANADI, shuning uchun "Kutubxona kategoriyalari" sahifasida
+    // "Kitoblar" menyusi ham (noto'g'ri) faol bo'lib ko'rinardi. Endi
+    // to'liq mos kelish YOKI keyingi belgi '/' bo'lgandagina (ya'ni
+    // haqiqiy pastki sahifa, masalan '/admin/library/5') faol deb
+    // hisoblanadi.
+    return page.url === href || page.url.startsWith(href + '/')
 }
 
 const logout = () => {
@@ -237,7 +244,9 @@ const menus = {
         { type: 'group', label: "Ta'lim" },
         { icon: RectangleStackIcon,        label: 'Kurs kategoriyalari', href: '/admin/course-categories' },
         { icon: BookOpenIcon,              label: 'Kurslar',            href: '/admin/courses' },
-        { icon: BuildingLibraryIcon,       label: 'Kutubxona',          href: '/admin/library' },
+        { type: 'group', label: 'Kutubxona' },
+        { icon: BuildingLibraryIcon,       label: 'Kitoblar',           href: '/admin/library' },
+        { icon: RectangleStackIcon,        label: 'Kutubxona kategoriyalari', href: '/admin/library-categories' },
     ],
     'admin': [
         { type: 'group', label: 'Asosiy' },
@@ -263,7 +272,9 @@ const menus = {
         { type: 'group', label: "Ta'lim" },
         { icon: RectangleStackIcon,        label: 'Kurs kategoriyalari', href: '/admin/course-categories' },
         { icon: BookOpenIcon,              label: 'Kurslar',            href: '/admin/courses' },
-        { icon: BuildingLibraryIcon,       label: 'Kutubxona',          href: '/admin/library' },
+        { type: 'group', label: 'Kutubxona' },
+        { icon: BuildingLibraryIcon,       label: 'Kitoblar',           href: '/admin/library' },
+        { icon: RectangleStackIcon,        label: 'Kutubxona kategoriyalari', href: '/admin/library-categories' },
     ],
     'admission': [
         { type: 'group', label: 'Asosiy' },
@@ -286,13 +297,14 @@ const menus = {
         { icon: Squares2X2Icon,            label: 'Dashboard',          href: '/admin/dashboard' },
         { type: 'group', label: "Ta'lim" },
         { icon: BookOpenIcon,              label: 'Kurslarim',          href: '/admin/my-courses' },
-        { icon: BuildingLibraryIcon,       label: 'Kutubxona',          href: '/admin/library' },
+        { icon: BuildingLibraryIcon,       label: 'Kutubxona',          href: '/admin/my-library' },
     ],
     'librarian': [
         { type: 'group', label: 'Asosiy' },
         { icon: Squares2X2Icon,            label: 'Dashboard',          href: '/admin/dashboard' },
         { type: 'group', label: 'Kutubxona' },
         { icon: BuildingLibraryIcon,       label: 'Kitoblar',           href: '/admin/library' },
+        { icon: RectangleStackIcon,        label: 'Kategoriyalar',      href: '/admin/library-categories' },
     ],
     'finance': [
         { type: 'group', label: 'Asosiy' },
