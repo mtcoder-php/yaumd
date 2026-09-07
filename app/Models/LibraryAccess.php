@@ -7,8 +7,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LibraryAccess extends Model
 {
+    // MUHIM: jadval nomi 'library_access' (BIRLIK) qilib yaratilgan
+    // (dastlabki migratsiyada), Eloquent esa model nomidan avtomatik
+    // 'library_accesses' (KO'PLIK) deb taxmin qiladi — shu farq sababli
+    // "Base table or view not found: library_accesses" xatosi chiqadi.
+    // Haqiqiy jadval nomini aniq ko'rsatib qo'yamiz.
+    protected $table = 'library_access';
+
     protected $fillable = [
-        'user_id', 'book_id', 'payment_id',
+        'user_id', 'book_id', 'purchase_id',
         'access_type', 'expires_at',
     ];
 
@@ -25,5 +32,10 @@ class LibraryAccess extends Model
     public function book(): BelongsTo
     {
         return $this->belongsTo(LibraryBook::class, 'book_id');
+    }
+
+    public function purchase(): BelongsTo
+    {
+        return $this->belongsTo(BookPurchase::class, 'purchase_id');
     }
 }

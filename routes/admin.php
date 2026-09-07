@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\LibraryCategoryController;
 use App\Http\Controllers\Admin\LibraryBookController;
 use App\Http\Controllers\Admin\BookCopyController;
 use App\Http\Controllers\Admin\StudentLibraryController;
+use App\Http\Controllers\Admin\BookPurchaseController;
 
 
 // Har bir marshrutga qo'yilgan 'permission:...' RolePermissionSeeder'dagi
@@ -307,5 +308,14 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::prefix('my-library')->name('my-library.')->group(function () {
         Route::get('/',     [StudentLibraryController::class, 'index'])->name('index');
         Route::get('/{id}', [StudentLibraryController::class, 'show'])->name('show');
+
+        // Pullik elektron kitobni Click yoki Payme orqali sotib olish.
+        // Haqiqiy ruxsat bu yerda EMAS, balki server-serverga keladigan
+        // Click/Payme callback'ida beriladi (routes/web.php'ga qarang) —
+        // shu sabab bu ikki marshrut ham oddiy 'auth' bilan cheklangan.
+        Route::post('/{id}/purchase/{provider}', [BookPurchaseController::class, 'checkout'])
+            ->where('provider', 'click|payme')->name('purchase');
+        Route::get('/purchase/{purchaseId}/return', [BookPurchaseController::class, 'return'])->name('purchase.return');
+        Route::get('/{id}/download', [BookPurchaseController::class, 'download'])->name('download');
     });
 });

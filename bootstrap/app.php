@@ -39,8 +39,15 @@ return Application::configure(basePath: dirname(__DIR__))
         // (iframe bizning o'z domenimizdan ochiladi), shuning uchun bu
         // xavfsizlikni pasaytirmaydi — faqat shu bitta marshrut turkumi
         // uchun CSRF tekshiruvi o'chiriladi.
+        // Click.uz va Payme to'lov tizimlarining o'z serverlaridan
+        // to'g'ridan-to'g'ri keladigan callback'lari ham (xAPI kabi)
+        // Laravel CSRF tokenini bilmaydi — ular o'zlarining imzo/Basic
+        // autentifikatsiya tekshiruviga ega (ClickPaymentService,
+        // PaymePaymentService), shuning uchun bu ikkalasi ham xavfsiz.
         $middleware->validateCsrfTokens(except: [
             'admin/my-courses/*/lessons/*/xapi/statements',
+            'payments/click/callback',
+            'payments/payme/callback',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

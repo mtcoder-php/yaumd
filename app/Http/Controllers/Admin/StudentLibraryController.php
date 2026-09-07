@@ -53,7 +53,11 @@ class StudentLibraryController extends Controller
             ->findOrFail($id);
 
         return Inertia::render('Student/Library/Show', [
-            'book' => $book,
+            'book'            => $book,
+            // Talaba pullik kitobni allaqachon sotib olganmi (yoki kitob
+            // bepul bo'lsa — har doim true). Frontend shu bittasiga qarab
+            // "Sotib olish" yoki "Yuklab olish" tugmasini ko'rsatadi.
+            'hasDigitalAccess' => $book->hasDigitalAccessFor(auth()->id()),
         ]);
     }
 }

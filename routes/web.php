@@ -3,6 +3,8 @@
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\AdmissionController;
 use App\Http\Controllers\Web\CertificateVerifyController;
+use App\Http\Controllers\Web\ClickCallbackController;
+use App\Http\Controllers\Web\PaymeCallbackController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 
@@ -20,6 +22,12 @@ Route::prefix('qabul')->name('qabul.')->group(function () {
 // login talab qilinmaydi (istalgan kishi, masalan ish beruvchi, sertifikat
 // raqamini kiritib uning haqiqiyligini tekshirishi mumkin).
 Route::get('/certificates/{number}', [CertificateVerifyController::class, 'show'])->name('certificates.verify');
+
+// Pullik elektron kitoblar uchun to'lov tizimlari callback'lari — Click.uz
+// va Payme serverlaridan to'g'ridan-to'g'ri keladi, login talab qilinmaydi,
+// CSRF tekshiruvidan ham ozod qilingan (bootstrap/app.php'ga qarang).
+Route::post('/payments/click/callback', [ClickCallbackController::class, 'callback'])->name('payments.click.callback');
+Route::post('/payments/payme/callback', [PaymeCallbackController::class, 'callback'])->name('payments.payme.callback');
 
 // ─── AUTH ─────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {

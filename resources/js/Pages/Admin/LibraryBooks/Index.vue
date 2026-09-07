@@ -59,13 +59,14 @@
                             <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Kategoriya</th>
                             <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Joylashuvi</th>
                             <th class="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nusxalar</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Elektron</th>
                             <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
                             <th class="px-4 py-3"></th>
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
                         <tr v-if="!books.data?.length">
-                            <td colspan="6" class="text-center py-16 text-gray-400">
+                            <td colspan="7" class="text-center py-16 text-gray-400">
                                 <Icon icon="mdi:book-outline" class="w-12 h-12 mx-auto mb-3 opacity-40" />
                                 <p class="text-sm">Kitob topilmadi</p>
                             </td>
@@ -95,6 +96,13 @@
                                       :style="b.available_copies_count > 0 ? 'background: linear-gradient(135deg, #eff6ff, #f5f3ff); color: #0f3460' : ''">
                                     {{ b.available_copies_count }} / {{ b.copies_count }}
                                 </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span v-if="!b.has_digital_file" class="text-xs text-gray-400">—</span>
+                                <span v-else-if="b.access_type === 'paid'" class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">
+                                    {{ formatPrice(b.price) }}
+                                </span>
+                                <span v-else class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">Bepul</span>
                             </td>
                             <td class="px-4 py-3">
                                 <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold"
@@ -178,6 +186,8 @@ const filters = ref({
 })
 
 const hasFilters = computed(() => Object.values(filters.value).some(v => v))
+
+const formatPrice = (v) => new Intl.NumberFormat('uz-UZ').format(v) + " so'm"
 
 const applyFilters = () => {
     router.get(route('admin.library.index'), filters.value, {

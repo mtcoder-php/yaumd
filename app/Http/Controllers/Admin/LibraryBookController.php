@@ -48,9 +48,18 @@ class LibraryBookController extends Controller
     {
         $data = $request->validated();
         $data['added_by'] = auth()->id();
+        unset($data['digital_file']);
 
         if ($request->hasFile('cover_image')) {
             $data['cover_image'] = $request->file('cover_image')->store('library/covers', 'public');
+        }
+
+        // Elektron kitob fayli — 'public' emas, 'local' (himoyalangan) diskda
+        // saqlanadi, chunki unga to'g'ridan-to'g'ri URL orqali kirish
+        // mumkin bo'lmasligi kerak (faqat sotib olgan/bepul kitob uchun
+        // BookPurchaseController@download orqali, ruxsat tekshirilgach).
+        if ($request->hasFile('digital_file')) {
+            $data['file_path'] = $request->file('digital_file')->store('library/files', 'local');
         }
 
         $book = LibraryBook::create($data);
@@ -83,12 +92,20 @@ class LibraryBookController extends Controller
     {
         $book = LibraryBook::findOrFail($id);
         $data = $request->validated();
+        unset($data['digital_file']);
 
         if ($request->hasFile('cover_image')) {
             if ($book->cover_image) {
                 Storage::disk('public')->delete($book->cover_image);
             }
             $data['cover_image'] = $request->file('cover_image')->store('library/covers', 'public');
+        }
+
+        if ($request->hasFile('digital_file')) {
+            if ($book->file_path) {
+                Storage::disk('local')->delete($book->file_path);
+            }
+            $data['file_path'] = $request->file('digital_file')->store('library/files', 'local');
         }
 
         $book->update($data);

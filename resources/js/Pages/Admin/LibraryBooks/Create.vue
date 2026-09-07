@@ -118,6 +118,49 @@
                 </div>
             </div>
 
+            <!-- Elektron (raqamli) kitob -->
+            <div class="bg-white rounded-2xl border border-gray-100 p-6 space-y-5"
+                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
+                <div>
+                    <p class="text-sm font-bold text-gray-700">Elektron kitob</p>
+                    <p class="text-xs text-gray-400 mt-0.5">Fayl yuklasangiz, talaba uni saytdan yuklab olishi mumkin bo'ladi</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="field-label">Kitob turi <span class="req">*</span></label>
+                        <select v-model="form.access_type" class="field-input">
+                            <option value="free">Bepul</option>
+                            <option value="paid">Pullik</option>
+                        </select>
+                        <p v-if="form.errors.access_type" class="err">{{ form.errors.access_type }}</p>
+                    </div>
+                    <div v-if="form.access_type === 'paid'">
+                        <label class="field-label">Narxi (so'm) <span class="req">*</span></label>
+                        <input v-model.number="form.price" type="number" min="0" step="1000" placeholder="Masalan: 25000"
+                               class="field-input" :class="form.errors.price ? 'field-error' : ''">
+                        <p v-if="form.errors.price" class="err">{{ form.errors.price }}</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="field-label">Elektron fayl (PDF / EPUB / Word)</label>
+                    <div class="flex items-center gap-3">
+                        <input ref="fileInput" type="file" accept=".pdf,.epub,.doc,.docx" class="hidden" @change="onFileChange">
+                        <button type="button" @click="$refs.fileInput.click()" class="btn-secondary">
+                            <Icon icon="mdi:file-upload-outline" class="w-4 h-4" />
+                            Fayl tanlash
+                        </button>
+                        <span v-if="fileName" class="text-sm text-gray-600 flex items-center gap-1">
+                            <Icon icon="mdi:file-check-outline" class="w-4 h-4 text-green-600" />
+                            {{ fileName }}
+                        </span>
+                    </div>
+                    <p class="hint mt-1">Maksimum 50 MB. Fayl himoyalangan joyda saqlanadi — faqat ruxsati bor talaba yuklab oladi.</p>
+                    <p v-if="form.errors.digital_file" class="err">{{ form.errors.digital_file }}</p>
+                </div>
+            </div>
+
             <!-- Tugmalar -->
             <div class="flex gap-3">
                 <Link :href="route('admin.library.index')"
@@ -158,6 +201,9 @@ const form = useForm({
     cover_image:     null,
     page_count:      null,
     shelf_location:  '',
+    access_type:     'free',
+    price:           null,
+    digital_file:    null,
     is_active:       true,
 })
 
@@ -169,6 +215,16 @@ const onCoverChange = (e) => {
     if (!file) return
     form.cover_image = file
     coverPreview.value = URL.createObjectURL(file)
+}
+
+const fileInput = ref(null)
+const fileName = ref('')
+
+const onFileChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    form.digital_file = file
+    fileName.value = file.name
 }
 
 const submit = () => {

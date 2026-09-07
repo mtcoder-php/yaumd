@@ -35,4 +35,24 @@ return [
         ],
     ],
 
+    // Click.uz — pullik elektron kitoblarni onlayn sotib olish uchun.
+    // Qiymatlarni Click biznes kabinetingizdan (my.click.uz) olib,
+    // serverdagi .env fayliga yozing — bu yerga hech qachon haqiqiy
+    // qiymat yozilmaydi.
+    'click' => [
+        'service_id'       => env('CLICK_SERVICE_ID'),
+        'merchant_id'      => env('CLICK_MERCHANT_ID'),
+        'merchant_user_id' => env('CLICK_MERCHANT_USER_ID'),
+        'secret_key'       => env('CLICK_SECRET_KEY'),
+    ],
+
+    // Payme (Paycom) — xuddi shu maqsadda. Test uchun checkout.test.paycom.uz
+    // (PAYME_IS_TEST=true), haqiqiy ishga tushirishda checkout.paycom.uz
+    // ishlatiladi.
+    'payme' => [
+        'merchant_id' => env('PAYME_MERCHANT_ID'),
+        'secret_key'  => env('PAYME_SECRET_KEY'),
+        'is_test'     => env('PAYME_IS_TEST', false),
+    ],
+
 ];

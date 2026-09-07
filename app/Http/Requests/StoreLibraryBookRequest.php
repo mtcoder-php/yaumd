@@ -25,6 +25,10 @@ class StoreLibraryBookRequest extends FormRequest
             'cover_image'     => 'nullable|image|max:4096',
             'page_count'      => 'nullable|integer|min:1',
             'shelf_location'  => 'nullable|string|max:100',
+            // Elektron (raqamli) kitob — narxlash va fayl
+            'access_type'     => 'required|in:free,paid,subscription',
+            'price'           => 'required_if:access_type,paid|nullable|numeric|min:0',
+            'digital_file'    => 'nullable|file|mimes:pdf,epub,doc,docx|max:51200',
             'is_active'       => 'boolean',
         ];
     }
@@ -40,6 +44,10 @@ class StoreLibraryBookRequest extends FormRequest
             'published_year.digits'   => "Nashr yili 4 ta raqamdan iborat bo'lishi kerak",
             'cover_image.image'       => "Muqova rasm fayli bo'lishi kerak",
             'cover_image.max'         => "Muqova hajmi 4 MB dan oshmasligi kerak",
+            'access_type.required'    => "Kitob turini (bepul/pullik) tanlang",
+            'price.required_if'       => 'Pullik kitob uchun narxni kiriting',
+            'digital_file.mimes'      => "Fayl PDF, EPUB yoki Word formatida bo'lishi kerak",
+            'digital_file.max'        => "Fayl hajmi 50 MB dan oshmasligi kerak",
         ];
     }
 }

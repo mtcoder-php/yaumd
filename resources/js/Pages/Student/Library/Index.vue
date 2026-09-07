@@ -52,10 +52,16 @@
                     <div class="p-3">
                         <p class="text-sm font-semibold text-gray-900 truncate">{{ b.title }}</p>
                         <p class="text-xs text-gray-400 truncate">{{ b.author }}</p>
-                        <span class="inline-flex mt-2 px-2 py-0.5 rounded-full text-xs font-semibold"
-                              :class="b.available_copies_count > 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'">
-                            {{ b.available_copies_count > 0 ? `${b.available_copies_count} nusxa mavjud` : 'Barchasi band' }}
-                        </span>
+                        <div class="flex flex-wrap gap-1 mt-2">
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
+                                  :class="b.available_copies_count > 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'">
+                                {{ b.available_copies_count > 0 ? `${b.available_copies_count} nusxa` : 'Band' }}
+                            </span>
+                            <span v-if="b.has_digital_file" class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
+                                  :class="b.access_type === 'paid' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'">
+                                {{ b.access_type === 'paid' ? formatPrice(b.price) : 'Elektron: bepul' }}
+                            </span>
+                        </div>
                     </div>
                 </Link>
             </div>
@@ -94,6 +100,8 @@ const filters = ref({
 })
 
 const hasFilters = computed(() => Object.values(filters.value).some(v => v))
+
+const formatPrice = (v) => new Intl.NumberFormat('uz-UZ').format(v) + " so'm"
 
 const applyFilters = () => {
     router.get(route('admin.my-library.index'), filters.value, {
