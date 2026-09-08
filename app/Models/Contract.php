@@ -70,4 +70,28 @@ class Contract extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    // To'langan summani qayta hisoblab, shartnoma holatini shunga
+    // moslashtiradi. Click/Payme orqali onlayn to'lov tasdiqlangan
+    // (ContractClickCallbackController / ContractPaymeCallbackController)
+    // yoki bekor qilingan/qaytarilgan har safar chaqiriladi — shu sababli
+    // "to'langan" holati har doim haqiqiy to'lovlar yig'indisiga mos keladi
+    // (masalan, to'lov keyinchalik bekor qilinsa, holat "imzolangan"ga
+    // qaytariladi, "to'langan" bo'lib qolavermaydi).
+    public function refreshStatusFromPayments(): void
+    {
+        if ($this->status === 'cancelled') {
+            return;
+        }
+
+        $totalPaid = $this->payments()->where('status', 'paid')->sum('amount');
+
+        if ($totalPaid >= $this->amount) {
+            if ($this->status !== 'paid') {
+                $this->update(['status' => 'paid']);
+            }
+        } elseif ($this->status === 'paid') {
+            $this->update(['status' => 'signed']);
+        }
+    }
 }

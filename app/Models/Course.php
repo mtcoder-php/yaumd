@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Contracts\Purchasable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Storage;
 
-class Course extends Model
+class Course extends Model implements Purchasable
 {
     use SoftDeletes;
 
@@ -89,5 +91,66 @@ class Course extends Model
     public function certificates(): HasMany
     {
         return $this->hasMany(Certificate::class);
+    }
+
+    // Bu kurs uchun ochilgan barcha to'lov buyurtmalari (Click/Payme) —
+    // umumiy 'payment_orders' jadvaliga polimorfik bog'lanish orqali
+    // (App\Models\PaymentOrder::payable()'ga qarang).
+    public function payments(): MorphMany
+    {
+        return $this->morphMany(PaymentOrder::class, 'payable');
+    }
+
+    // --- App\Contracts\Purchasable ---
+
+    public function purchasePrice(): float
+    {
+        return (float) ($this->discount_price > 0 ? $this->discount_price : $this->price);
+    }
+
+    public function canBePurchased(): bool
+    {
+        return $this->status === 'published' && $this->type === 'paid' && $this->purchasePrice() > 0;
+    }
+
+    // Talaba bu kursga ALLAQACHON (to'langan holda) yozilganmi. Diqqat:
+    // StudentCourseController::findEnrollmentOrFail() faqat Enrollment
+    // yozuvi mavjudligini tekshiradi (payment_status'ga qaramaydi) — shu
+    // sababli yozuv "paid" bo'lishi shu yerda alohida talab qilinadi,
+    // aks holda "pending" (hali to'lanmagan) buyurtma ham kursni ochib
+    // qo'yishi mumkin edi.
+    public function hasAccessFor(?int $userId): bool
+    {
+        if (! $userId) {
+            return false;
+        }
+
+        return $this->enrollments()
+            ->where('user_id', $userId)
+            ->where('payment_status', 'paid')
+            ->exists();
+    }
+
+    public function grantAccessFor(int $userId, PaymentOrder $order): void
+    {
+        Enrollment::updateOrCreate([
+            'course_id' => $this->id,
+            'user_id'   => $userId,
+        ], [
+            'payment_type'   => $order->provider,
+            'payment_status' => 'paid',
+            'amount'         => $order->amount,
+            'transaction_id' => $order->transaction_id,
+            'status'         => 'active',
+            'enrolled_at'    => now(),
+        ]);
+    }
+
+    // Yozuvni O'CHIRMAYMIZ — talaba allaqachon progress qildirgan bo'lishi
+    // mumkin (masalan to'lov keyinchalik Payme tomonidan bekor qilinsa),
+    // shuning uchun faqat to'lov holatini "failed" qilib qo'yamiz.
+    public function revokeAccessFor(int $userId): void
+    {
+        $this->enrollments()->where('user_id', $userId)->update(['payment_status' => 'failed']);
     }
 }

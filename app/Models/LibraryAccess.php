@@ -15,7 +15,7 @@ class LibraryAccess extends Model
     protected $table = 'library_access';
 
     protected $fillable = [
-        'user_id', 'book_id', 'purchase_id',
+        'user_id', 'book_id', 'payment_order_id',
         'access_type', 'expires_at',
     ];
 
@@ -34,8 +34,8 @@ class LibraryAccess extends Model
         return $this->belongsTo(LibraryBook::class, 'book_id');
     }
 
-    public function purchase(): BelongsTo
+    public function paymentOrder(): BelongsTo
     {
-        return $this->belongsTo(BookPurchase::class, 'purchase_id');
+        return $this->belongsTo(PaymentOrder::class, 'payment_order_id');
     }
 }

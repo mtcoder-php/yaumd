@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Contracts\Purchasable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
 
-class LibraryBook extends Model
+class LibraryBook extends Model implements Purchasable
 {
     use SoftDeletes;
 
@@ -56,9 +58,12 @@ class LibraryBook extends Model
         return $this->hasMany(LibraryAccess::class, 'book_id');
     }
 
-    public function purchases(): HasMany
+    // Bu kitob uchun ochilgan barcha to'lov buyurtmalari (Click/Payme) —
+    // umumiy 'payment_orders' jadvaliga polimorfik bog'lanish orqali
+    // (App\Models\PaymentOrder::payable()'ga qarang).
+    public function payments(): MorphMany
     {
-        return $this->hasMany(BookPurchase::class, 'book_id');
+        return $this->morphMany(PaymentOrder::class, 'payable');
     }
 
     public function copies(): HasMany
@@ -71,10 +76,22 @@ class LibraryBook extends Model
         return $this->belongsTo(User::class, 'added_by');
     }
 
+    // --- App\Contracts\Purchasable ---
+
+    public function purchasePrice(): float
+    {
+        return (float) $this->price;
+    }
+
+    public function canBePurchased(): bool
+    {
+        return $this->access_type === 'paid' && $this->purchasePrice() > 0;
+    }
+
     // Berilgan foydalanuvchi shu kitobning RAQAMLI faylini yuklab olishga
     // haqlimi: kitob bepul bo'lsa — ha; pullik bo'lsa — faqat muddati
     // o'tmagan (yoki muddatsiz) ruxsat yozuvi (LibraryAccess) mavjud bo'lsa.
-    public function hasDigitalAccessFor(?int $userId): bool
+    public function hasAccessFor(?int $userId): bool
     {
         if ($this->access_type === 'free') {
             return true;
@@ -88,5 +105,21 @@ class LibraryBook extends Model
             ->where('user_id', $userId)
             ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', Carbon::now()))
             ->exists();
+    }
+
+    public function grantAccessFor(int $userId, PaymentOrder $order): void
+    {
+        LibraryAccess::firstOrCreate([
+            'user_id' => $userId,
+            'book_id' => $this->id,
+        ], [
+            'payment_order_id' => $order->id,
+            'access_type'      => 'purchased',
+        ]);
+    }
+
+    public function revokeAccessFor(int $userId): void
+    {
+        $this->accesses()->where('user_id', $userId)->delete();
     }
 }

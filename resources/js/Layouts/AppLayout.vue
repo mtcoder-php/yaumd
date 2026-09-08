@@ -15,28 +15,60 @@
             </div>
 
             <!-- Nav -->
-            <nav class="p-4 space-y-1 overflow-y-auto h-[calc(100vh-4rem)]">
-                <template v-for="item in menuItems" :key="item.label">
-                    <p
-                        v-if="item.type === 'group'"
-                        class="text-xs font-medium text-gray-400 uppercase tracking-wider px-3 pt-4 pb-1"
-                    >
-                        {{ item.label }}
-                    </p>
-                    <Link
-                        v-else
-                        :href="item.href"
-                        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition"
-                        :class="isActive(item.href)
-                            ? 'bg-gray-900 text-white'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
-                    >
-                        <component
-                            :is="item.icon"
-                            class="w-4 h-4 flex-shrink-0"
-                        />
-                        <span>{{ item.label }}</span>
-                    </Link>
+            <!-- Ko'p elementli bo'limlar (masalan "Boshqaruv", "Moliya") endi
+                 ixcham accordion sifatida ochilib-yopiladi — faqat joriy
+                 sahifa turgan bo'lim avtomatik ochiq boshlanadi, qolganlari
+                 yig'ilgan holda turadi. Bitta elementli bo'lim (masalan
+                 "Asosiy" ichidagi yolg'iz Dashboard) oddiy, sarlavhasiz
+                 havola sifatida qoladi — uni ochib-yopish shart emas. -->
+            <nav class="p-3 space-y-0.5 overflow-y-auto h-[calc(100vh-4rem)]">
+                <template v-for="section in groupedMenu" :key="section.label">
+
+                    <template v-if="section.children.length <= 1">
+                        <Link
+                            v-for="item in section.children"
+                            :key="item.href"
+                            :href="item.href"
+                            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition"
+                            :class="isActive(item.href)
+                                ? 'bg-gray-900 text-white'
+                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
+                        >
+                            <component :is="item.icon" class="w-4 h-4 flex-shrink-0" />
+                            <span>{{ item.label }}</span>
+                        </Link>
+                    </template>
+
+                    <div v-else>
+                        <button
+                            type="button"
+                            @click="toggleSection(section.label)"
+                            class="w-full flex items-center justify-between gap-2 px-3 pt-3 pb-1.5 text-xs font-medium uppercase tracking-wider transition"
+                            :class="isSectionOpen(section) ? 'text-gray-600' : 'text-gray-400 hover:text-gray-600'"
+                        >
+                            <span>{{ section.label }}</span>
+                            <ChevronRightIcon
+                                class="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200"
+                                :class="isSectionOpen(section) ? 'rotate-90' : ''"
+                            />
+                        </button>
+
+                        <div v-show="isSectionOpen(section)" class="space-y-0.5">
+                            <Link
+                                v-for="item in section.children"
+                                :key="item.href"
+                                :href="item.href"
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition"
+                                :class="isActive(item.href)
+                                    ? 'bg-gray-900 text-white'
+                                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
+                            >
+                                <component :is="item.icon" class="w-4 h-4 flex-shrink-0" />
+                                <span>{{ item.label }}</span>
+                            </Link>
+                        </div>
+                    </div>
+
                 </template>
             </nav>
         </aside>
@@ -133,6 +165,7 @@ import {
     CommandLineIcon,
     BookmarkSquareIcon,
     UserGroupIcon,
+    ChevronRightIcon,
 } from '@heroicons/vue/24/outline'
 
 defineProps({
@@ -297,7 +330,9 @@ const menus = {
         { icon: Squares2X2Icon,            label: 'Dashboard',          href: '/admin/dashboard' },
         { type: 'group', label: "Ta'lim" },
         { icon: BookOpenIcon,              label: 'Kurslarim',          href: '/admin/my-courses' },
+        { icon: RectangleStackIcon,        label: 'Kurslar katalogi',   href: '/admin/course-catalog' },
         { icon: BuildingLibraryIcon,       label: 'Kutubxona',          href: '/admin/my-library' },
+        { icon: DocumentTextIcon,          label: 'Mening shartnomam',  href: '/admin/my-contract' },
     ],
     'librarian': [
         { type: 'group', label: 'Asosiy' },
@@ -332,4 +367,47 @@ const menuItems = computed(() => {
 
     return merged.length ? merged : menus['student']
 })
+
+// menuItems — tekis ro'yxat ('group' belgisi + undan keyingi havolalar).
+// Sidebar'ni ixcham (accordion) qilish uchun shu tekis ro'yxatni
+// {label, children: [...]} bo'limlariga guruhlaymiz — "menus" obyektining
+// o'zini o'zgartirish shart emas.
+const groupedMenu = computed(() => {
+    const sections = []
+    let current = null
+
+    menuItems.value.forEach((item) => {
+        if (item.type === 'group') {
+            current = { label: item.label, children: [] }
+            sections.push(current)
+        } else if (current) {
+            current.children.push(item)
+        }
+    })
+
+    return sections
+})
+
+// Qaysi ko'p elementli bo'limlar hozir ochiq turibdi. Joriy sahifa turgan
+// bo'lim avtomatik ochiladi (pastdagi watch), foydalanuvchi istalgan
+// bo'limni bosib ochib/yopib turishi mumkin.
+const openSections = ref(new Set())
+
+watch(groupedMenu, (sections) => {
+    sections.forEach((section) => {
+        if (section.children.some((item) => isActive(item.href))) {
+            openSections.value.add(section.label)
+        }
+    })
+}, { immediate: true })
+
+const isSectionOpen = (section) => openSections.value.has(section.label)
+
+const toggleSection = (label) => {
+    if (openSections.value.has(label)) {
+        openSections.value.delete(label)
+    } else {
+        openSections.value.add(label)
+    }
+}
 </script>

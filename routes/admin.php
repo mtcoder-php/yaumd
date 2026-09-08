@@ -31,6 +31,11 @@ use App\Http\Controllers\Admin\LibraryBookController;
 use App\Http\Controllers\Admin\BookCopyController;
 use App\Http\Controllers\Admin\StudentLibraryController;
 use App\Http\Controllers\Admin\BookPurchaseController;
+use App\Http\Controllers\Admin\CourseCatalogController;
+use App\Http\Controllers\Admin\CoursePurchaseController;
+use App\Http\Controllers\Admin\PaymentReturnController;
+use App\Http\Controllers\Admin\StudentContractController;
+use App\Http\Controllers\Admin\ContractPaymentController;
 
 
 // Har bir marshrutga qo'yilgan 'permission:...' RolePermissionSeeder'dagi
@@ -315,7 +320,48 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         // shu sabab bu ikki marshrut ham oddiy 'auth' bilan cheklangan.
         Route::post('/{id}/purchase/{provider}', [BookPurchaseController::class, 'checkout'])
             ->where('provider', 'click|payme')->name('purchase');
-        Route::get('/purchase/{purchaseId}/return', [BookPurchaseController::class, 'return'])->name('purchase.return');
         Route::get('/{id}/download', [BookPurchaseController::class, 'download'])->name('download');
     });
+
+    // "Mening shartnomam" — talaba o'zining shartnomasi va to'lovlari
+    // (qancha to'lagan, qancha qolgan) haqida ma'lumot olishi uchun.
+    // Yuqoridagilar bilan bir xil sabab bilan 'permission:' qo'yilmagan —
+    // admin/moliya ContractController'idagi 'contract.view' ruxsati bunga
+    // aloqasi yo'q, chunki bu yerda talaba faqat O'ZINING shartnomasini
+    // (student_id orqali qat'iy cheklangan) ko'radi.
+    Route::prefix('my-contract')->name('my-contract.')->group(function () {
+        Route::get('/', [StudentContractController::class, 'show'])->name('show');
+        Route::get('/{id}/pdf', [StudentContractController::class, 'downloadPdf'])->name('pdf');
+
+        // Shartnoma qarzini (to'liq yoki qisman) Click/Payme orqali onlayn
+        // to'lash. Haqiqiy tasdiq bu yerda EMAS, balki server-serverga
+        // keladigan Click/Payme callback'ida beriladi (routes/web.php'ga
+        // qarang) — shu sabab bu ikki marshrut ham oddiy 'auth' bilan
+        // cheklangan.
+        Route::post('/payment/{provider}', [ContractPaymentController::class, 'checkout'])
+            ->where('provider', 'click|payme')->name('payment.checkout');
+        Route::get('/payment/{paymentId}/return', [ContractPaymentController::class, 'returnFromGateway'])->name('payment.return');
+    });
+
+    // Kurslar katalogi — talaba o'zi ko'rib, bepul yozilishi yoki (pullik
+    // bo'lsa) Click/Payme orqali sotib olishi mumkin bo'lgan sahifa.
+    // "Kurslarim" (my-courses) bilan bir xil sabab bilan bu yerga
+    // 'permission:' qo'yilmagan — sof o'qish + o'z-o'ziga yozilish, CRUD
+    // emas.
+    Route::prefix('course-catalog')->name('course-catalog.')->group(function () {
+        Route::get('/',     [CourseCatalogController::class, 'index'])->name('index');
+        Route::get('/{id}', [CourseCatalogController::class, 'show'])->name('show');
+        Route::post('/{id}/enroll-free', [CourseCatalogController::class, 'enrollFree'])->name('enroll-free');
+
+        // Pullik kursni Click yoki Payme orqali sotib olish. Haqiqiy
+        // ruxsat bu yerda EMAS, balki server-serverga keladigan
+        // Click/Payme callback'ida beriladi (routes/web.php'ga qarang).
+        Route::post('/{id}/purchase/{provider}', [CoursePurchaseController::class, 'checkout'])
+            ->where('provider', 'click|payme')->name('purchase');
+    });
+
+    // Click/Payme sahifasidan to'lovdan keyin talaba brauzerda qaytadigan
+    // UMUMIY manzil — kitob yoki kurs, farqi yo'q (PaymentReturnController
+    // buni payment_orders.payable_type orqali o'zi aniqlaydi).
+    Route::get('/payments/{orderId}/return', PaymentReturnController::class)->name('payments.return');
 });

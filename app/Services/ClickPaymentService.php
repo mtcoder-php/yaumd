@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\BookPurchase;
+use App\Models\Payment;
+use App\Models\PaymentOrder;
 
 /**
  * Click.uz "Checkout" (klassik) merchant protokoli.
@@ -30,14 +31,21 @@ class ClickPaymentService
     public const ERROR_TRANSACTION_NOT_FOUND = -6;
     public const ERROR_TRANSACTION_CANCELLED = -9;
 
-    public function buildCheckoutUrl(BookPurchase $purchase, string $returnUrl): string
+    // $order — kitob/kurs xaridi bo'lsa PaymentOrder, shartnoma to'lovi
+    // bo'lsa Payment (ContractPaymentController'ga qarang). "transaction_param"
+    // ga "order:<id>" yoki "contract:<id>" prefiksi qo'shiladi — Click bu
+    // qiymatni o'zgarishsiz qaytaradi (merchant_trans_id), shu orqali
+    // ClickCallbackController qaysi jadvaldan qidirish kerakligini biladi.
+    public function buildCheckoutUrl(PaymentOrder|Payment $order, string $returnUrl): string
     {
+        $prefix = $order instanceof PaymentOrder ? 'order' : 'contract';
+
         $params = http_build_query([
-            'service_id'       => config('services.click.service_id'),
-            'merchant_id'      => config('services.click.merchant_id'),
-            'amount'           => number_format((float) $purchase->amount, 2, '.', ''),
-            'transaction_param' => $purchase->id,
-            'return_url'       => $returnUrl,
+            'service_id'        => config('services.click.service_id'),
+            'merchant_id'       => config('services.click.merchant_id'),
+            'amount'            => number_format((float) $order->amount, 2, '.', ''),
+            'transaction_param' => "{$prefix}:{$order->id}",
+            'return_url'        => $returnUrl,
         ]);
 
         return "https://my.click.uz/services/pay?{$params}";

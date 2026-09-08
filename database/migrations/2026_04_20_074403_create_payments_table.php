@@ -21,6 +21,11 @@ return new class extends Migration
             $table->enum('status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
             $table->json('provider_data')->nullable();
             $table->timestamp('paid_at')->nullable();
+            $table->timestamp('cancelled_at')->nullable();
+            $table->unsignedTinyInteger('cancel_reason')->nullable();
+            $table->unsignedBigInteger('payme_create_time')->nullable();
+            $table->unsignedBigInteger('payme_perform_time')->nullable();
+            $table->unsignedBigInteger('payme_cancel_time')->nullable();
             $table->timestamps();
         });
     }

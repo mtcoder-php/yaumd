@@ -9,18 +9,27 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * Pullik elektron kitoblarni onlayn sotib olish uchun buyurtma/to'lov
-     * yozuvi. Mavjud 'payments' jadvalidan ATAYLAB alohida qilingan —
-     * 'payments' faqat 'contracts' (kontrakt/o'quv to'lovi) bilan bog'liq
-     * va uning contract_id ustuni MAJBURIY, shu sababli uni qayta ishlatish
-     * moliya (Kontraktlar) bo'limidagi ishlayotgan kodni buzish xavfini
-     * keltirib chiqarardi.
+     * Pullik narsalarni (elektron kitob, pullik kurs va kelajakda
+     * qo'shilishi mumkin bo'lgan boshqa turlar) onlayn Click/Payme orqali
+     * sotib olish uchun UMUMIY to'lov buyurtmasi jadvali. 'payable_type' +
+     * 'payable_id' polimorfik bog'lanish orqali istalgan modelga (hozircha
+     * LibraryBook va Course) ishora qiladi — shu sababli Click/Payme
+     * protokoli kodi (ClickPaymentService, PaymePaymentService,
+     * ClickCallbackController, PaymeCallbackController) FAQAT BIR MARTA
+     * yoziladi va ikkalasi uchun ham ishlatiladi.
+     *
+     * Mavjud 'payments' jadvalidan ATAYLAB alohida qilingan — 'payments'
+     * faqat 'contracts' (kontrakt/o'quv to'lovi) bilan bog'liq va uning
+     * contract_id ustuni MAJBURIY, shu sababli uni qayta ishlatish moliya
+     * (Kontraktlar) bo'limidagi ishlayotgan kodni buzish xavfini keltirib
+     * chiqarardi.
      */
     public function up(): void
     {
-        Schema::create('book_purchases', function (Blueprint $table) {
+        Schema::create('payment_orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('book_id')->constrained('library_books')->cascadeOnDelete();
+            $table->string('payable_type');
+            $table->unsignedBigInteger('payable_id');
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
             $table->enum('provider', ['click', 'payme'])->default('click');
@@ -40,6 +49,8 @@ return new class extends Migration
             $table->unsignedBigInteger('payme_perform_time')->nullable();
             $table->unsignedBigInteger('payme_cancel_time')->nullable();
             $table->timestamps();
+
+            $table->index(['payable_type', 'payable_id']);
         });
     }
 
@@ -48,6 +59,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('book_purchases');
+        Schema::dropIfExists('payment_orders');
     }
 };

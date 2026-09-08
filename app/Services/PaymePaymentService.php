@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\BookPurchase;
+use App\Models\Payment;
+use App\Models\PaymentOrder;
 
 /**
  * Payme (Paycom) "Merchant Cash Register" JSON-RPC 2.0 protokoli.
@@ -29,12 +30,16 @@ class PaymePaymentService
     public const ERROR_INSUFFICIENT_PRIVILEGE = -32504;
     public const ERROR_METHOD_NOT_FOUND = -32601;
 
-    public function buildCheckoutUrl(BookPurchase $purchase, string $returnUrl): string
+    // $order — kitob/kurs xaridi bo'lsa PaymentOrder ('ac.order_id'), shartnoma
+    // to'lovi bo'lsa Payment ('ac.contract_payment_id') — PaymeCallbackController
+    // qaysi jadvaldan qidirish kerakligini shu maydon nomidan aniqlaydi.
+    public function buildCheckoutUrl(PaymentOrder|Payment $order, string $returnUrl): string
     {
-        $amountTiyin = (int) round(((float) $purchase->amount) * 100);
+        $amountTiyin = (int) round(((float) $order->amount) * 100);
+        $accountField = $order instanceof PaymentOrder ? 'order_id' : 'contract_payment_id';
 
         $params = "m=".config('services.payme.merchant_id')
-            .";ac.order_id={$purchase->id}"
+            .";ac.{$accountField}={$order->id}"
             .";a={$amountTiyin}"
             .";c={$returnUrl}";
 

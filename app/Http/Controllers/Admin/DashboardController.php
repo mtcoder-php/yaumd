@@ -8,13 +8,33 @@ use App\Models\Student;
 use App\Models\Course;
 use App\Models\LibraryBook;
 use App\Models\Contract;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(): Response
+    // MUHIM: '/admin/dashboard' bitta umumiy marshrut — barcha rollar shu
+    // yerga tushadi (permission talab qilinmaydi). Bu yerdagi statistika
+    // (abituriyentlar, shartnomalar soni va h.k.) FAQAT admin/qabul/moliya
+    // xodimlariga tegishli — talabaga bularning hech biri kerak emas va
+    // tushunarsiz bo'ladi. Shu sababli faqat "student" rolidagi (boshqa
+    // hech qanday xodim roli bo'lmagan) foydalanuvchi uchun butunlay
+    // boshqa, alohida StudentDashboardController'ga yo'naltiramiz.
+    private const STAFF_ROLES = ['super-admin', 'admin', 'admission', 'teacher', 'finance', 'librarian'];
+
+    public function __construct(private StudentDashboardController $studentDashboard)
     {
+    }
+
+    public function index(Request $request): Response
+    {
+        $user = $request->user();
+
+        if ($user->hasRole('student') && ! $user->hasAnyRole(self::STAFF_ROLES)) {
+            return $this->studentDashboard->index($request);
+        }
+
         // Abituriyentlar statistikasi
         $applicantStats = Applicant::selectRaw('status, count(*) as count')
             ->groupBy('status')
