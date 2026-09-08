@@ -19,10 +19,13 @@
         "@iconify/vue": "^5.0.0",
         "@inertiajs/vue3": "^3.0.3",
         "@vitejs/plugin-vue": "^6.0.6",
+        "apexcharts": "^7.1.0",
         "imask": "^7.6.1",
+        "qrcode": "^1.5.4",
         "swiper": "^12.2.0",
         "vue": "^3.5.32",
         "vue-toastification": "^2.0.0-rc.5",
+        "vue3-apexcharts": "^1.11.1",
         "ziggy-js": "^2.6.4"
     }
 }

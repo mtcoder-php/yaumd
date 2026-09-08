@@ -174,83 +174,134 @@
 
         <!-- To'lov qabul qilish modal -->
         <div v-if="addModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-             style="background: rgba(0,0,0,0.5)" @click.self="addModal = false">
+             style="background: rgba(0,0,0,0.5)" @click.self="closeAddModal">
             <div class="bg-white rounded-2xl w-full max-w-md p-6">
-                <h3 class="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
-                    <Icon icon="mdi:cash-plus" class="w-5 h-5 text-[#0f3460]" />
-                    To'lov qabul qilish
-                </h3>
 
-                <div class="space-y-4">
+                <!-- Onlayn to'lov: havola/QR va uning holati -->
+                <template v-if="onlineCheckout">
+                    <h3 class="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
+                        <Icon :icon="providerIcon(payForm.provider)" class="w-5 h-5 text-[#0f3460]" />
+                        {{ providerLabel(payForm.provider) }} orqali to'lov
+                    </h3>
 
-                    <!-- Kontrakt tanlash -->
-                    <div>
-                        <label class="field-label">Kontrakt <span class="req">*</span></label>
-                        <select v-model="payForm.contract_id" class="field-input">
-                            <option value="">Tanlang</option>
-                            <option v-for="c in activeContracts" :key="c.id" :value="c.id">
-                                {{ c.contract_number }} — {{ c.applicant_name }}
-                            </option>
-                        </select>
-                        <p v-if="payErrors.contract_id" class="err">{{ payErrors.contract_id }}</p>
+                    <div class="flex flex-col items-center text-center">
+                        <template v-if="onlineCheckout.status === 'pending'">
+                            <img :src="onlineCheckout.qrDataUrl" alt="QR kod"
+                                 class="w-44 h-44 rounded-xl border border-gray-100 mb-4">
+                            <p class="text-xs text-gray-500 mb-3">
+                                To'lovchi shu QR kodni skaner qilsin yoki quyidagi havolani oching/yuboring
+                            </p>
+                            <div class="w-full flex items-center gap-2 mb-4">
+                                <input :value="onlineCheckout.checkoutUrl" readonly
+                                       class="field-input flex-1 text-xs font-mono truncate"
+                                       @focus="$event.target.select()">
+                                <button @click="copyLink" type="button"
+                                        class="px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 flex-shrink-0">
+                                    {{ linkCopied ? 'Nusxalandi' : 'Nusxalash' }}
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs font-medium" style="color:#d97706">
+                                <Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                                To'lov kutilmoqda...
+                            </div>
+                        </template>
+
+                        <template v-else-if="onlineCheckout.status === 'paid'">
+                            <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-3">
+                                <Icon icon="mdi:check" class="w-8 h-8 text-green-600" />
+                            </div>
+                            <p class="text-sm font-semibold text-gray-800">To'lov muvaffaqiyatli qabul qilindi!</p>
+                        </template>
+
+                        <template v-else>
+                            <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-3">
+                                <Icon icon="mdi:close" class="w-8 h-8 text-red-500" />
+                            </div>
+                            <p class="text-sm font-semibold text-gray-800">To'lov amalga oshmadi yoki bekor qilindi</p>
+                        </template>
                     </div>
 
-                    <!-- Summa -->
-                    <div>
-                        <label class="field-label">Summa <span class="req">*</span></label>
-                        <div class="relative">
-                            <input
-                                ref="amountRef"
-                                type="text"
-                                placeholder="0"
-                                class="field-input pr-12"
-                                :class="payErrors.amount ? 'field-error' : ''"
-                            >
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">so'm</span>
+                    <button @click="closeAddModal" class="btn-secondary w-full mt-6">Yopish</button>
+                </template>
+
+                <!-- Kontrakt/summa/to'lov turini tanlash -->
+                <template v-else>
+                    <h3 class="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
+                        <Icon icon="mdi:cash-plus" class="w-5 h-5 text-[#0f3460]" />
+                        To'lov qabul qilish
+                    </h3>
+
+                    <div class="space-y-4">
+
+                        <!-- Kontrakt tanlash -->
+                        <div>
+                            <label class="field-label">Kontrakt <span class="req">*</span></label>
+                            <select v-model="payForm.contract_id" class="field-input">
+                                <option value="">Tanlang</option>
+                                <option v-for="c in activeContracts" :key="c.id" :value="c.id">
+                                    {{ c.contract_number }} — {{ c.applicant_name }}
+                                </option>
+                            </select>
+                            <p v-if="payErrors.contract_id" class="err">{{ payErrors.contract_id }}</p>
                         </div>
-                        <p v-if="payErrors.amount" class="err">{{ payErrors.amount }}</p>
-                    </div>
 
-                    <!-- To'lov turi -->
-                    <div>
-                        <label class="field-label">To'lov turi <span class="req">*</span></label>
-                        <div class="flex gap-2">
-                            <button v-for="pv in providers" :key="pv.value" type="button"
-                                    @click="!pv.disabled && (payForm.provider = pv.value)"
-                                    class="flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all"
-                                    :class="pv.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
-                                    :style="!pv.disabled && payForm.provider === pv.value
+                        <!-- Summa -->
+                        <div>
+                            <label class="field-label">Summa <span class="req">*</span></label>
+                            <div class="relative">
+                                <input
+                                    ref="amountRef"
+                                    type="text"
+                                    placeholder="0"
+                                    class="field-input pr-12"
+                                    :class="payErrors.amount ? 'field-error' : ''"
+                                >
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">so'm</span>
+                            </div>
+                            <p v-if="payErrors.amount" class="err">{{ payErrors.amount }}</p>
+                        </div>
+
+                        <!-- To'lov turi -->
+                        <div>
+                            <label class="field-label">To'lov turi <span class="req">*</span></label>
+                            <div class="flex gap-2">
+                                <button v-for="pv in providers" :key="pv.value" type="button"
+                                        @click="payForm.provider = pv.value"
+                                        class="flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 cursor-pointer transition-all"
+                                        :style="payForm.provider === pv.value
                 ? 'border-color:#0f3460; background:linear-gradient(135deg,#eff6ff,#f5f3ff)'
                 : 'border-color:#e5e7eb; background:#fafafa'">
-                                <Icon :icon="pv.disabled ? 'mdi:lock-outline' : pv.icon" class="w-5 h-5"
-                                      :style="!pv.disabled && payForm.provider === pv.value ? 'color:#0f3460' : 'color:#9ca3af'" />
-                                <span class="text-xs font-semibold"
-                                      :style="!pv.disabled && payForm.provider === pv.value ? 'color:#0f3460' : 'color:#374151'">
+                                    <Icon :icon="pv.icon" class="w-5 h-5"
+                                          :style="payForm.provider === pv.value ? 'color:#0f3460' : 'color:#9ca3af'" />
+                                    <span class="text-xs font-semibold"
+                                          :style="payForm.provider === pv.value ? 'color:#0f3460' : 'color:#374151'">
                 {{ pv.label }}
             </span>
-                                <span v-if="pv.disabled" class="text-xs text-gray-400">tez orada</span>
-                            </button>
+                                </button>
+                            </div>
+                            <p v-if="payForm.provider !== 'cash'" class="text-xs text-gray-400 mt-1.5">
+                                Havola/QR generatsiya qilinadi — to'lovchi o'zi to'laydi, tizim avtomatik tasdiqlaydi.
+                            </p>
+                            <p v-if="payErrors.provider" class="err">{{ payErrors.provider }}</p>
+                            <p v-if="onlineError" class="err">{{ onlineError }}</p>
                         </div>
-                        <p v-if="payErrors.provider" class="err">{{ payErrors.provider }}</p>
+
                     </div>
 
-                    <!-- Tranzaksiya ID (ixtiyoriy) -->
-                    <div v-if="payForm.provider !== 'cash'">
-                        <label class="field-label">Tranzaksiya ID</label>
-                        <input v-model="payForm.transaction_id" type="text" placeholder="Ixtiyoriy"
-                               class="field-input">
+                    <div class="flex gap-3 mt-6">
+                        <button @click="closeAddModal" class="btn-secondary flex-1">Bekor qilish</button>
+                        <button v-if="payForm.provider === 'cash'" @click="submitPayment" :disabled="paying" class="btn-primary flex-1">
+                            <Icon v-if="paying" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                            <Icon v-else icon="mdi:check" class="w-4 h-4" />
+                            {{ paying ? 'Saqlanmoqda...' : 'Qabul qilish' }}
+                        </button>
+                        <button v-else @click="startOnlineCheckout" :disabled="creatingLink" class="btn-primary flex-1">
+                            <Icon v-if="creatingLink" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                            <Icon v-else icon="mdi:qrcode" class="w-4 h-4" />
+                            {{ creatingLink ? 'Yaratilmoqda...' : 'Havola/QR yaratish' }}
+                        </button>
                     </div>
-
-                </div>
-
-                <div class="flex gap-3 mt-6">
-                    <button @click="addModal = false" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitPayment" :disabled="paying" class="btn-primary flex-1">
-                        <Icon v-if="paying" icon="mdi:loading" class="w-4 h-4 animate-spin" />
-                        <Icon v-else icon="mdi:check" class="w-4 h-4" />
-                        {{ paying ? 'Saqlanmoqda...' : 'Qabul qilish' }}
-                    </button>
-                </div>
+                </template>
             </div>
         </div>
 
@@ -276,11 +327,12 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onBeforeUnmount } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import IMask from 'imask'
+import QRCode from 'qrcode'
 
 const props = defineProps({
     payments:        { type: Object, default: () => ({ data: [], links: [], total: 0 }) },
@@ -296,11 +348,20 @@ const payErrors    = ref({})
 const amountRef    = ref(null)
 let   amountMask   = null
 
+// Click/Payme uchun HAQIQIY onlayn to'lov havolasi (QR) oqimi — kassir
+// kontrakt/summani tanlagach havola generatsiya qiladi, to'lovchi o'z
+// qurilmasida to'laydi, tizim server-serverga keladigan callback orqali
+// avtomatik tasdiqlaydi (admin.payments.online / admin.payments.status).
+const creatingLink   = ref(false)
+const onlineCheckout = ref(null) // { paymentId, checkoutUrl, qrDataUrl, status }
+const onlineError    = ref('')
+const linkCopied     = ref(false)
+let   pollTimer      = null
+
 const payForm = ref({
-    contract_id:    '',
-    amount:         '',
-    provider:       'cash',
-    transaction_id: '',
+    contract_id: '',
+    amount:      '',
+    provider:    'cash',
 })
 
 const filters = ref({
@@ -314,8 +375,11 @@ const hasFilters = computed(() =>
 )
 
 const openAddModal = () => {
-    payForm.value  = { contract_id: '', amount: '', provider: 'cash', transaction_id: '' }
+    payForm.value   = { contract_id: '', amount: '', provider: 'cash' }
     payErrors.value = {}
+    onlineCheckout.value = null
+    onlineError.value    = ''
+    stopPolling()
     addModal.value  = true
 
     nextTick(() => {
@@ -333,6 +397,19 @@ const openAddModal = () => {
         }
     })
 }
+
+const closeAddModal = () => {
+    addModal.value = false
+    onlineCheckout.value = null
+    onlineError.value    = ''
+    stopPolling()
+    if (amountMask) { amountMask.destroy(); amountMask = null }
+}
+
+const stopPolling = () => {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+}
+onBeforeUnmount(stopPolling)
 
 const applyFilters = () => {
     router.get(route('admin.payments.index'), filters.value, {
@@ -360,16 +437,85 @@ const submitPayment = () => {
     paying.value = true
     router.post(route('admin.payments.store'), payForm.value, {
         onSuccess: () => {
-            addModal.value = false
-            paying.value   = false
-            payForm.value  = { contract_id: '', amount: '', provider: 'cash', transaction_id: '' }
-            if (amountMask) { amountMask.destroy(); amountMask = null }
+            paying.value = false
+            closeAddModal()
         },
         onError: (errors) => {
             payErrors.value = errors
             paying.value    = false
         },
     })
+}
+
+// Click/Payme: haqiqiy to'lov havolasini generatsiya qilish (JSON so'rov —
+// Inertia visit emas, chunki bu admin panelining o'zi emas, to'lovchining
+// QR/havolasi kerak). Muvaffaqiyatli bo'lsa, natija QR'ga aylantiriladi va
+// to'lov holati bir necha soniyada bir marta so'raladi (pollingda).
+const startOnlineCheckout = async () => {
+    payErrors.value  = {}
+    onlineError.value = ''
+    if (!payForm.value.contract_id) { payErrors.value.contract_id = 'Kontraktni tanlang'; return }
+    if (!payForm.value.amount)      { payErrors.value.amount = 'Summani kiriting'; return }
+
+    creatingLink.value = true
+    try {
+        const { data } = await window.axios.post(route('admin.payments.online', payForm.value.provider), {
+            contract_id: payForm.value.contract_id,
+            amount:      payForm.value.amount,
+        })
+
+        const qrDataUrl = await QRCode.toDataURL(data.checkout_url, { width: 220, margin: 1 })
+
+        onlineCheckout.value = {
+            paymentId:   data.payment_id,
+            checkoutUrl: data.checkout_url,
+            qrDataUrl,
+            status:      'pending',
+        }
+
+        stopPolling()
+        pollTimer = setInterval(checkOnlineStatus, 3000)
+    } catch (e) {
+        if (e.response?.status === 422 && e.response?.data?.errors) {
+            payErrors.value = e.response.data.errors
+        } else {
+            onlineError.value = e.response?.data?.message || "Havola yaratishda xatolik yuz berdi"
+        }
+    } finally {
+        creatingLink.value = false
+    }
+}
+
+const checkOnlineStatus = async () => {
+    if (!onlineCheckout.value) { stopPolling(); return }
+
+    try {
+        const { data } = await window.axios.get(route('admin.payments.status', onlineCheckout.value.paymentId))
+        if (data.status === onlineCheckout.value.status) return
+
+        onlineCheckout.value.status = data.status
+
+        if (data.status === 'paid') {
+            stopPolling()
+            router.reload({ only: ['payments', 'stats'] })
+            setTimeout(closeAddModal, 1800)
+        } else if (data.status === 'failed' || data.status === 'cancelled') {
+            stopPolling()
+        }
+    } catch (e) {
+        // Vaqtinchalik tarmoq xatosi — keyingi urinishda qayta tekshiriladi.
+    }
+}
+
+const copyLink = async () => {
+    if (!onlineCheckout.value) return
+    try {
+        await navigator.clipboard.writeText(onlineCheckout.value.checkoutUrl)
+        linkCopied.value = true
+        setTimeout(() => { linkCopied.value = false }, 1500)
+    } catch (e) {
+        // Clipboard mavjud emas — havola input orqali qo'lda nusxalanadi.
+    }
 }
 
 const confirmDelete = (p) => { deleteTarget.value = p }
@@ -380,9 +526,9 @@ const submitDelete = () => {
 }
 
 const providers = [
-    { value: 'cash',  label: 'Naqd',  icon: 'mdi:cash',                disabled: false },
-    { value: 'click', label: 'Click', icon: 'mdi:cellphone',            disabled: true  },
-    { value: 'payme', label: 'Payme', icon: 'mdi:credit-card-outline',  disabled: true  },
+    { value: 'cash',  label: 'Naqd',  icon: 'mdi:cash' },
+    { value: 'click', label: 'Click', icon: 'mdi:cellphone' },
+    { value: 'payme', label: 'Payme', icon: 'mdi:credit-card-outline' },
 ]
 
 const providerLabel = (p) => providers.find(x => x.value === p)?.label || p

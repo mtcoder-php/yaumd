@@ -32,58 +32,15 @@
                 <!-- Haftalik arizalar grafigi -->
                 <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-5"
                      style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                    <h2 class="text-sm font-bold text-gray-700 mb-5">Oxirgi 7 kunlik arizalar</h2>
-
-                    <div class="flex items-end gap-2 h-40">
-                        <div
-                            v-for="(day, i) in weeklyData"
-                            :key="i"
-                            class="flex-1 flex flex-col items-center gap-1.5"
-                        >
-                            <span class="text-xs text-gray-500 font-medium">{{ day.count }}</span>
-                            <div
-                                class="w-full rounded-t-lg transition-all duration-500"
-                                :style="{
-                                    height: maxWeekly > 0 ? (day.count / maxWeekly * 120) + 'px' : '4px',
-                                    background: 'linear-gradient(180deg, #0f3460, #533483)',
-                                    minHeight: '4px'
-                                }"
-                            ></div>
-                            <span class="text-xs text-gray-400">{{ day.label }}</span>
-                        </div>
-                    </div>
+                    <h2 class="text-sm font-bold text-gray-700 mb-2">Oxirgi 7 kunlik arizalar</h2>
+                    <apexchart type="area" height="220" :options="weeklyChartOptions" :series="weeklySeries" />
                 </div>
 
                 <!-- Status bo'yicha -->
                 <div class="bg-white rounded-2xl border border-gray-100 p-5"
                      style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                    <h2 class="text-sm font-bold text-gray-700 mb-4">Status bo'yicha</h2>
-
-                    <div class="space-y-3">
-                        <div
-                            v-for="s in statusList"
-                            :key="s.value"
-                            class="flex items-center gap-2"
-                        >
-                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ background: s.color }"></div>
-                            <span class="text-xs text-gray-600 flex-1">{{ s.label }}</span>
-                            <span class="text-xs font-bold text-gray-800">
-                                {{ applicantByStatus[s.value] || 0 }}
-                            </span>
-                            <!-- Progress bar -->
-                            <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div
-                                    class="h-full rounded-full"
-                                    :style="{
-                                        width: stats.applicants_total > 0
-                                            ? ((applicantByStatus[s.value] || 0) / stats.applicants_total * 100) + '%'
-                                            : '0%',
-                                        background: s.color
-                                    }"
-                                ></div>
-                            </div>
-                        </div>
-                    </div>
+                    <h2 class="text-sm font-bold text-gray-700 mb-2">Status bo'yicha</h2>
+                    <apexchart type="bar" :height="statusChartHeight" :options="statusChartOptions" :series="statusSeries" />
                 </div>
             </div>
 
@@ -93,35 +50,8 @@
                 <!-- Ta'lim turi bo'yicha -->
                 <div class="bg-white rounded-2xl border border-gray-100 p-5"
                      style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                    <h2 class="text-sm font-bold text-gray-700 mb-4">Ta'lim turi</h2>
-                    <div class="space-y-3">
-                        <div
-                            v-for="t in educationTypes"
-                            :key="t.value"
-                            class="flex items-center justify-between"
-                        >
-                            <div class="flex items-center gap-2">
-                                <Icon :icon="t.icon" class="w-4 h-4" :style="{ color: t.color }" />
-                                <span class="text-xs text-gray-600">{{ t.label }}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                    <div
-                                        class="h-full rounded-full"
-                                        :style="{
-                                            width: stats.applicants_total > 0
-                                                ? ((applicantByType[t.value] || 0) / stats.applicants_total * 100) + '%'
-                                                : '0%',
-                                            background: t.color
-                                        }"
-                                    ></div>
-                                </div>
-                                <span class="text-xs font-bold text-gray-800 w-6 text-right">
-                                    {{ applicantByType[t.value] || 0 }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                    <h2 class="text-sm font-bold text-gray-700 mb-2">Ta'lim turi</h2>
+                    <apexchart type="bar" :height="educationChartHeight" :options="educationChartOptions" :series="educationSeries" />
                 </div>
 
                 <!-- Tizim holati -->
@@ -227,6 +157,7 @@ import { computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { barSeries, horizontalBarOptions, areaChartOptions } from '@/lib/charts'
 
 const props = defineProps({
     stats:              { type: Object, default: () => ({}) },
@@ -289,18 +220,30 @@ const weeklyData = computed(() => {
     return result
 })
 
-const maxWeekly = computed(() => Math.max(...weeklyData.value.map(d => d.count), 1))
+// Haftalik grafik uchun ApexCharts sozlamalari — bitta seriya, brend
+// gradienti (Reports.vue bilan bir xil umumiy modul: @/lib/charts).
+const weeklySeries = computed(() => [{ name: 'Arizalar', data: weeklyData.value.map((d) => d.count) }])
+const weeklyChartOptions = computed(() => areaChartOptions(weeklyData.value.map((d) => d.label)))
 
 // Statuslar
 const statusList = [
-    { value: 'new',        label: 'Yangi',            color: '#3b82f6' },
-    { value: 'accepted',   label: 'Qabul qilindi',    color: '#22c55e' },
-    { value: 'interview',  label: 'Suhbat',           color: '#f59e0b' },
-    { value: 'tested',     label: 'Test',             color: '#8b5cf6' },
-    { value: 'contracted', label: 'Kontrakt',         color: '#6366f1' },
-    { value: 'enrolled',   label: "Ro'yxatga olindi", color: '#14b8a6' },
-    { value: 'rejected',   label: 'Rad etildi',       color: '#ef4444' },
+    { value: 'new',        label: 'Yangi' },
+    { value: 'accepted',   label: 'Qabul qilindi' },
+    { value: 'interview',  label: 'Suhbat' },
+    { value: 'tested',     label: 'Test' },
+    { value: 'contracted', label: 'Kontrakt' },
+    { value: 'enrolled',   label: "Ro'yxatga olindi" },
+    { value: 'rejected',   label: 'Rad etildi' },
 ]
+
+// Status bo'yicha taqsimot — bir nechta kategoriya bo'yicha miqdorni
+// solishtirish, shuning uchun ko'p rangli emas, bitta brend rangida
+// (dataviz: "sequential is the safe default" — categorical faqat seriyalar
+// o'zi mavzu bo'lganda kerak, bu yerda esa faqat bitta o'lchov bor).
+const statusRows = computed(() => statusList.map((s) => ({ label: s.label, count: applicantByStatus.value[s.value] || 0 })))
+const statusSeries = computed(() => barSeries(statusRows.value, 'Arizalar'))
+const statusChartOptions = computed(() => horizontalBarOptions(statusRows.value))
+const statusChartHeight = computed(() => Math.max(200, statusRows.value.length * 34))
 
 const statusBadge = (s) => {
     const badges = {
@@ -319,11 +262,16 @@ const statusLabel = (s) => statusList.find(x => x.value === s)?.label || s
 
 // Ta'lim turlari
 const educationTypes = [
-    { value: 'bachelor', label: 'Bakalavr',       icon: 'mdi:school-outline',          color: '#3b82f6' },
-    { value: 'master',   label: 'Magistr',         icon: 'mdi:account-school-outline',  color: '#8b5cf6' },
-    { value: 'transfer', label: 'Transfer',        icon: 'mdi:transfer',                color: '#f97316' },
-    { value: 'second',   label: 'Ikkinchi-mutaxassislik', icon: 'mdi:layers-outline',          color: '#14b8a6' },
+    { value: 'bachelor', label: 'Bakalavr' },
+    { value: 'master',   label: 'Magistr' },
+    { value: 'transfer', label: 'Transfer' },
+    { value: 'second',   label: 'Ikkinchi-mutaxassislik' },
 ]
+
+const educationRows = computed(() => educationTypes.map((t) => ({ label: t.label, count: applicantByType.value[t.value] || 0 })))
+const educationSeries = computed(() => barSeries(educationRows.value, 'Arizalar'))
+const educationChartOptions = computed(() => horizontalBarOptions(educationRows.value))
+const educationChartHeight = computed(() => Math.max(160, educationRows.value.length * 42))
 
 // Tizim holati
 const systemStatus = [

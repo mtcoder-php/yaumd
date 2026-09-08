@@ -18,7 +18,13 @@ return new class extends Migration
             $table->decimal('amount', 12, 2);
             $table->enum('provider', ['click', 'payme', 'cash'])->default('cash');
             $table->string('transaction_id', 255)->unique()->nullable();
-            $table->enum('status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
+            // 'cancelled' — Click/Payme orqali onlayn to'lov bekor
+            // qilinganda ClickCallbackController/PaymeCallbackController
+            // aynan shu qiymatni yozadi (payment_orders jadvalidagi bilan
+            // bir xil status to'plami uchun) — shuning uchun bu yerda ham
+            // bo'lishi shart, 'refunded' esa moliya xodimi 'cash' to'lovni
+            // qo'lda qaytarganda ishlatiladi.
+            $table->enum('status', ['pending', 'paid', 'failed', 'refunded', 'cancelled'])->default('pending');
             $table->json('provider_data')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();

@@ -15,16 +15,23 @@
             </div>
 
             <!-- Nav -->
-            <!-- Ko'p elementli bo'limlar (masalan "Boshqaruv", "Moliya") endi
-                 ixcham accordion sifatida ochilib-yopiladi — faqat joriy
-                 sahifa turgan bo'lim avtomatik ochiq boshlanadi, qolganlari
-                 yig'ilgan holda turadi. Bitta elementli bo'lim (masalan
-                 "Asosiy" ichidagi yolg'iz Dashboard) oddiy, sarlavhasiz
-                 havola sifatida qoladi — uni ochib-yopish shart emas. -->
+            <!-- Ko'p elementli bo'limlar (masalan "Boshqaruv", "Moliya") ixcham
+                 accordion sifatida ochilib-yopiladi — LEKIN faqat menyusi
+                 haqiqatan uzun bo'lgan rollarda (masalan super-admin/admin).
+                 Menyusi qisqa bo'lgan rollarda (masalan talaba) accordion
+                 keraksiz — bo'lim sarlavhasi oddiy, bosilmaydigan matn
+                 sifatida ko'rsatiladi va barcha havolalar doim ochiq turadi
+                 (useAccordion'ga qarang). Bitta elementli bo'lim (masalan
+                 "Asosiy" ichidagi yolg'iz Dashboard) har doim oddiy,
+                 sarlavhasiz havola sifatida qoladi. -->
             <nav class="p-3 space-y-0.5 overflow-y-auto h-[calc(100vh-4rem)]">
                 <template v-for="section in groupedMenu" :key="section.label">
 
-                    <template v-if="section.children.length <= 1">
+                    <template v-if="!useAccordion || section.children.length <= 1">
+                        <p v-if="!useAccordion && section.children.length > 1"
+                           class="px-3 pt-3 pb-1.5 text-xs font-medium uppercase tracking-wider text-gray-400">
+                            {{ section.label }}
+                        </p>
                         <Link
                             v-for="item in section.children"
                             :key="item.href"
@@ -166,6 +173,8 @@ import {
     BookmarkSquareIcon,
     UserGroupIcon,
     ChevronRightIcon,
+    PhoneIcon,
+    ChartBarIcon,
 } from '@heroicons/vue/24/outline'
 
 defineProps({
@@ -274,6 +283,9 @@ const menus = {
         { type: 'group', label: 'Moliya' },
         { icon: DocumentTextIcon,          label: 'Kontraktlar',        href: '/admin/contracts' },
         { icon: CreditCardIcon,            label: "To'lovlar",          href: '/admin/payments' },
+        { type: 'group', label: 'CRM' },
+        { icon: PhoneIcon,                 label: 'Qarzdorlar',         href: '/admin/crm/debtors' },
+        { icon: ChartBarIcon,              label: 'CRM hisobotlari',    href: '/admin/crm/reports' },
         { type: 'group', label: "Ta'lim" },
         { icon: RectangleStackIcon,        label: 'Kurs kategoriyalari', href: '/admin/course-categories' },
         { icon: BookOpenIcon,              label: 'Kurslar',            href: '/admin/courses' },
@@ -302,6 +314,9 @@ const menus = {
         { type: 'group', label: 'Moliya' },
         { icon: DocumentTextIcon,          label: 'Kontraktlar',        href: '/admin/contracts' },
         { icon: CreditCardIcon,            label: "To'lovlar",          href: '/admin/payments' },
+        { type: 'group', label: 'CRM' },
+        { icon: PhoneIcon,                 label: 'Qarzdorlar',         href: '/admin/crm/debtors' },
+        { icon: ChartBarIcon,              label: 'CRM hisobotlari',    href: '/admin/crm/reports' },
         { type: 'group', label: "Ta'lim" },
         { icon: RectangleStackIcon,        label: 'Kurs kategoriyalari', href: '/admin/course-categories' },
         { icon: BookOpenIcon,              label: 'Kurslar',            href: '/admin/courses' },
@@ -347,6 +362,9 @@ const menus = {
         { type: 'group', label: 'Moliya' },
         { icon: DocumentTextIcon,          label: 'Kontraktlar',        href: '/admin/contracts' },
         { icon: CreditCardIcon,            label: "To'lovlar",          href: '/admin/payments' },
+        { type: 'group', label: 'CRM' },
+        { icon: PhoneIcon,                 label: 'Qarzdorlar',         href: '/admin/crm/debtors' },
+        { icon: ChartBarIcon,              label: 'CRM hisobotlari',    href: '/admin/crm/reports' },
     ],
 }
 
@@ -387,6 +405,15 @@ const groupedMenu = computed(() => {
 
     return sections
 })
+
+// Accordion faqat menyusi haqiqatan uzun bo'lgan rollarda kerak (masalan
+// super-admin/admin — 15+ havola). Menyusida jami shuncha havoladan kam
+// bo'lgan rol (masalan talaba — atigi 5 ta) uchun accordion ortiqcha
+// murakkablik bo'ladi, shuning uchun bunday hollarda barcha bo'limlar
+// doim ochiq, oddiy ro'yxat sifatida ko'rsatiladi.
+const ACCORDION_THRESHOLD = 8
+const totalLinkCount = computed(() => menuItems.value.filter((item) => item.type !== 'group').length)
+const useAccordion = computed(() => totalLinkCount.value > ACCORDION_THRESHOLD)
 
 // Qaysi ko'p elementli bo'limlar hozir ochiq turibdi. Joriy sahifa turgan
 // bo'lim avtomatik ochiladi (pastdagi watch), foydalanuvchi istalgan

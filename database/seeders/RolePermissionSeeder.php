@@ -49,6 +49,8 @@ class RolePermissionSeeder extends Seeder
             'library.view', 'library.create', 'library.edit', 'library.delete',
             // Hisobot
             'report.view', 'report.export',
+            // CRM (qarzdorlar, muloqot tarixi, CRM hisobotlari)
+            'crm.view', 'crm.create',
             // O'quv tuzilmasi/katalogi (fakultet, yo'nalish, kafedra, o'quv yili)
             'academic.view', 'academic.create', 'academic.edit', 'academic.delete',
             // Talabalar
@@ -81,6 +83,7 @@ class RolePermissionSeeder extends Seeder
             'lms.view', 'lms.create', 'lms.edit',
             'library.view', 'library.create', 'library.edit',
             'report.view', 'report.export',
+            'crm.view', 'crm.create',
             'academic.view', 'academic.create', 'academic.edit',
             'student.view', 'student.create', 'student.edit',
             'group.view', 'group.create', 'group.edit',
@@ -135,6 +138,7 @@ class RolePermissionSeeder extends Seeder
         $finance->givePermissionTo([
             'payment.view', 'payment.create', 'payment.edit',
             'contract.view', 'report.view', 'report.export',
+            'crm.view', 'crm.create',
         ]);
 
         // Super Admin foydalanuvchi yaratish/yangilash.

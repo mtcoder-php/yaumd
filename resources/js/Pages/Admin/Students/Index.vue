@@ -9,6 +9,10 @@
                     <p class="text-sm text-gray-500 mt-0.5">Jami: {{ students.total }} ta talaba</p>
                 </div>
                 <div class="flex items-center gap-3">
+                    <a :href="exportUrl" class="btn-secondary">
+                        <Icon icon="mdi:file-download-outline" class="w-4 h-4" />
+                        Excel'ga eksport
+                    </a>
                     <button @click="importOpen = true" class="btn-secondary">
                         <Icon icon="mdi:file-excel-outline" class="w-4 h-4" />
                         HEMIS'dan import
@@ -300,6 +304,17 @@ const filters = ref({
 })
 
 const hasFilters = computed(() => Object.values(filters.value).some(v => v))
+
+// Joriy qidiruv/filtrlar bilan bir xil natijani eksport qilish uchun —
+// bu oddiy fayl yuklab olish (Inertia navigatsiyasi emas), shuning uchun
+// <Link>/router.get emas, oddiy <a href> ishlatiladi.
+const exportUrl = computed(() => {
+    const params = new URLSearchParams(
+        Object.entries(filters.value).filter(([, v]) => v !== '' && v !== null)
+    )
+    const query = params.toString()
+    return route('admin.students.export') + (query ? `?${query}` : '')
+})
 
 const applyFilters = () => {
     router.get(route('admin.students.index'), filters.value, {

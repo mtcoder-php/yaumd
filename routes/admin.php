@@ -36,6 +36,9 @@ use App\Http\Controllers\Admin\CoursePurchaseController;
 use App\Http\Controllers\Admin\PaymentReturnController;
 use App\Http\Controllers\Admin\StudentContractController;
 use App\Http\Controllers\Admin\ContractPaymentController;
+use App\Http\Controllers\Admin\CrmDebtorController;
+use App\Http\Controllers\Admin\CommunicationLogController;
+use App\Http\Controllers\Admin\CrmReportController;
 
 
 // Har bir marshrutga qo'yilgan 'permission:...' RolePermissionSeeder'dagi
@@ -115,7 +118,29 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::prefix('payments')->name('payments.')->group(function () {
         Route::get('/', [PaymentController::class, 'index'])->name('index')->middleware('permission:payment.view');
         Route::post('/', [PaymentController::class, 'store'])->name('store')->middleware('permission:payment.create');
+        // Kassir shu yerdan haqiqiy Click/Payme to'lov havolasi (QR)
+        // generatsiya qiladi (JSON javob) va uning holatini so'raydi
+        // (pollingda) — PaymentController::checkoutOnline()/status()ga qarang.
+        Route::post('/online/{provider}', [PaymentController::class, 'checkoutOnline'])->name('online')->middleware('permission:payment.create');
+        Route::get('/{payment}/status', [PaymentController::class, 'status'])->name('status')->middleware('permission:payment.view');
         Route::delete('/{id}', [PaymentController::class, 'destroy'])->name('destroy')->middleware('permission:payment.delete');
+    });
+
+    // CRM — qarzdorlar ro'yxati, muloqot tarixi, hisobotlar
+    Route::prefix('crm')->name('crm.')->group(function () {
+        Route::get('/reports', [CrmReportController::class, 'index'])->name('reports')->middleware('permission:crm.view');
+
+        Route::prefix('debtors')->name('debtors.')->group(function () {
+            Route::get('/', [CrmDebtorController::class, 'index'])->name('index')->middleware('permission:crm.view');
+            Route::get('/export', [CrmDebtorController::class, 'export'])->name('export')->middleware('permission:crm.view');
+        });
+
+        // Muloqot tarixi — {type} 'student' yoki 'applicant', {id} shu
+        // modeldagi ID (qarzdorlar ro'yxatidagi "person" orqali aniqlanadi).
+        Route::prefix('contacts/{type}/{id}')->name('contact.')->group(function () {
+            Route::get('/',     [CommunicationLogController::class, 'show'])->name('show')->middleware('permission:crm.view');
+            Route::post('/logs', [CommunicationLogController::class, 'store'])->name('logs.store')->middleware('permission:crm.create');
+        });
     });
 
     Route::prefix('users')->name('users.')->group(function () {
@@ -180,6 +205,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/',          [StudentController::class, 'store'])->name('store')->middleware('permission:student.create');
         Route::get('/template',   [StudentController::class, 'template'])->name('template')->middleware('permission:student.view');
         Route::post('/import',    [StudentController::class, 'import'])->name('import')->middleware('permission:student.create');
+        Route::get('/export',     [StudentController::class, 'export'])->name('export')->middleware('permission:student.view');
         Route::get('/{id}',       [StudentController::class, 'show'])->name('show')->middleware('permission:student.view');
         Route::get('/{id}/edit',  [StudentController::class, 'edit'])->name('edit')->middleware('permission:student.edit');
         Route::put('/{id}',       [StudentController::class, 'update'])->name('update')->middleware('permission:student.edit');

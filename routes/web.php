@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\AdmissionController;
 use App\Http\Controllers\Web\CertificateVerifyController;
 use App\Http\Controllers\Web\ClickCallbackController;
 use App\Http\Controllers\Web\PaymeCallbackController;
+use App\Http\Controllers\Web\PublicPaymentReturnController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 
@@ -28,6 +29,13 @@ Route::get('/certificates/{number}', [CertificateVerifyController::class, 'show'
 // CSRF tekshiruvidan ham ozod qilingan (bootstrap/app.php'ga qarang).
 Route::post('/payments/click/callback', [ClickCallbackController::class, 'callback'])->name('payments.click.callback');
 Route::post('/payments/payme/callback', [PaymeCallbackController::class, 'callback'])->name('payments.payme.callback');
+
+// Kassir /admin/payments sahifasida shartnoma uchun Click/Payme havolasi
+// (QR) generatsiya qilganda, to'lovchi (talaba yoki uning yaqini) o'z
+// qurilmasida to'lab bo'lgach shu manzilga qaytariladi — login talab
+// qilinmaydi, chunki to'lovchi tizimda umuman hisobga ega bo'lmasligi
+// mumkin (PublicPaymentReturnController'ga qarang).
+Route::get('/pay/{payment}/return', [PublicPaymentReturnController::class, 'contract'])->name('payments.public.return');
 
 // ─── AUTH ─────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {

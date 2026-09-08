@@ -12,6 +12,8 @@ use App\Models\Direction;
 use App\Models\Student;
 use App\Services\HemisImportService;
 use App\Services\StudentAccountService;
+use App\Services\StudentExportService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,11 +23,29 @@ class StudentController extends Controller
     public function __construct(
         private HemisImportService $importService,
         private StudentAccountService $accountService,
+        private StudentExportService $exportService,
     ) {}
 
     public function index(Request $request): Response
     {
-        $query = Student::with(['academicYear', 'direction', 'department'])
+        $query = $this->filteredQuery($request)->latest();
+
+        return Inertia::render('Admin/Students/Index', [
+            'students'     => $query->paginate(20)->withQueryString(),
+            'academicYears' => AcademicYear::orderByDesc('start_date')->get(['id', 'name', 'is_active']),
+            'directions'   => Direction::orderBy('name_uz')->get(['id', 'name_uz', 'hemis_code']),
+            'filters'      => $request->only(['academic_year_id', 'direction_id', 'course_year', 'status', 'search']),
+        ]);
+    }
+
+    /**
+     * index() va export() bir xil filtrlarni ishlatadi — "sahifadagi
+     * ko'rinishni eksport qilish" tamoyili shu orqali ta'minlanadi
+     * (eksport index()dagi bilan bir xil qidiruv/filter natijasini oladi).
+     */
+    private function filteredQuery(Request $request): Builder
+    {
+        return Student::with(['academicYear', 'direction', 'department'])
             ->when($request->filled('academic_year_id'), fn ($q) => $q->where('academic_year_id', $request->academic_year_id))
             ->when($request->filled('direction_id'), fn ($q) => $q->where('direction_id', $request->direction_id))
             ->when($request->filled('course_year'), fn ($q) => $q->where('course_year', $request->course_year))
@@ -39,14 +59,17 @@ class StudentController extends Controller
                         ->orWhere('student_number', 'like', "%{$search}%")
                         ->orWhere('hemis_id', 'like', "%{$search}%");
                 });
-            })
-            ->latest();
+            });
+    }
 
-        return Inertia::render('Admin/Students/Index', [
-            'students'     => $query->paginate(20)->withQueryString(),
-            'academicYears' => AcademicYear::orderByDesc('start_date')->get(['id', 'name', 'is_active']),
-            'directions'   => Direction::orderBy('name_uz')->get(['id', 'name_uz', 'hemis_code']),
-            'filters'      => $request->only(['academic_year_id', 'direction_id', 'course_year', 'status', 'search']),
+    public function export(Request $request)
+    {
+        $bytes = $this->exportService->export($this->filteredQuery($request));
+        $filename = 'talabalar_' . now()->format('Y_m_d_His') . '.xlsx';
+
+        return response($bytes, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
     }
 

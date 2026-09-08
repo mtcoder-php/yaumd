@@ -7,6 +7,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { ZiggyVue } from 'ziggy-js'
 import Toast from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
+import VueApexCharts from 'vue3-apexcharts'
 
 createInertiaApp({
     title: (title) => `${title} - Yangi Asr Universiteti`,
@@ -24,6 +25,7 @@ createInertiaApp({
                 timeout: 4000,
                 closeOnClick: true,
             })
+            .use(VueApexCharts)
             .mount(el)
 
     },
