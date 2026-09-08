@@ -97,12 +97,20 @@
                                 <p class="text-xs text-gray-400">Shaxsiy kabinet</p>
                             </div>
                             <Link
+                                href="/login"
+                                @click="userOpen = false"
+                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition"
+                            >
+                                <Icon icon="mdi:account-school-outline" class="w-4 h-4 text-[#0f3460]" />
+                                Talaba / xodim sifatida kirish
+                            </Link>
+                            <Link
                                 href="/cabinet/login"
                                 @click="userOpen = false"
                                 class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition"
                             >
-                                <Icon icon="mdi:login" class="w-4 h-4 text-[#0f3460]" />
-                                Kirish
+                                <Icon icon="mdi:file-document-edit-outline" class="w-4 h-4 text-[#0f3460]" />
+                                Qabul testiga kirish
                             </Link>
                             <Link
                                 href="/qabul/ariza"
