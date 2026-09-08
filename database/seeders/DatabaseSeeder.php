@@ -12,6 +12,9 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             RegionDistrictSeeder::class,
             FacultyDirectionSeeder::class,
+            AcademicStructureSeeder::class,
+            AdmissionSeeder::class,
+            CourseSeeder::class,
         ]);
     }
 }

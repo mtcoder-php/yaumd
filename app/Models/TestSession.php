@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TestSession extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'applicant_id', 'direction_id', 'language', 'foreign_lang',
         'login', 'password_plain', 'password',

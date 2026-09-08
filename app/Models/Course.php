@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Purchasable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 
 class Course extends Model implements Purchasable
 {
+    use HasFactory;
     use SoftDeletes;
 
     protected $appends = ['thumbnail_url'];

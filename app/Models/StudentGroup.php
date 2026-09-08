@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class StudentGroup extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'academic_year_id', 'direction_id', 'department_id',
         'head_teacher_id', 'hemis_id', 'name',

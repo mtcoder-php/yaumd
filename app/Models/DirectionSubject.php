@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DirectionSubject extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'direction_id', 'subject_id', 'block_type',
         'questions_count', 'score_per_question', 'is_active',
