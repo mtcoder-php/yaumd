@@ -261,7 +261,18 @@ const isActive = (href) => {
     // to'liq mos kelish YOKI keyingi belgi '/' bo'lgandagina (ya'ni
     // haqiqiy pastki sahifa, masalan '/admin/library/5') faol deb
     // hisoblanadi.
-    return page.url === href || page.url.startsWith(href + '/')
+    //
+    // MUHIM #2: page.url'dagi query-string (masalan '?page=2', filtr
+    // parametrlari) va hash HISOBGA OLINMAYDI — aks holda jadvalda
+    // "Keyingi" (pagination) bosilganda yoki biror filtr qo'llanganda
+    // manzil '/admin/users?page=2' ga aylanadi va yuqoridagi solishtirish
+    // ikkalasida ham mos kelmay qoladi (na to'liq teng, na '/' bilan
+    // boshlanadi) — natijada bo'lim FAOL EMAS deb hisoblanib, pastdagi
+    // watch() uni yopib qo'yar edi (Foydalanuvchilar sahifasida "Next"
+    // bosilganda "Boshqaruv" bo'limi kutilmaganda yopilib qolgan edi).
+    const path = page.url.split('?')[0].split('#')[0]
+
+    return path === href || path.startsWith(href + '/')
 }
 
 const logout = () => {
