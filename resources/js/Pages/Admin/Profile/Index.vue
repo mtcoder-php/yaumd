@@ -97,17 +97,23 @@
                         <label class="field-label">Telefon</label>
                         <div class="relative">
                             <Icon icon="mdi:phone-outline"
-                                  class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                v-model="infoForm.phone"
-                                type="text"
-                                name="phone"
-                                autocomplete="tel"
-                                inputmode="tel"
-                                placeholder="998901234567"
-                                class="field-input pl-10"
+                                  class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+                            <div
+                                class="field-input pl-10 flex items-center gap-1.5"
                                 :class="infoForm.errors.phone ? 'field-error' : ''"
                             >
+                                <span class="text-gray-500 flex-shrink-0">+998</span>
+                                <input
+                                    :value="phoneLocalDisplay"
+                                    @input="onPhoneInput"
+                                    type="text"
+                                    name="phone"
+                                    autocomplete="tel-national"
+                                    inputmode="numeric"
+                                    placeholder="(90) 123-45-67"
+                                    class="phone-inner flex-1 min-w-0"
+                                >
+                            </div>
                         </div>
                         <p v-if="infoForm.errors.phone" class="err">{{ infoForm.errors.phone }}</p>
                     </div>
@@ -362,6 +368,41 @@ const submitInfo = () => {
     infoForm.put(route('admin.profile.update'), { preserveScroll: true })
 }
 
+// --- Telefon shabloni: +998 (XX) XXX-XX-XX ---
+// Bazada raqam har doim faqat raqamlardan iborat holda saqlanadi
+// (masalan "998901234567", mavjud Factory/Seeder ma'lumotlari bilan bir
+// xil format) — bu yerda faqat KO'RSATISH uchun shablon qo'llaniladi,
+// infoForm.phone esa serverga har doim shu "toza" formatda yuboriladi.
+const PHONE_PREFIX = '998'
+
+const digitsOnly = (value) => (value || '').replace(/\D/g, '')
+
+const extractLocalDigits = (rawPhone) => {
+    let digits = digitsOnly(rawPhone)
+    if (digits.startsWith(PHONE_PREFIX)) {
+        digits = digits.slice(PHONE_PREFIX.length)
+    }
+    return digits.slice(0, 9)
+}
+
+const formatPhoneLocal = (digits) => {
+    if (!digits) return ''
+    let out = '(' + digits.slice(0, 2)
+    if (digits.length >= 2) out += ')'
+    if (digits.length > 2) out += ' ' + digits.slice(2, 5)
+    if (digits.length > 5) out += '-' + digits.slice(5, 7)
+    if (digits.length > 7) out += '-' + digits.slice(7, 9)
+    return out
+}
+
+const phoneLocalDisplay = ref(formatPhoneLocal(extractLocalDigits(props.user.phone)))
+
+const onPhoneInput = (e) => {
+    const digits = extractLocalDigits(e.target.value)
+    phoneLocalDisplay.value = formatPhoneLocal(digits)
+    infoForm.phone = digits ? PHONE_PREFIX + digits : ''
+}
+
 // --- Profil rasmi ---
 const photoPreview = ref(null)
 const photoForm = useForm({ photo: null })
@@ -446,8 +487,18 @@ const cancelEmailChange = () => {
     transition: border-color 0.2s;
 }
 .field-input.pl-10 { padding-left: 2.5rem; }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus,
+.field-input:focus-within { border-color: #0f3460; background: white; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
+
+.phone-inner {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    font-size: 0.875rem;
+    color: #111827;
+}
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
 
 .btn-primary {
