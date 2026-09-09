@@ -138,6 +138,13 @@ class AdmissionSeeder extends Seeder
             ...$owner,
             'direction_id' => $direction?->id,
             'amount'       => $amount,
+            // MUHIM: factory'ning definition()'i o'zining tasodifiy
+            // yo'nalishidan mustaqil 'base_amount' tanlaydi — shu yerda
+            // 'amount' aniq qiymatga o'rnatilgani uchun 'base_amount' ham
+            // aynan shu bilan mos qo'yilishi shart (aks holda chegirmasiz
+            // "narx" bilan haqiqiy summa mos kelmay, CRM hisobotidagi
+            // "chegirmasiz"/"chegirma bilan" taqqoslash noto'g'ri chiqadi).
+            'base_amount'  => $amount,
             'status'       => 'signed',
         ]);
 

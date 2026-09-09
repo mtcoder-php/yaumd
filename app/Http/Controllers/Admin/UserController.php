@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,13 +14,30 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        // Ro'yxat 20 tadan sahifalangani uchun 77+ foydalanuvchi orasidan
+        // (masalan o'zini — Super Admin'ni) qidirish uchun sahifama-sahifa
+        // yurishga to'g'ri kelmasligi kerak edi — shu sababli ism/email
+        // bo'yicha qidiruv va rol bo'yicha filtr qo'shildi.
+        $query = User::with('roles')->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->whereHas('roles', fn ($q) => $q->where('name', $request->role));
+        }
+
         return Inertia::render('Admin/Users/Index', [
-            'users' => User::with('roles')
-                ->latest()
-                ->paginate(20),
-            'roles' => Role::all(),
+            'users'   => $query->paginate(20)->withQueryString(),
+            'roles'   => Role::all(),
+            'filters' => $request->only(['search', 'role']),
         ]);
     }
 

@@ -169,7 +169,7 @@
             <div class="bg-white rounded-2xl border border-gray-100 p-5"
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                 <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-sm font-bold text-gray-700">Oylik to'lovlar dinamikasi (oxirgi 12 oy)</h2>
+                    <h2 class="text-sm font-bold text-gray-700">Oylik to'lovlar dinamikasi (oxirgi 6 oy)</h2>
                     <span v-if="latestChangePercent !== null"
                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
                           :class="latestChangePercent >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">
@@ -288,10 +288,17 @@ const collectedSharePercent = computed(() => {
     return target > 0 ? Math.round(((props.kpi.collected_total || 0) / target) * 100) : 0
 })
 
-// Oylik to'lovlar dinamikasi — backend "YYYY-MM" qaytaradi, label boshqa
-// sahifalardagi kabi shu yerda uz-UZ formatida chiqariladi.
+// Oylik to'lovlar dinamikasi — backend "YYYY-MM" qaytaradi. Oy nomi
+// uchun brauzerning 'uz-UZ' locale'iga ishonilmaydi — ba'zi brauzerlarda
+// ICU ma'lumotlari to'liq bo'lmagani uchun "M10" kabi noto'g'ri qisqartma
+// chiqarib yuboradi (Applicants/Edit.vue va Admission/Create.vue'dagi kabi
+// qo'lda tayyorlangan oy nomlari ishlatiladi).
+const MONTHS_SHORT = ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyun', 'Iyul', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek']
 const monthlyLabels = computed(() =>
-    props.monthlyPayments.map((m) => new Date(m.month + '-02').toLocaleDateString('uz-UZ', { month: 'short', year: '2-digit' }))
+    props.monthlyPayments.map((m) => {
+        const [year, month] = m.month.split('-').map(Number)
+        return `${MONTHS_SHORT[month - 1]} ${String(year).slice(2)}`
+    })
 )
 const monthlyAmounts = computed(() => props.monthlyPayments.map((m) => m.amount))
 const latestChangePercent = computed(() => {

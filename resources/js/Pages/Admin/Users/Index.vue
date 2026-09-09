@@ -14,6 +14,38 @@
                 </Link>
             </div>
 
+            <!-- Filters -->
+            <div class="bg-white rounded-2xl border border-gray-100 p-4 flex flex-wrap gap-3"
+                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
+
+                <!-- Search -->
+                <div class="flex-1 min-w-48 relative">
+                    <Icon icon="mdi:magnify" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                        v-model="filters.search"
+                        type="text"
+                        placeholder="Ism yoki email bo'yicha qidirish..."
+                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
+                        @input="debouncedSearch"
+                    >
+                </div>
+
+                <!-- Role -->
+                <select v-model="filters.role"
+                        class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
+                        @change="applyFilters">
+                    <option value="">Barcha rollar</option>
+                    <option v-for="r in roles" :key="r.value" :value="r.value">{{ r.label }}</option>
+                </select>
+
+                <!-- Reset -->
+                <button v-if="hasFilters" @click="resetFilters"
+                        class="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-1.5">
+                    <Icon icon="mdi:close" class="w-4 h-4" />
+                    Tozalash
+                </button>
+            </div>
+
             <!-- Table -->
             <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
@@ -130,17 +162,42 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
-    users: { type: Object, default: () => ({ data: [], links: [], total: 0 }) },
-    roles: { type: Array,  default: () => [] },
+    users:   { type: Object, default: () => ({ data: [], links: [], total: 0 }) },
+    roles:   { type: Array,  default: () => [] },
+    filters: { type: Object, default: () => ({}) },
 })
 
 const deleteTarget = ref(null)
+
+const filters = ref({
+    search: props.filters.search || '',
+    role:   props.filters.role   || '',
+})
+
+const hasFilters = computed(() => filters.value.search || filters.value.role)
+
+const applyFilters = () => {
+    router.get(route('admin.users.index'), filters.value, {
+        preserveState: true, replace: true,
+    })
+}
+
+let searchTimer = null
+const debouncedSearch = () => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(applyFilters, 400)
+}
+
+const resetFilters = () => {
+    filters.value = { search: '', role: '' }
+    applyFilters()
+}
 
 const roles = [
     { value: 'super-admin', label: 'Super Admin', class: 'bg-red-50 text-red-700' },

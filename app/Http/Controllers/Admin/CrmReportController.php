@@ -193,14 +193,14 @@ class CrmReportController extends Controller
     }
 
     /**
-     * Oxirgi 12 oy uchun to'langan summalar va oldingi oyga nisbatan
+     * Oxirgi 6 oy uchun to'langan summalar va oldingi oyga nisbatan
      * o'zgarish foizi ("oylik to'lovlar solishtirilmasi... oshdi kamaydi").
      * Oy nomi frontendda formatlanadi (boshqa sahifalardagi kabi) — bu
      * yerda faqat "YYYY-MM" qaytariladi.
      */
     private function monthlyPaymentTrend(): array
     {
-        $months = collect(range(11, 0))
+        $months = collect(range(5, 0))
             ->map(fn (int $i) => now()->copy()->subMonths($i)->startOfMonth());
 
         $amounts = $months->map(function ($month) {
