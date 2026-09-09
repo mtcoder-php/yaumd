@@ -115,7 +115,11 @@
                             @click="userMenuOpen = !userMenuOpen"
                             class="flex items-center gap-2.5 hover:opacity-75 transition"
                         >
-                            <div class="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-medium">
+                            <div v-if="auth.user.photo_url"
+                                 class="w-8 h-8 rounded-full bg-cover bg-center border border-gray-200"
+                                 :style="`background-image:url('${auth.user.photo_url}')`">
+                            </div>
+                            <div v-else class="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-medium">
                                 {{ initials }}
                             </div>
                             <div class="hidden sm:block text-left">
@@ -133,6 +137,12 @@
                             <div class="px-4 py-2 border-b border-gray-100">
                                 <p class="text-xs text-gray-500">{{ auth.user.email }}</p>
                             </div>
+                            <Link
+                                :href="route('admin.profile.edit')"
+                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                            >
+                                Mening profilim
+                            </Link>
                             <button
                                 @click="logout"
                                 class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition"

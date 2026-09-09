@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\ContractPaymentController;
 use App\Http\Controllers\Admin\CrmDebtorController;
 use App\Http\Controllers\Admin\CommunicationLogController;
 use App\Http\Controllers\Admin\CrmReportController;
+use App\Http\Controllers\Admin\ProfileController;
 
 
 // Har bir marshrutga qo'yilgan 'permission:...' RolePermissionSeeder'dagi
@@ -56,6 +57,20 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     })->name('home');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Shaxsiy profil — har qanday rol o'z hisobini shu yerdan boshqaradi,
+    // shuning uchun alohida 'permission:' middleware talab qilinmaydi
+    // (boshqa foydalanuvchilarni boshqarish uchun esa UserController bor).
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [ProfileController::class, 'edit'])->name('edit');
+        Route::put('/', [ProfileController::class, 'update'])->name('update');
+        Route::post('/photo', [ProfileController::class, 'updatePhoto'])->name('photo.update');
+        Route::delete('/photo', [ProfileController::class, 'destroyPhoto'])->name('photo.destroy');
+        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+        Route::post('/email', [ProfileController::class, 'requestEmailChange'])->name('email.request');
+        Route::post('/email/verify', [ProfileController::class, 'verifyEmailChange'])->name('email.verify');
+        Route::post('/email/cancel', [ProfileController::class, 'cancelEmailChange'])->name('email.cancel');
+    });
 
     // Abituriyentlar
     Route::prefix('applicants')->name('applicants.')->group(function () {

@@ -7,11 +7,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes, HasRoles;
+
+    // Profil sahifasida va topbar avatarida ko'rsatish uchun — 'photo'
+    // ustunida faqat nisbiy yo'l saqlanadi (masalan "avatars/xxx.jpg"),
+    // frontend esa to'liq URL kutadi (ProfileController::updatePhoto()ga
+    // qarang).
+    protected $appends = ['photo_url'];
 
     protected $fillable = [
         'uuid',
@@ -52,5 +59,10 @@ class User extends Authenticatable
                 $model->uuid = Str::uuid();
             }
         });
+    }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->photo ? Storage::disk('public')->url($this->photo) : null;
     }
 }
