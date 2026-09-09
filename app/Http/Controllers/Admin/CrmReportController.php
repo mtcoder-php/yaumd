@@ -27,12 +27,25 @@ class CrmReportController extends Controller
             'byCourse'             => $this->byCourse(),
             'byAcademicYear'       => $this->byAcademicYear(),
             'recentCommunications' => $this->recentCommunications(),
+            // Chegirma va oylik to'lov tahlili (CRM so'rovi: qancha talaba
+            // qarzdor, chegirmasiz/chegirmali summa farqi, oylik dinamika).
+            'discountByReason'     => $this->discountByReason(),
+            'discountByPercent'    => $this->discountByPercent(),
+            'monthlyPayments'      => $this->monthlyPaymentTrend(),
         ]);
     }
 
     private function kpi(): array
     {
-        $debts = $this->outstandingContractBalances();
+        $rows = $this->contractFinancials();
+        $debtorRows = $rows->filter(fn (array $r) => $r['remaining'] > 0);
+
+        // "Barchasi to'lasa" — chegirma qo'llangandan keyingi (net) haqiqiy
+        // to'lanishi kerak bo'lgan jami summa; "gross" — xuddi shu
+        // kontraktlar chegirmasiz bo'lganda qancha bo'lardi.
+        $targetTotal    = round($rows->sum('amount'), 2);
+        $grossPotential = round($rows->sum('base_amount'), 2);
+        $discountTotal  = round(max(0, $grossPotential - $targetTotal), 2);
 
         return [
             'students_total'           => Student::count(),
@@ -41,8 +54,8 @@ class CrmReportController extends Controller
             // uchun ulush "jami talabalar"ga emas, aynan kontrakt asosida
             // o'qiydiganlarga nisbatan hisoblanishi kerak.
             'contract_students_total'  => Student::where('funding_type', 'contract')->count(),
-            'debtors_count'            => $debts->count(),
-            'debtors_amount'           => round($debts->sum(), 2),
+            'debtors_count'            => $debtorRows->count(),
+            'debtors_amount'           => round($debtorRows->sum('remaining'), 2),
             'paid_this_month'          => round(
                 (float) Payment::where('status', 'paid')
                     ->whereMonth('paid_at', now()->month)
@@ -51,23 +64,46 @@ class CrmReportController extends Controller
                 2
             ),
             'communications_this_week' => CommunicationLog::where('occurred_at', '>=', now()->subDays(7))->count(),
+
+            // Kontrakt bo'yicha "hammasi to'lansa qancha bo'ladi" / chegirma tahlili
+            'contract_target_total'     => $targetTotal,
+            'collected_total'           => round($rows->sum('paid'), 2),
+            'gross_potential_total'     => $grossPotential,
+            'discount_amount_total'     => $discountTotal,
+            'discount_percent_of_gross' => $grossPotential > 0 ? round($discountTotal / $grossPotential * 100, 1) : 0,
+            'students_with_discount'    => $rows->filter(fn (array $r) => $r['discount_percent'] > 0)->count(),
         ];
     }
 
     /**
-     * Bekor qilinmagan, kontrakt asosidagi shartnomalarning qolgan
-     * qarzlari — CrmDebtorController'dagi bilan bir xil hisoblash mantig'i
-     * (faqat bu yerda to'liq ro'yxat emas, KPI uchun sonlar kerak).
+     * Bekor qilinmagan, kontrakt asosidagi har bir shartnoma uchun
+     * summa/chegirma/to'lov ma'lumotlarini bitta joyda tayyorlaydi —
+     * kpi(), discountByReason() va discountByPercent() shu massivdan
+     * kelib chiqib turli kesimlarda hisob-kitob qiladi (bir xil so'rov
+     * bir necha marta takrorlanmasligi uchun).
+     *
+     * @return \Illuminate\Support\Collection<int, array>
      */
-    private function outstandingContractBalances()
+    private function contractFinancials(): \Illuminate\Support\Collection
     {
         return Contract::where('payment_type', 'contract')
             ->where('status', '!=', 'cancelled')
             ->withSum(['payments as paid_sum' => fn ($q) => $q->where('status', 'paid')], 'amount')
             ->get()
-            ->map(fn (Contract $c) => round(max(0, (float) $c->amount - (float) ($c->paid_sum ?? 0)), 2))
-            ->filter(fn (float $remaining) => $remaining > 0)
-            ->values();
+            ->map(function (Contract $c) {
+                $paid = (float) ($c->paid_sum ?? 0);
+
+                return [
+                    'amount'           => (float) $c->amount,
+                    // Eski yozuvlarda ham migratsiya orqali to'ldirilgan,
+                    // lekin ehtiyot uchun fallback qoldiriladi.
+                    'base_amount'      => (float) ($c->base_amount ?? $c->amount),
+                    'discount_percent' => (int) $c->discount_percent,
+                    'discount_reason'  => $c->discount_reason,
+                    'paid'             => $paid,
+                    'remaining'        => round(max(0, (float) $c->amount - $paid), 2),
+                ];
+            });
     }
 
     private function byDirection()
@@ -113,6 +149,79 @@ class CrmReportController extends Controller
             ])
             ->sortByDesc('count')
             ->values();
+    }
+
+    /**
+     * Chegirma sababi bo'yicha taqsimot — nechta talaba, va shu sabab
+     * bo'yicha jami qancha summa "chegirma qilib berilgan" (base - amount).
+     */
+    private function discountByReason()
+    {
+        $rows = $this->contractFinancials()->filter(fn (array $r) => $r['discount_percent'] > 0);
+
+        return collect(Contract::DISCOUNT_REASONS)
+            ->map(function (string $label, string $key) use ($rows) {
+                $matched = $rows->filter(fn (array $r) => $r['discount_reason'] === $key);
+
+                return [
+                    'label'  => $label,
+                    'count'  => $matched->count(),
+                    'amount' => round($matched->sum(fn (array $r) => $r['base_amount'] - $r['amount']), 2),
+                ];
+            })
+            ->filter(fn (array $row) => $row['count'] > 0)
+            ->sortByDesc('count')
+            ->values();
+    }
+
+    /**
+     * Chegirma foizi (10/20/25/50/75/100%) bo'yicha nechta talabaga shu
+     * foiz berilgani — "qancha foizi chegirma qilib berilmoqda" so'rovining
+     * tarqalish (distribution) ko'rinishi.
+     */
+    private function discountByPercent()
+    {
+        $rows = $this->contractFinancials()->filter(fn (array $r) => $r['discount_percent'] > 0);
+
+        return collect(array_slice(Contract::DISCOUNT_PERCENTS, 1))
+            ->map(fn (int $percent) => [
+                'label' => "{$percent}%",
+                'count' => $rows->filter(fn (array $r) => $r['discount_percent'] === $percent)->count(),
+            ])
+            ->filter(fn (array $row) => $row['count'] > 0)
+            ->values();
+    }
+
+    /**
+     * Oxirgi 12 oy uchun to'langan summalar va oldingi oyga nisbatan
+     * o'zgarish foizi ("oylik to'lovlar solishtirilmasi... oshdi kamaydi").
+     * Oy nomi frontendda formatlanadi (boshqa sahifalardagi kabi) — bu
+     * yerda faqat "YYYY-MM" qaytariladi.
+     */
+    private function monthlyPaymentTrend(): array
+    {
+        $months = collect(range(11, 0))
+            ->map(fn (int $i) => now()->copy()->subMonths($i)->startOfMonth());
+
+        $amounts = $months->map(function ($month) {
+            return (float) Payment::where('status', 'paid')
+                ->whereYear('paid_at', $month->year)
+                ->whereMonth('paid_at', $month->month)
+                ->sum('amount');
+        })->values();
+
+        return $months->values()->map(function ($month, int $i) use ($amounts) {
+            $amount = round($amounts[$i], 2);
+            $prev = $i > 0 ? $amounts[$i - 1] : null;
+
+            return [
+                'month'          => $month->format('Y-m'),
+                'amount'         => $amount,
+                'change_percent' => ($prev !== null && $prev > 0)
+                    ? round((($amounts[$i] - $prev) / $prev) * 100, 1)
+                    : null,
+            ];
+        })->all();
     }
 
     private function recentCommunications()

@@ -23,7 +23,18 @@ return new class extends Migration
             $table->foreignId('student_id')->nullable();
             $table->foreignId('direction_id')->constrained();
             $table->string('contract_number', 30)->unique();
+            // 'amount' — chegirma qo'llangandan keyingi, haqiqiy to'lanishi
+            // kerak bo'lgan summa ("net"). 'base_amount' — chegirmasiz
+            // to'liq narx ("gross"); chegirma bo'lmasa ikkalasi teng.
+            // Talabalarga oilaviy sharoit, yetimlik, nogironlik, kam
+            // ta'minlanganlik va boshqa sabablar bilan chegirma berish
+            // imkoniyati uchun (ContractController shu ikkalasidan
+            // 'amount'ni serverda hisoblaydi, mijozga ishonilmaydi).
             $table->decimal('amount', 12, 2);
+            $table->decimal('base_amount', 12, 2);
+            $table->unsignedTinyInteger('discount_percent')->default(0);
+            $table->string('discount_reason', 30)->nullable();
+            $table->string('discount_note', 500)->nullable();
             $table->enum('payment_type', ['grant', 'contract'])->default('contract');
             $table->enum('status', ['draft', 'signed', 'paid', 'cancelled'])->default('draft');
             $table->string('pdf_path', 500)->nullable();

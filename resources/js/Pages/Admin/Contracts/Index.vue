@@ -118,6 +118,10 @@
                                     <span class="text-sm font-bold text-gray-800">
                                         {{ formatAmount(c.amount) }}
                                     </span>
+                                <span v-if="c.discount_percent > 0"
+                                      class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-700 ml-1">
+                                        -{{ c.discount_percent }}%
+                                    </span>
                             </td>
 
                             <!-- Turi -->

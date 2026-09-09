@@ -18,19 +18,51 @@ class Contract extends Model
         'amount', 'payment_type', 'status',
         'pdf_path', 'qr_code', 'otp_code',
         'otp_expires_at', 'signed_at',
+        // Chegirma: 'base_amount' — chegirmasiz to'liq narx ("gross"),
+        // 'amount' — chegirma qo'llangandan keyin haqiqiy to'lanadigan
+        // summa ("net", boshqa joylarda o'zgarishsiz shu ma'noda ishlatiladi).
+        'base_amount', 'discount_percent', 'discount_reason', 'discount_note',
     ];
 
     protected $hidden = ['otp_code'];
 
-    protected $appends = ['person'];
+    protected $appends = ['person', 'discount_amount'];
+
+    // CrmReportController va Contracts/Create-Edit.vue shu ro'yxatni
+    // ishlatadi — sabab kaliti bitta joyda saqlanadi.
+    public const DISCOUNT_REASONS = [
+        'family'     => 'Oilaviy sharoit',
+        'orphan'     => 'Yetim',
+        'disability' => 'Nogironligi bor',
+        'low_income' => "Kam ta'minlangan",
+        'other'      => 'Boshqa',
+    ];
+
+    public const DISCOUNT_PERCENTS = [0, 10, 20, 25, 50, 75, 100];
 
     protected function casts(): array
     {
         return [
-            'amount'          => 'decimal:2',
-            'otp_expires_at'  => 'datetime',
-            'signed_at'       => 'datetime',
+            'amount'           => 'decimal:2',
+            'base_amount'      => 'decimal:2',
+            'discount_percent' => 'integer',
+            'otp_expires_at'   => 'datetime',
+            'signed_at'        => 'datetime',
         ];
+    }
+
+    /**
+     * Chegirma tufayli "yo'qotilgan" summa (gross - net). Chegirma
+     * bo'lmasa yoki eski yozuvlarda base_amount hali to'ldirilmagan
+     * bo'lsa — 0.
+     */
+    public function getDiscountAmountAttribute(): float
+    {
+        if (!$this->discount_percent || $this->base_amount === null) {
+            return 0.0;
+        }
+
+        return round((float) $this->base_amount - (float) $this->amount, 2);
     }
 
     public function applicant(): BelongsTo

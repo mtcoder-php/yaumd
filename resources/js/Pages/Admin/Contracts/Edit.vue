@@ -71,30 +71,76 @@
                         <p v-if="form.errors.payment_type" class="err">{{ form.errors.payment_type }}</p>
                     </div>
 
-                    <!-- Summa -->
+                    <!-- Summa (chegirmasiz, to'liq narx) -->
                     <div>
-                        <label class="field-label">Kontrakt summasi (so'm) <span class="req">*</span></label>
+                        <label class="field-label">To'liq narx / yillik to'lov (so'm) <span class="req">*</span></label>
                         <div class="relative">
                             <input
-                                v-model="form.amount"
+                                v-model="form.base_amount"
                                 type="number"
                                 placeholder="0"
                                 min="0"
                                 class="field-input pr-16"
-                                :class="form.errors.amount ? 'field-error' : ''"
+                                :class="form.errors.base_amount ? 'field-error' : ''"
                                 :disabled="form.payment_type === 'grant'"
                             >
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">
                                 so'm
                             </span>
                         </div>
-                        <p v-if="form.errors.amount" class="err">{{ form.errors.amount }}</p>
+                        <p v-if="form.errors.base_amount" class="err">{{ form.errors.base_amount }}</p>
                         <p v-if="form.payment_type === 'grant'" class="text-xs text-green-600 mt-1">
                             Grant bo'lganligi uchun summa 0 so'm
                         </p>
-                        <p v-else-if="form.amount" class="text-xs text-gray-400 mt-1">
-                            {{ formatAmount(form.amount) }}
+                        <p v-else-if="form.base_amount" class="text-xs text-gray-400 mt-1">
+                            {{ formatAmount(form.base_amount) }}
                         </p>
+                    </div>
+
+                    <!-- Chegirma -->
+                    <div v-if="form.payment_type !== 'grant'">
+                        <label class="field-label">Chegirma</label>
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                v-for="p in discountPercents"
+                                :key="p"
+                                type="button"
+                                @click="onDiscountPercentChange(p)"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all"
+                                :style="Number(form.discount_percent) === p
+                                    ? 'border-color:#0f3460; background:linear-gradient(135deg,#eff6ff,#f5f3ff); color:#0f3460'
+                                    : 'border-color:#e5e7eb; background:#fafafa; color:#6b7280'"
+                            >
+                                {{ p === 0 ? "Yo'q" : `${p}%` }}
+                            </button>
+                        </div>
+
+                        <div v-if="form.discount_percent > 0" class="mt-3 space-y-3">
+                            <div>
+                                <label class="field-label">Chegirma sababi <span class="req">*</span></label>
+                                <select v-model="form.discount_reason" class="field-input"
+                                        :class="form.errors.discount_reason ? 'field-error' : ''">
+                                    <option value="">Tanlang</option>
+                                    <option v-for="(label, key) in discountReasons" :key="key" :value="key">
+                                        {{ label }}
+                                    </option>
+                                </select>
+                                <p v-if="form.errors.discount_reason" class="err">{{ form.errors.discount_reason }}</p>
+                            </div>
+                            <div v-if="form.discount_reason === 'other'">
+                                <label class="field-label">Izoh <span class="req">*</span></label>
+                                <textarea v-model="form.discount_note" rows="2" class="field-input"
+                                          :class="form.errors.discount_note ? 'field-error' : ''"
+                                          placeholder="Sababni qisqacha yozing" />
+                                <p v-if="form.errors.discount_note" class="err">{{ form.errors.discount_note }}</p>
+                            </div>
+
+                            <div class="px-4 py-3 rounded-xl flex items-center justify-between"
+                                 style="background: linear-gradient(135deg,#eff6ff,#f5f3ff)">
+                                <span class="text-xs font-semibold text-gray-500">Yakuniy summa (chegirma bilan)</span>
+                                <span class="text-sm font-bold" style="color:#0f3460">{{ formatAmount(netAmount) }}</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Status -->
@@ -153,6 +199,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
@@ -166,10 +213,38 @@ const props = defineProps({
 const person = props.contract.applicant ?? props.contract.student
 
 const form = useForm({
-    amount:       props.contract.amount       || 0,
-    payment_type: props.contract.payment_type || 'contract',
-    status:       props.contract.status       || 'draft',
+    // Eski kontraktlarda base_amount to'ldirilgan (migratsiya paytida
+    // amount'dan ko'chirilgan) — shunga qaramay fallback qo'yiladi.
+    base_amount:      props.contract.base_amount ?? props.contract.amount ?? 0,
+    payment_type:     props.contract.payment_type || 'contract',
+    status:           props.contract.status       || 'draft',
+    discount_percent: props.contract.discount_percent || 0,
+    discount_reason:  props.contract.discount_reason  || '',
+    discount_note:    props.contract.discount_note    || '',
 })
+
+const discountPercents = [0, 10, 20, 25, 50, 75, 100]
+const discountReasons = {
+    family:     'Oilaviy sharoit',
+    orphan:     'Yetim',
+    disability: 'Nogironligi bor',
+    low_income: "Kam ta'minlangan",
+    other:      'Boshqa',
+}
+
+const netAmount = computed(() => {
+    const base = Number(form.base_amount) || 0
+    const percent = Number(form.discount_percent) || 0
+    return Math.round(base * (1 - percent / 100))
+})
+
+const onDiscountPercentChange = (p) => {
+    form.discount_percent = p
+    if (p === 0) {
+        form.discount_reason = ''
+        form.discount_note = ''
+    }
+}
 
 const paymentTypes = [
     { value: 'contract', label: 'Kontrakt', desc: "Pullik ta'lim", icon: 'mdi:file-sign' },
@@ -184,7 +259,12 @@ const statuses = [
 ]
 
 const submit = () => {
-    if (form.payment_type === 'grant') form.amount = 0
+    if (form.payment_type === 'grant') {
+        form.base_amount = 0
+        form.discount_percent = 0
+        form.discount_reason = ''
+        form.discount_note = ''
+    }
     form.put(route('admin.contracts.update', props.contract.id))
 }
 

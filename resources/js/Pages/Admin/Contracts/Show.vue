@@ -106,6 +106,20 @@
                             <div>
                                 <p class="info-label">Kontrakt summasi</p>
                                 <p class="text-lg font-bold text-[#0f3460]">{{ formatAmount(contract.amount) }}</p>
+                                <p v-if="hasDiscount" class="text-xs text-gray-400 mt-0.5">
+                                    <span class="line-through">{{ formatAmount(contract.base_amount) }}</span>
+                                    — {{ contract.discount_percent }}% chegirma
+                                </p>
+                            </div>
+                            <div v-if="hasDiscount">
+                                <p class="info-label">Chegirma sababi</p>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700">
+                                    {{ discountReasonLabel }}
+                                </span>
+                                <p v-if="contract.discount_reason === 'other' && contract.discount_note"
+                                   class="text-xs text-gray-400 mt-1">
+                                    {{ contract.discount_note }}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -164,6 +178,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
@@ -176,6 +191,17 @@ const props = defineProps({
 // Kontrakt Abituriyentlar oqimi orqali (applicant) yoki talaba
 // to'g'ridan-to'g'ri kiritilganda (student) yaratilgan bo'lishi mumkin
 const person = props.contract.applicant ?? props.contract.student
+
+const discountReasons = {
+    family:     'Oilaviy sharoit',
+    orphan:     'Yetim',
+    disability: 'Nogironligi bor',
+    low_income: "Kam ta'minlangan",
+    other:      'Boshqa',
+}
+
+const hasDiscount = computed(() => Number(props.contract.discount_percent) > 0)
+const discountReasonLabel = computed(() => discountReasons[props.contract.discount_reason] || '—')
 
 // Applicant'da manzil viloyat/tuman + matn ko'rinishida, Student'da esa
 // yagona matn maydonida saqlanadi
@@ -195,9 +221,16 @@ const statusLabel = (s) => statuses.find(x => x.value === s)?.label || s
 const statusBadge = (s) => statuses.find(x => x.value === s)?.class || 'bg-gray-100 text-gray-600'
 
 const updateStatus = (status) => {
+    // UpdateContractRequest 'base_amount' (va mavjud bo'lsa chegirma
+    // maydonlari)ni talab qiladi — faqat status o'zgarayotgan bo'lsa ham,
+    // kontraktning joriy qiymatlari qayta yuboriladi (ContractController
+    // ulardan 'amount'ni serverda qayta hisoblaydi).
     router.put(route('admin.contracts.update', props.contract.id), {
-        amount:       props.contract.amount,
-        payment_type: props.contract.payment_type,
+        base_amount:      props.contract.base_amount ?? props.contract.amount,
+        payment_type:     props.contract.payment_type,
+        discount_percent: props.contract.discount_percent || 0,
+        discount_reason:  props.contract.discount_reason || '',
+        discount_note:    props.contract.discount_note || '',
         status,
     }, {
         preserveState: true,

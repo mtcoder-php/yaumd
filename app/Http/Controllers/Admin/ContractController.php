@@ -86,14 +86,30 @@ class ContractController extends Controller
             $number = 'BK' . random_int(100000000, 999999999);
         } while (Contract::withTrashed()->where('contract_number', $number)->exists());
 
+        $data = $request->validated();
+        $data['amount'] = $this->netAmount($data);
+
         Contract::create([
-            ...$request->validated(),
+            ...$data,
             'contract_number' => $number,
             'status'          => 'draft',
         ]);
 
         return redirect()->route('admin.contracts.index')
             ->with('success', 'Kontrakt yaratildi!');
+    }
+
+    /**
+     * Chegirma qo'llangandan keyingi haqiqiy to'lanadigan summa. Mijoz
+     * tomonidan yuborilgan tayyor 'amount' ga ishonilmaydi — har doim
+     * serverda 'base_amount' va 'discount_percent'dan qayta hisoblanadi.
+     */
+    private function netAmount(array $data): float
+    {
+        $base = (float) ($data['base_amount'] ?? 0);
+        $discountPercent = (int) ($data['discount_percent'] ?? 0);
+
+        return round($base * (1 - $discountPercent / 100), 2);
     }
 
     public function show(int $id): Response
@@ -117,7 +133,11 @@ class ContractController extends Controller
     public function update(UpdateContractRequest $request, int $id)
     {
         $contract = Contract::findOrFail($id);
-        $contract->update($request->validated());
+
+        $data = $request->validated();
+        $data['amount'] = $this->netAmount($data);
+
+        $contract->update($data);
 
         return back()->with('success', 'Kontrakt yangilandi!');
     }
