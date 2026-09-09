@@ -17,7 +17,13 @@ class PaymentController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Payment::with(['contract.applicant', 'user'])
+        // MUHIM: kontrakt Abituriyentlar oqimi orqali (applicant_id) YOKI
+        // talaba to'g'ridan-to'g'ri kiritilganda (student_id) yaratilishi
+        // mumkin (Contract::$person accessoriga qarang, ContractController
+        // ham har doim ikkalasini birga yuklaydi) — shu yerda faqat
+        // 'applicant' yuklangani uchun talaba orqali kelgan to'lovlarda
+        // ism-familiya bo'sh ko'rinib qolgan edi.
+        $query = Payment::with(['contract.applicant', 'contract.student', 'user'])
             ->latest();
 
         if ($request->filled('status')) {
@@ -30,11 +36,22 @@ class PaymentController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('contract.applicant', fn($q) => $q
-                ->where('first_name', 'like', "%{$search}%")
-                ->orWhere('last_name', 'like', "%{$search}%")
-                ->orWhere('passport_series', 'like', "%{$search}%")
-            )->orWhere('transaction_id', 'like', "%{$search}%");
+            // Bitta yopiq guruh ichida — aks holda ->orWhere(...) tashqi
+            // status/provider filtrlaridan ham "chiqib ketib", ularni
+            // chetlab o'tgan bo'lardi.
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('contract.applicant', fn($q2) => $q2
+                    ->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('passport_series', 'like', "%{$search}%")
+                )
+                    ->orWhereHas('contract.student', fn($q2) => $q2
+                        ->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('passport_series', 'like', "%{$search}%")
+                    )
+                    ->orWhere('transaction_id', 'like', "%{$search}%");
+            });
         }
 
         return Inertia::render('Admin/Payments/Index', [
@@ -47,13 +64,17 @@ class PaymentController extends Controller
                 'count'   => Payment::where('status', 'paid')->count(),
             ],
             'activeContracts' => Contract::whereIn('status', ['draft', 'signed'])
-                ->with('applicant')
+                ->with(['applicant', 'student'])
                 ->get()
-                ->map(fn($c) => [
-                    'id'              => $c->id,
-                    'contract_number' => $c->contract_number,
-                    'applicant_name'  => $c->applicant?->last_name . ' ' . $c->applicant?->first_name,
-                ]),
+                ->map(function (Contract $c) {
+                    $person = $c->applicant ?? $c->student;
+
+                    return [
+                        'id'              => $c->id,
+                        'contract_number' => $c->contract_number,
+                        'applicant_name'  => trim(($person?->last_name ?? '') . ' ' . ($person?->first_name ?? '')),
+                    ];
+                }),
         ]);
     }
 

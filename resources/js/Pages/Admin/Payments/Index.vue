@@ -107,9 +107,9 @@
 
                             <td class="px-4 py-3">
                                 <p class="text-sm font-medium text-gray-900">
-                                    {{ p.contract?.applicant?.last_name }} {{ p.contract?.applicant?.first_name }}
+                                    {{ personOf(p)?.last_name }} {{ personOf(p)?.first_name }}
                                 </p>
-                                <p class="text-xs text-gray-400 font-mono">{{ p.contract?.applicant?.passport_series }}</p>
+                                <p class="text-xs text-gray-400 font-mono">{{ personOf(p)?.passport_series }}</p>
                             </td>
 
                             <td class="px-4 py-3">
@@ -340,6 +340,11 @@ const props = defineProps({
     stats:           { type: Object, default: () => ({}) },
     activeContracts: { type: Array,  default: () => [] },
 })
+
+// To'lov kontrakti Abituriyentlar oqimi orqali (applicant) yoki talaba
+// to'g'ridan-to'g'ri kiritilganda (student) yaratilgan bo'lishi mumkin —
+// Admin/Contracts/Index.vue'dagi bilan bir xil yondashuv.
+const personOf = (p) => p.contract?.applicant ?? p.contract?.student
 
 const addModal     = ref(false)
 const paying       = ref(false)
