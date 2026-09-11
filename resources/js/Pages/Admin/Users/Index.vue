@@ -204,6 +204,7 @@ const roles = [
     { value: 'admin',       label: 'Admin',       class: 'bg-purple-50 text-purple-700' },
     { value: 'admission',   label: 'Qabul',       class: 'bg-blue-50 text-blue-700' },
     { value: 'teacher',     label: "O'qituvchi",  class: 'bg-green-50 text-green-700' },
+    { value: 'tutor',       label: 'Tutor',       class: 'bg-indigo-50 text-indigo-700' },
     { value: 'finance',     label: 'Moliya',      class: 'bg-yellow-50 text-yellow-700' },
     { value: 'librarian',   label: 'Kutubxonachi',class: 'bg-teal-50 text-teal-700' },
     { value: 'student',     label: 'Talaba',      class: 'bg-gray-100 text-gray-600' },

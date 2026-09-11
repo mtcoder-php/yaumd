@@ -185,6 +185,7 @@ const roleLabels = [
     { value: 'admin',       label: 'Admin',        icon: 'mdi:shield-account-outline' },
     { value: 'admission',   label: 'Qabul',        icon: 'mdi:clipboard-account-outline' },
     { value: 'teacher',     label: "O'qituvchi",   icon: 'mdi:school-outline' },
+    { value: 'tutor',       label: 'Tutor',        icon: 'mdi:account-tie-outline' },
     { value: 'finance',     label: 'Moliya',       icon: 'mdi:cash-multiple' },
     { value: 'librarian',   label: 'Kutubxonachi', icon: 'mdi:bookshelf' },
     { value: 'student',     label: 'Talaba',       icon: 'mdi:account-school-outline' },

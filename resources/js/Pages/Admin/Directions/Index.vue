@@ -14,28 +14,28 @@
                 </Link>
             </div>
 
-            <!-- Fakultet tabs -->
+            <!-- Kafedra tabs -->
             <div class="overflow-x-auto scrollbar-hide">
                 <div class="flex items-center gap-2 w-max">
                     <button
-                        @click="activeFaculty = null"
+                        @click="activeDepartment = null"
                         class="px-4 py-2 text-sm font-medium rounded-xl border transition-all whitespace-nowrap"
-                        :class="activeFaculty === null
+                        :class="activeDepartment === null
                             ? 'border-[#0f3460] text-[#0f3460] bg-blue-50'
                             : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                     >
                         Barchasi ({{ totalDirections }})
                     </button>
                     <button
-                        v-for="f in faculties"
-                        :key="f.id"
-                        @click="activeFaculty = f.id"
+                        v-for="dep in departments"
+                        :key="dep.id"
+                        @click="activeDepartment = dep.id"
                         class="px-4 py-2 text-sm font-medium rounded-xl border transition-all whitespace-nowrap"
-                        :class="activeFaculty === f.id
+                        :class="activeDepartment === dep.id
                             ? 'border-[#0f3460] text-[#0f3460] bg-blue-50'
                             : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                     >
-                        {{ f.short_name || f.name_uz }} ({{ f.directions?.length || 0 }})
+                        {{ dep.short_name || dep.name_uz }} ({{ dep.directions?.length || 0 }})
                     </button>
                 </div>
             </div>
@@ -161,22 +161,22 @@ import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
-    faculties: { type: Array, default: () => [] },
+    departments: { type: Array, default: () => [] },
 })
 
-const activeFaculty = ref(null)
-const deleteTarget  = ref(null)
+const activeDepartment = ref(null)
+const deleteTarget      = ref(null)
 
 const totalDirections = computed(() =>
-    props.faculties.reduce((sum, f) => sum + (f.directions?.length || 0), 0)
+    props.departments.reduce((sum, dep) => sum + (dep.directions?.length || 0), 0)
 )
 
 const filteredDirections = computed(() => {
-    const all = props.faculties.flatMap(f =>
-        (f.directions || []).map(d => ({ ...d, faculty: f }))
+    const all = props.departments.flatMap(dep =>
+        (dep.directions || []).map(d => ({ ...d, department: dep }))
     )
-    if (activeFaculty.value === null) return all
-    return all.filter(d => d.faculty_id === activeFaculty.value)
+    if (activeDepartment.value === null) return all
+    return all.filter(d => d.department_id === activeDepartment.value)
 })
 
 const confirmDelete = (d) => { deleteTarget.value = d }

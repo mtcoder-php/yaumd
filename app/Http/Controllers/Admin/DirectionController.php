@@ -15,10 +15,17 @@ class DirectionController extends Controller
 {
     public function index(): Response
     {
+        // MUHIM: avval bu yerda tablar Fakultet bo'yicha edi — lekin YAU'da
+        // amalda bitta fakultet borligi uchun ("Barchasi" va "YAU" tablari
+        // aslida bir xil ro'yxatni ko'rsatardi, foydasiz takrorlanish edi).
+        // Kafedralar soni bir nechta bo'lgani uchun endi tablar Kafedra
+        // bo'yicha — har bir kafedrani bosganda faqat shu kafedraga
+        // tegishli yo'nalishlar ko'rinadi.
         return Inertia::render('Admin/Directions/Index', [
-            'faculties' => Faculty::where('is_active', true)
+            'departments' => Department::where('is_active', true)
+                ->orderBy('name_uz')
                 ->with(['directions' => fn($q) => $q
-                    ->with('department')
+                    ->with('faculty')
                     ->withCount('applicants')])
                 ->get(),
         ]);
