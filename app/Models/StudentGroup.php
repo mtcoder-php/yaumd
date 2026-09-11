@@ -13,7 +13,7 @@ class StudentGroup extends Model
 
     protected $fillable = [
         'academic_year_id', 'direction_id', 'department_id',
-        'head_teacher_id', 'hemis_id', 'name',
+        'tutor_id', 'hemis_id', 'name',
         'degree', 'study_form', 'course_year', 'is_active',
     ];
 
@@ -37,9 +37,9 @@ class StudentGroup extends Model
         return $this->belongsTo(Department::class);
     }
 
-    public function headTeacher(): BelongsTo
+    public function tutor(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'head_teacher_id');
+        return $this->belongsTo(User::class, 'tutor_id');
     }
 
     public function students(): BelongsToMany

@@ -167,6 +167,11 @@ class AcademicStructureSeeder extends Seeder
             ['email' => 'teacher.demo@yau.uz',   'name' => "Demo O'qituvchi",       'role' => 'teacher'],
             ['email' => 'finance.demo@yau.uz',   'name' => 'Demo Moliya xodimi',    'role' => 'finance'],
             ['email' => 'librarian.demo@yau.uz', 'name' => 'Demo Kutubxonachi',     'role' => 'librarian'],
+            // Ikkitasi — AdmissionSeeder guruhlarni shu ikkalasi orasida
+            // navbat bilan biriktiradi, shunda Tutor KPI hisobotida bir
+            // nechta tutor va turlicha ko'rsatkichlarni ko'rish mumkin.
+            ['email' => 'tutor1.demo@yau.uz',    'name' => 'Demo Tutor 1',          'role' => 'tutor'],
+            ['email' => 'tutor2.demo@yau.uz',    'name' => 'Demo Tutor 2',          'role' => 'tutor'],
         ];
 
         foreach ($demo as $row) {
@@ -183,6 +188,6 @@ class AcademicStructureSeeder extends Seeder
             $user->syncRoles([$row['role']]);
         }
 
-        $this->command->info('✓ Demo hisoblar (parol: password): admin.demo@yau.uz, admission.demo@yau.uz, teacher.demo@yau.uz, finance.demo@yau.uz, librarian.demo@yau.uz');
+        $this->command->info('✓ Demo hisoblar (parol: password): admin.demo@yau.uz, admission.demo@yau.uz, teacher.demo@yau.uz, finance.demo@yau.uz, librarian.demo@yau.uz, tutor1.demo@yau.uz, tutor2.demo@yau.uz');
     }
 }

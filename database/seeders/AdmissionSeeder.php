@@ -218,6 +218,13 @@ class AdmissionSeeder extends Seeder
     {
         $earliestYear = $years->first();
 
+        // Tutor KPI hisobotini (CRM) demo ma'lumot bilan sinash mumkin
+        // bo'lishi uchun — har bir guruh shu ikki demo tutordan biriga
+        // navbat bilan biriktiriladi ("bitta tutorga bir nechta guruh"
+        // holatini ham aks ettirish uchun).
+        $tutors = User::role('tutor')->orderBy('id')->get();
+        $tutorIndex = 0;
+
         foreach ($directions as $direction) {
             foreach ([1, 2, 3, 4] as $courseYear) {
                 $studentIds = Student::where('direction_id', $direction->id)
@@ -228,10 +235,15 @@ class AdmissionSeeder extends Seeder
                     continue;
                 }
 
+                $tutorId = $tutors->isNotEmpty()
+                    ? $tutors[$tutorIndex++ % $tutors->count()]->id
+                    : null;
+
                 $group = StudentGroup::factory()->create([
                     'academic_year_id' => $earliestYear?->id,
                     'direction_id'     => $direction->id,
                     'course_year'      => $courseYear,
+                    'tutor_id'         => $tutorId,
                 ]);
 
                 $group->students()->attach($studentIds);

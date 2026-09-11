@@ -101,12 +101,12 @@
                         </div>
                     </div>
 
-                    <!-- Rahbar o'qituvchi -->
+                    <!-- Tutor (guruh rahbari) -->
                     <div>
-                        <label class="field-label">Rahbar (kurator) o'qituvchi</label>
-                        <select v-model="form.head_teacher_id" class="field-input">
+                        <label class="field-label">Tutor (guruh rahbari)</label>
+                        <select v-model="form.tutor_id" class="field-input">
                             <option value="">Tayinlanmagan</option>
-                            <option v-for="t in teachers" :key="t.id" :value="t.id">{{ t.full_name }}</option>
+                            <option v-for="t in tutors" :key="t.id" :value="t.id">{{ t.full_name }}</option>
                         </select>
                     </div>
 
@@ -156,7 +156,7 @@ const props = defineProps({
     academicYears: { type: Array, default: () => [] },
     directions:    { type: Array, default: () => [] },
     departments:   { type: Array, default: () => [] },
-    teachers:      { type: Array, default: () => [] },
+    tutors:        { type: Array, default: () => [] },
 })
 
 const isEdit = computed(() => !!props.group)
@@ -181,7 +181,7 @@ const form = useForm({
     degree:            props.group?.degree             || 'bachelor',
     study_form:        props.group?.study_form         || 'full_time',
     course_year:       props.group?.course_year        || 1,
-    head_teacher_id:   props.group?.head_teacher_id     || '',
+    tutor_id:          props.group?.tutor_id             || '',
     is_active:         props.group?.is_active           ?? true,
 })
 

@@ -20,7 +20,7 @@ class StudentGroupFactory extends Factory
             'academic_year_id' => AcademicYear::inRandomOrder()->value('id'),
             'direction_id'     => Direction::inRandomOrder()->value('id'),
             'department_id'    => null,
-            'head_teacher_id'  => null,
+            'tutor_id'         => null,
             'hemis_id'         => fake()->unique()->numerify('##########'),
             // Masalan "MT-1-25" — yo'nalish qisqartmasi, kurs, qabul yili.
             'name'             => Str::upper(fake()->lexify('??')).'-'.$courseYear.'-'.fake()->unique()->numerify('##'),

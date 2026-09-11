@@ -52,8 +52,8 @@
                     <p class="text-sm font-semibold text-gray-900">{{ group.course_year }}-kurs</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Rahbar o'qituvchi</p>
-                    <p class="text-sm font-semibold text-gray-900">{{ group.head_teacher?.full_name || 'Tayinlanmagan' }}</p>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Tutor (guruh rahbari)</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ group.tutor?.full_name || 'Tayinlanmagan' }}</p>
                 </div>
                 <div v-if="group.hemis_id">
                     <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">HEMIS ID</p>

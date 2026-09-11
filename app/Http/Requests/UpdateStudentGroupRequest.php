@@ -20,7 +20,7 @@ class UpdateStudentGroupRequest extends FormRequest
             'academic_year_id' => 'required|exists:academic_years,id',
             'direction_id'     => 'required|exists:directions,id',
             'department_id'    => 'nullable|exists:departments,id',
-            'head_teacher_id'  => 'nullable|exists:users,id',
+            'tutor_id'         => 'nullable|exists:users,id',
             'hemis_id'         => 'nullable|string|max:50|unique:student_groups,hemis_id,' . $id,
             'name'             => [
                 'required', 'string', 'max:50',

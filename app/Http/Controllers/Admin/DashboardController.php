@@ -21,7 +21,7 @@ class DashboardController extends Controller
     // tushunarsiz bo'ladi. Shu sababli faqat "student" rolidagi (boshqa
     // hech qanday xodim roli bo'lmagan) foydalanuvchi uchun butunlay
     // boshqa, alohida StudentDashboardController'ga yo'naltiramiz.
-    private const STAFF_ROLES = ['super-admin', 'admin', 'admission', 'teacher', 'finance', 'librarian'];
+    private const STAFF_ROLES = ['super-admin', 'admin', 'admission', 'teacher', 'tutor', 'finance', 'librarian'];
 
     public function __construct(private StudentDashboardController $studentDashboard)
     {

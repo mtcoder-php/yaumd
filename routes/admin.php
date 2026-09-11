@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\ContractPaymentController;
 use App\Http\Controllers\Admin\CrmDebtorController;
 use App\Http\Controllers\Admin\CommunicationLogController;
 use App\Http\Controllers\Admin\CrmReportController;
+use App\Http\Controllers\Admin\TutorKpiController;
 use App\Http\Controllers\Admin\ProfileController;
 
 
@@ -148,6 +149,16 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::prefix('debtors')->name('debtors.')->group(function () {
             Route::get('/', [CrmDebtorController::class, 'index'])->name('index')->middleware('permission:crm.view');
             Route::get('/export', [CrmDebtorController::class, 'export'])->name('export')->middleware('permission:crm.view');
+        });
+
+        // Tutor KPI — qaysi tutorning guruhlari/talabalari shu oy uchun
+        // mo'ljallangan kontrakt to'lovining necha foizini to'laganini
+        // ko'rsatadi (KPI/bonus hisoblash uchun). Xodim (admin/moliya/
+        // super-admin) 'crm.view' orqali BARCHA tutorlarni ko'radi;
+        // tutorning o'z-o'ziga ko'radigan sahifasi pastdagi 'my-kpi'da.
+        Route::prefix('tutor-kpi')->name('tutor-kpi.')->group(function () {
+            Route::get('/', [TutorKpiController::class, 'index'])->name('index')->middleware('permission:crm.view');
+            Route::get('/{id}', [TutorKpiController::class, 'show'])->name('show')->middleware('permission:crm.view');
         });
 
         // Muloqot tarixi — {type} 'student' yoki 'applicant', {id} shu
@@ -400,6 +411,14 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/{id}/purchase/{provider}', [CoursePurchaseController::class, 'checkout'])
             ->where('provider', 'click|payme')->name('purchase');
     });
+
+    // "Mening KPI'm" — tutor o'ziga biriktirilgan guruhlar/talabalarning
+    // shu oy uchun kontrakt to'lovi bo'yicha ko'rsatkichini ko'radi (KPI
+    // bonus mezoni). "Mening shartnomam" bilan bir xil sabab bilan bu
+    // yerga 'permission:' qo'yilmagan — kontroller (TutorKpiController::
+    // myKpi()) faqat 'tutor' roliga tekshiradi va ma'lumotni qat'iy
+    // auth()->id() bilan cheklaydi.
+    Route::get('/my-kpi', [TutorKpiController::class, 'myKpi'])->name('my-kpi');
 
     // Click/Payme sahifasidan to'lovdan keyin talaba brauzerda qaytadigan
     // UMUMIY manzil — kitob yoki kurs, farqi yo'q (PaymentReturnController

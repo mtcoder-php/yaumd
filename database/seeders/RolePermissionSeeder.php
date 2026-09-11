@@ -19,6 +19,7 @@ class RolePermissionSeeder extends Seeder
             'admin'          => 'Admin',
             'admission'      => 'Qabul xodimi',
             'teacher'        => "O'qituvchi",
+            'tutor'          => 'Tutor',
             'student'        => 'Talaba',
             'librarian'      => 'Kutubxonachi',
             'finance'        => 'Moliya xodimi',
@@ -110,6 +111,16 @@ class RolePermissionSeeder extends Seeder
             // O'z kursiga biriktirilgan talaba/guruhlarni ko'rish uchun
             'student.view', 'group.view',
         ]);
+
+        // Tutor (guruh rahbari)
+        // MUHIM: hech qanday permission kerak emas — "Mening KPI'm"
+        // (/admin/my-kpi) boshqa "o'ziniki" sahifalar (masalan
+        // /admin/my-contract) kabi permission talab qilmaydi, chunki
+        // kontroller o'zi faqat shu foydalanuvchiga tutor sifatida
+        // biriktirilgan guruhlar bilan cheklaydi (TutorKpiController::myKpi()).
+        // Butun tutorlar ro'yxatini ko'radigan CRM sahifasi esa mavjud
+        // 'crm.view' permission bilan cheklangan (admin/moliya/super-admin
+        // allaqachon shunga ega).
 
         // Talaba
         // MUHIM: bu yerda syncPermissions() ishlatilgan (givePermissionTo()

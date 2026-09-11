@@ -185,6 +185,7 @@ import {
     ChevronRightIcon,
     PhoneIcon,
     ChartBarIcon,
+    TrophyIcon,
 } from '@heroicons/vue/24/outline'
 
 defineProps({
@@ -213,6 +214,7 @@ const ROLE_LABELS = {
     'admin':       'Admin',
     'admission':   "Qabul xodimi",
     'teacher':     "O'qituvchi",
+    'tutor':       'Tutor',
     'student':     'Talaba',
     'librarian':   'Kutubxonachi',
     'finance':     'Moliya xodimi',
@@ -231,7 +233,7 @@ const ROLE_LABELS = {
 // balki foydalanuvchiga biriktirilgan BARCHA rollarning menyulari
 // birlashtiriladi, shunda bitta hisob bilan o'ziga tegishli barcha
 // bo'limlarda bitta sahifada ishlash mumkin bo'ladi.
-const ROLE_PRIORITY = ['super-admin', 'admin', 'admission', 'teacher', 'finance', 'librarian', 'student']
+const ROLE_PRIORITY = ['super-admin', 'admin', 'admission', 'teacher', 'tutor', 'finance', 'librarian', 'student']
 
 const userRoles = computed(() => {
     const roles = auth.value?.user?.roles || []
@@ -307,6 +309,7 @@ const menus = {
         { type: 'group', label: 'CRM' },
         { icon: PhoneIcon,                 label: 'Qarzdorlar',         href: '/admin/crm/debtors' },
         { icon: ChartBarIcon,              label: 'CRM hisobotlari',    href: '/admin/crm/reports' },
+        { icon: TrophyIcon,                label: 'Tutor KPI',          href: '/admin/crm/tutor-kpi' },
         { type: 'group', label: "Ta'lim" },
         { icon: RectangleStackIcon,        label: 'Kurs kategoriyalari', href: '/admin/course-categories' },
         { icon: BookOpenIcon,              label: 'Kurslar',            href: '/admin/courses' },
@@ -338,6 +341,7 @@ const menus = {
         { type: 'group', label: 'CRM' },
         { icon: PhoneIcon,                 label: 'Qarzdorlar',         href: '/admin/crm/debtors' },
         { icon: ChartBarIcon,              label: 'CRM hisobotlari',    href: '/admin/crm/reports' },
+        { icon: TrophyIcon,                label: 'Tutor KPI',          href: '/admin/crm/tutor-kpi' },
         { type: 'group', label: "Ta'lim" },
         { icon: RectangleStackIcon,        label: 'Kurs kategoriyalari', href: '/admin/course-categories' },
         { icon: BookOpenIcon,              label: 'Kurslar',            href: '/admin/courses' },
@@ -386,6 +390,12 @@ const menus = {
         { type: 'group', label: 'CRM' },
         { icon: PhoneIcon,                 label: 'Qarzdorlar',         href: '/admin/crm/debtors' },
         { icon: ChartBarIcon,              label: 'CRM hisobotlari',    href: '/admin/crm/reports' },
+        { icon: TrophyIcon,                label: 'Tutor KPI',          href: '/admin/crm/tutor-kpi' },
+    ],
+    'tutor': [
+        { type: 'group', label: 'Asosiy' },
+        { icon: Squares2X2Icon,            label: 'Dashboard',          href: '/admin/dashboard' },
+        { icon: TrophyIcon,                label: 'Mening KPI\'m',      href: '/admin/my-kpi' },
     ],
 }
 

@@ -57,7 +57,7 @@ class StudentGroupController extends Controller
 
     public function show(int $id): Response
     {
-        $group = StudentGroup::with(['academicYear', 'direction', 'department', 'headTeacher'])
+        $group = StudentGroup::with(['academicYear', 'direction', 'department', 'tutor'])
             ->withCount('students')
             ->findOrFail($id);
 
@@ -139,7 +139,9 @@ class StudentGroupController extends Controller
             'academicYears' => AcademicYear::orderByDesc('start_date')->get(['id', 'name', 'is_active']),
             'directions'    => Direction::orderBy('name_uz')->get(['id', 'name_uz', 'department_id', 'degree']),
             'departments'   => Department::orderBy('name_uz')->get(['id', 'name_uz']),
-            'teachers'      => User::role('teacher')->orderBy('full_name')->get(['id', 'full_name']),
+            // Guruh rahbari (Tutor) faqat 'tutor' rolidagilardan tanlanadi —
+            // 'teacher' (dars o'tuvchi) bilan aralashtirilmasin.
+            'tutors'        => User::role('tutor')->orderBy('full_name')->get(['id', 'full_name']),
         ];
     }
 }
