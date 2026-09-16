@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Payment;
+use App\Models\Student;
+use App\Models\User;
 use App\Observers\PaymentObserver;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -56,5 +59,17 @@ class AppServiceProvider extends ServiceProvider
         // ham ishlaydi, chunki ikkalasi ham oxir-oqibat shu Payment
         // modelini yaratadi/yangilaydi.
         Payment::observe(PaymentObserver::class);
+
+        // Turniket (Face ID) "employeeNo" moslashtiruvi uchun (PersonMatch,
+        // TurnstileEvent.matched_type) — bazada to'liq class nomi
+        // (masalan "App\\Models\\Student") o'rniga qisqa "student"/"staff"
+        // satri saqlanadi. Sabablari: (1) turnstile_events.matched_type
+        // ustuni allaqachon shu qisqa konvensiya bilan yaratilgan edi,
+        // (2) kelajakda model joyini/nomini o'zgartirsak ham, bazadagi
+        // eski yozuvlar buzilib qolmaydi.
+        Relation::morphMap([
+            'student' => Student::class,
+            'staff'   => User::class,
+        ]);
     }
 }

@@ -75,7 +75,16 @@ class HikvisionTerminalClient
                 $events[] = $row;
 
                 if (isset($row['time'])) {
-                    $eventTime = Carbon::parse($row['time']);
+                    // MUHIM: terminal vaqtni "+05:00" (Toshkent) belgisi bilan
+                    // yuboradi. Carbon::parse() to'g'ri lahzani o'qiydi, lekin
+                    // "+05:00" belgisini o'zida saqlab qoladi — agar shu
+                    // holatda saqlansa, Eloquent'ning 'datetime' cast'i uni
+                    // avval UTC'ga aylantirmasdan, xuddi shu raqamlarni
+                    // (masalan "17:00:20") UTC sifatida bazaga yozib qo'yadi.
+                    // Natijada keyingi o'qishda bu "kelajakdagi" vaqt bo'lib
+                    // chiqadi (haqiqiy UTC'dan ~5 soat oldinda). ->utc() shu
+                    // aylantirishni majburan bajaradi.
+                    $eventTime = Carbon::parse($row['time'])->utc();
                     if (! $lastEventTime || $eventTime->greaterThan($lastEventTime)) {
                         $lastEventTime = $eventTime;
                     }
@@ -113,9 +122,16 @@ class HikvisionTerminalClient
     {
         $url = $this->device->baseUrl() . '/ISAPI/AccessControl/AcsEvent?format=json';
 
+        // MUHIM: retry()'ning standart xatti-harakati — barcha urinishlar
+        // muvaffaqiyatsiz tugasa, o'zi avtomatik ravishda Laravel'ning
+        // RequestException'ini tashlaydi, va bu xatoning matni Guzzle
+        // tomonidan atigi ~120 belgigacha KESIB TASHLANADI (diagnostika
+        // uchun deyarli foydasiz). "throw: false" shu avtomatik xatoni
+        // o'chiradi — shunda pastdagi $response->failed() tekshiruvi ishga
+        // tushadi va to'liq (kesilmagan) $response->body() ko'rsatiladi.
         $response = Http::withDigestAuth($this->username, $this->password)
             ->timeout(20)
-            ->retry(2, 500)
+            ->retry(2, 500, throw: false)
             ->post($url, [
                 'AcsEventCond' => [
                     'searchID' => (string) str()->uuid(),

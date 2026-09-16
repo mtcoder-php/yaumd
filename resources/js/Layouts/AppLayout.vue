@@ -186,6 +186,7 @@ import {
     PhoneIcon,
     ChartBarIcon,
     TrophyIcon,
+    FingerPrintIcon,
 } from '@heroicons/vue/24/outline'
 
 defineProps({
@@ -310,6 +311,8 @@ const menus = {
         { icon: PhoneIcon,                 label: 'Qarzdorlar',         href: '/admin/crm/debtors' },
         { icon: ChartBarIcon,              label: 'CRM hisobotlari',    href: '/admin/crm/reports' },
         { icon: TrophyIcon,                label: 'Tutor KPI',          href: '/admin/crm/tutor-kpi' },
+        { type: 'group', label: 'Turniket' },
+        { icon: FingerPrintIcon,           label: 'Moslashtirish',      href: '/admin/turnstile/matches' },
         { type: 'group', label: "Ta'lim" },
         { icon: RectangleStackIcon,        label: 'Kurs kategoriyalari', href: '/admin/course-categories' },
         { icon: BookOpenIcon,              label: 'Kurslar',            href: '/admin/courses' },
@@ -342,6 +345,8 @@ const menus = {
         { icon: PhoneIcon,                 label: 'Qarzdorlar',         href: '/admin/crm/debtors' },
         { icon: ChartBarIcon,              label: 'CRM hisobotlari',    href: '/admin/crm/reports' },
         { icon: TrophyIcon,                label: 'Tutor KPI',          href: '/admin/crm/tutor-kpi' },
+        { type: 'group', label: 'Turniket' },
+        { icon: FingerPrintIcon,           label: 'Moslashtirish',      href: '/admin/turnstile/matches' },
         { type: 'group', label: "Ta'lim" },
         { icon: RectangleStackIcon,        label: 'Kurs kategoriyalari', href: '/admin/course-categories' },
         { icon: BookOpenIcon,              label: 'Kurslar',            href: '/admin/courses' },

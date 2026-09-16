@@ -60,6 +60,9 @@ class RolePermissionSeeder extends Seeder
             'group.view', 'group.create', 'group.edit', 'group.delete',
             // Audit log
             'audit.view',
+            // Turniket (Face ID) — employeeNo'larni talaba/xodim bilan
+            // moslashtirish, sinxronlash holatini ko'rish
+            'turnstile.view', 'turnstile.match',
         ];
 
         foreach ($permissions as $permission) {
@@ -89,6 +92,7 @@ class RolePermissionSeeder extends Seeder
             'student.view', 'student.create', 'student.edit',
             'group.view', 'group.create', 'group.edit',
             'audit.view',
+            'turnstile.view', 'turnstile.match',
         ]);
 
         // Qabul xodimi

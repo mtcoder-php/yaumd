@@ -41,6 +41,7 @@ use App\Http\Controllers\Admin\CommunicationLogController;
 use App\Http\Controllers\Admin\CrmReportController;
 use App\Http\Controllers\Admin\TutorKpiController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\PersonMatchController;
 
 
 // Har bir marshrutga qo'yilgan 'permission:...' RolePermissionSeeder'dagi
@@ -167,6 +168,18 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('/',     [CommunicationLogController::class, 'show'])->name('show')->middleware('permission:crm.view');
             Route::post('/logs', [CommunicationLogController::class, 'store'])->name('logs.store')->middleware('permission:crm.create');
         });
+    });
+
+    // Turniket (Face ID) — terminaldan kelgan employeeNo'larni talaba/
+    // xodim yozuvlari bilan moslashtirish (avtomatik taklif +
+    // MatchTurnstilePeople; bu yerda faqat admin ko'rib chiqish/tasdiqlash
+    // qiladi). O'zi hisoblash emas, shu sababli faqat 'view'/'match'
+    // permissionlari yetarli.
+    Route::prefix('turnstile/matches')->name('turnstile.matches.')->group(function () {
+        Route::get('/', [PersonMatchController::class, 'index'])->name('index')->middleware('permission:turnstile.view');
+        Route::get('/search-candidates', [PersonMatchController::class, 'searchCandidates'])->name('search')->middleware('permission:turnstile.match');
+        Route::post('/{personMatch}/assign', [PersonMatchController::class, 'assign'])->name('assign')->middleware('permission:turnstile.match');
+        Route::post('/{personMatch}/reject', [PersonMatchController::class, 'reject'])->name('reject')->middleware('permission:turnstile.match');
     });
 
     Route::prefix('users')->name('users.')->group(function () {

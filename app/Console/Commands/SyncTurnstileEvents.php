@@ -111,7 +111,10 @@ class SyncTurnstileEvents extends Command
             }
 
             $event->fill([
-                'event_time' => Carbon::parse($row['time']),
+                // ->utc() SHART — sabab HikvisionTerminalClient'dagi izohda
+                // tushuntirilgan (terminal "+05:00" bilan yuboradi, UTC'ga
+                // aylantirmasdan saqlash noto'g'ri vaqt yozib qo'yadi).
+                'event_time' => Carbon::parse($row['time'])->utc(),
                 'major' => $row['major'] ?? 0,
                 'minor' => $row['minor'] ?? 0,
                 'employee_no' => $row['employeeNoString'] ?? null,
