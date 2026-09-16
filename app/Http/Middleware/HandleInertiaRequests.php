@@ -49,6 +49,9 @@ class HandleInertiaRequests extends Middleware
                 'success'      => session('success'),
                 'error'        => session('error'),
                 'importErrors' => session('importErrors'),
+                // Talaba "Mening shartnomam" sahifasida Telegram bog'lash
+                // kodini olganda shu orqali qaytariladi (StudentContractController::generateTelegramCode).
+                'telegramCode' => session('telegramCode'),
             ],
         ]);
     }

@@ -393,6 +393,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/payment/{provider}', [ContractPaymentController::class, 'checkout'])
             ->where('provider', 'click|payme')->name('payment.checkout');
         Route::get('/payment/{paymentId}/return', [ContractPaymentController::class, 'returnFromGateway'])->name('payment.return');
+
+        // Telegram bot bilan bog'lanish — bir martalik kod olish/uzish.
+        // Yuqoridagilar bilan bir xil sabab bilan 'permission:' qo'yilmagan.
+        Route::post('/telegram/code', [StudentContractController::class, 'generateTelegramCode'])->name('telegram.code');
+        Route::post('/telegram/unlink', [StudentContractController::class, 'unlinkTelegram'])->name('telegram.unlink');
     });
 
     // Kurslar katalogi — talaba o'zi ko'rib, bepul yozilishi yoki (pullik

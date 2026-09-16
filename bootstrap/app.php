@@ -48,6 +48,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin/my-courses/*/lessons/*/xapi/statements',
             'payments/click/callback',
             'payments/payme/callback',
+            // Telegram bot webhook'i va turniket (Face ID) tekshiruv API'si
+            // ham (yuqoridagilar kabi) tashqi tizimdan to'g'ridan-to'g'ri
+            // keladi va Laravel CSRF tokenini bilmaydi — o'zining alohida
+            // xavfsizlik tekshiruvi bor (TelegramWebhookController'dagi
+            // yo'l maxfiy segmenti, TurnstileController'dagi Bearer token).
+            'telegram/webhook/*',
+            'api/turnstile/check-access',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

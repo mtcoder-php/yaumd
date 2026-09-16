@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Payment;
+use App\Observers\PaymentObserver;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Gate;
@@ -47,5 +49,12 @@ class AppServiceProvider extends ServiceProvider
                 ->action('Parolni tiklash', $url)
                 ->line('Xavfsizlik yuzasidan ushbu havola 60 daqiqa davomida amal qiladi.');
         });
+
+        // To'lov "to'landi" holatiga o'tganda talabaga darhol Telegram
+        // orqali tasdiq xabari yuborish uchun (PaymentObserver'ga qarang) —
+        // kassir qo'lda kiritganda ham, Click/Payme callback tasdiqlaganda
+        // ham ishlaydi, chunki ikkalasi ham oxir-oqibat shu Payment
+        // modelini yaratadi/yangilaydi.
+        Payment::observe(PaymentObserver::class);
     }
 }

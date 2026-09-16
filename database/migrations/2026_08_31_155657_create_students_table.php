@@ -35,6 +35,17 @@ return new class extends Migration
             $table->string('photo')->nullable();
             $table->text('address')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+
+            // Telegram bot — talaba shartnoma/to'lov holatini (qarzi bormi,
+            // shu oy uchun turniketda muammo bo'ladimi) botga ulanib
+            // kuzatib borishi uchun (TelegramWebhookController,
+            // ContractPaymentScheduleService'ga qarang). Talaba botga
+            // telefon raqami orqali yoki shaxsiy kabinetda olingan bir
+            // martalik kod orqali ulanadi — ulangach shu yerga Telegram
+            // chat_id (foydalanuvchi identifikatori) yoziladi.
+            $table->string('telegram_chat_id', 32)->unique()->nullable();
+            $table->timestamp('telegram_linked_at')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
         });

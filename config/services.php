@@ -55,4 +55,32 @@ return [
         'is_test'     => env('PAYME_IS_TEST', false),
     ],
 
+    // Telegram bot — talabalarga shartnoma to'lovi holati/eslatmalarini
+    // yuborish uchun (TelegramService, TelegramWebhookController).
+    // 'bot_token' — @BotFather'dan olinadi. 'webhook_secret' — o'zingiz
+    // o'ylab topgan uzun tasodifiy satr (webhook manzilidagi maxfiy yo'l
+    // segmenti sifatida ishlatiladi, hech kimga aytilmaydi).
+    'telegram' => [
+        'bot_token'      => env('TELEGRAM_BOT_TOKEN'),
+        'bot_username'   => env('TELEGRAM_BOT_USERNAME'),
+        'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
+    ],
+
+    // Turniket (Face ID) tekshiruv API'sini himoya qiluvchi maxfiy kalit —
+    // faqat turniket qurilmasi/serveri shu qiymatni "Authorization: Bearer
+    // <token>" sarlavhasi bilan yuborishi kerak (TurnstileController).
+    'turnstile' => [
+        'api_token' => env('TURNSTILE_API_TOKEN'),
+    ],
+
+    // Hikvision Face ID terminallari (DS-K1T671MF, 12 dona) — barchasida
+    // BIR XIL admin login/parol ishlatiladi (Mukhtor tomonidan tasdiqlangan),
+    // shuning uchun markazlashtirilgan holda shu yerda saqlanadi. Haqiqiy
+    // qiymat FAQAT serverdagi .env fayliga yoziladi, bu yerga yoki boshqa
+    // hech qanday fayl/kodga yozilmasligi SHART.
+    'hikvision' => [
+        'username' => env('HIKVISION_USERNAME'),
+        'password' => env('HIKVISION_PASSWORD'),
+    ],
+
 ];

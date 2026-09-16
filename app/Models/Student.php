@@ -24,6 +24,28 @@ class Student extends Model
         'photo', 'address', 'user_id',
     ];
 
+    // MUHIM: 'telegram_chat_id' va 'telegram_linked_at' ATAYLAB $fillable
+    // ro'yxatida YO'Q — bu maydonlar faqat TelegramWebhookController orqali
+    // (bog'lash kodi/telefon raqami tasdiqlangandan keyin) to'g'ridan-to'g'ri
+    // property sifatida o'rnatilishi kerak, hech qachon oddiy so'rov
+    // ma'lumotlaridan (mass-assignment) emas.
+    protected function casts(): array
+    {
+        return [
+            'telegram_linked_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * TutorKpiService'dagi bilan bir xil naqsh (F I O birlashtirilgan
+     * ko'rinishi) — Telegram bot xabarlarida va turniket javobida
+     * ishlatiladi.
+     */
+    public function fullName(): string
+    {
+        return trim("{$this->last_name} {$this->first_name} {$this->middle_name}");
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

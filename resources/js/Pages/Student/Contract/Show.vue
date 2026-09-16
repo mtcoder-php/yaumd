@@ -7,6 +7,74 @@
                 <p class="text-sm text-gray-500 mt-0.5">Shartnoma va to'lovlar haqida ma'lumot</p>
             </div>
 
+            <!-- Telegram bot -->
+            <div class="bg-white rounded-2xl border border-gray-100 p-6 space-y-3"
+                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
+                <div class="flex items-center gap-2">
+                    <Icon icon="mdi:send-circle-outline" class="w-5 h-5" style="color:#0f3460" />
+                    <p class="text-sm font-bold text-gray-900">Telegram bot</p>
+                </div>
+
+                <template v-if="telegram.linked">
+                    <p class="text-xs text-gray-500">
+                        ✅ Hisobingiz Telegram botga ulangan — to'lov muddati va holatingiz haqida avtomatik xabar olasiz.
+                    </p>
+                    <button @click="unlinkTelegram" :disabled="unlinking" class="btn-outline-danger">
+                        <Icon v-if="unlinking" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                        <span v-else>Bog'lanishni uzish</span>
+                    </button>
+                </template>
+                <template v-else>
+                    <p class="text-xs text-gray-500">
+                        Shartnoma to'lovi holatini (qarzi bormi, keyingi muddat qachon) Telegram orqali kuzatib borish uchun botga ulaning.
+                    </p>
+
+                    <div v-if="!telegramCode" class="flex flex-wrap gap-3">
+                        <button @click="requestCode" :disabled="requestingCode" class="btn-outline">
+                            <Icon v-if="requestingCode" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                            <span v-else>Ulash kodini olish</span>
+                        </button>
+                    </div>
+
+                    <div v-else class="bg-gray-50 rounded-xl p-4 space-y-2">
+                        <p class="text-xs text-gray-500">
+                            Botga quyidagi tugma orqali o'ting (yoki kodni <code>/kod {{ telegramCode.code }}</code> ko'rinishida yuboring) — kod {{ telegramCode.expires_in }} daqiqa amal qiladi.
+                        </p>
+                        <p class="text-2xl font-bold tracking-widest text-center py-2" style="color:#0f3460">{{ telegramCode.code }}</p>
+                        <a v-if="telegramCode.deep_link" :href="telegramCode.deep_link" target="_blank" class="btn-outline w-full justify-center">
+                            <Icon icon="mdi:send" class="w-4 h-4" />
+                            Botni ochish
+                        </a>
+                        <button @click="router.reload({ only: ['telegram'] })" class="text-xs text-gray-400 hover:text-gray-600 underline w-full text-center">
+                            Ulangandan so'ng shu yerni yangilash
+                        </button>
+                    </div>
+                </template>
+            </div>
+
+            <!-- To'lov muddati (turniket) -->
+            <div v-if="schedule && schedule.known" class="bg-white rounded-2xl border border-gray-100 p-6 space-y-2"
+                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
+                <p class="text-sm font-bold text-gray-900">Turniket / oylik to'lov muddati</p>
+                <p v-if="schedule.is_compliant" class="text-xs text-green-700 bg-green-50 rounded-lg px-3 py-2">
+                    ✅ Bu oy uchun to'lov talabi qondirilgan — turniketda muammo bo'lmaydi.
+                </p>
+                <p v-else class="text-xs text-red-700 bg-red-50 rounded-lg px-3 py-2">
+                    ❌ Qarz: <strong>{{ formatPrice(schedule.debt_amount) }}</strong> — muddatida to'lanmasa turniketdan o'tishda muammo bo'lishi mumkin.
+                </p>
+                <!-- "is_compliant" faqat O'TGAN muddat bo'yicha; masalan
+                     1-muddatdan OLDIN u har doim true bo'ladi, lekin talaba
+                     KELAYOTGAN muddatgacha hali yetarli to'lamagan bo'lishi
+                     mumkin — shu holatni alohida ko'rsatamiz. -->
+                <p v-if="schedule.is_compliant && schedule.is_compliant_for_next === false"
+                   class="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                    ⏳ Keyingi muddatgacha yana <strong>{{ formatPrice(Math.max(0, schedule.next_required_amount - schedule.paid_amount)) }}</strong> to'lashingiz kerak.
+                </p>
+                <p v-if="schedule.next_deadline" class="text-xs text-gray-400">
+                    Keyingi muddat: {{ formatDate(schedule.next_deadline) }} (har oyning 20-sanasi)
+                </p>
+            </div>
+
             <!-- Shartnoma yo'q -->
             <div v-if="!contract"
                  class="bg-white rounded-2xl border border-gray-100 p-16 text-center text-gray-400"
@@ -144,13 +212,41 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { useForm } from '@inertiajs/vue3'
+import { useForm, usePage, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
     contract: { type: Object, default: null },
+    telegram: { type: Object, default: () => ({ linked: false, bot_username: null }) },
+    schedule: { type: Object, default: null },
 })
+
+// Telegram ulash kodi — generateTelegramCode() flash orqali qaytaradi
+// (Inertia'ning odatiy 'success'/'error' xabarlaridan farqli, o'z alohida
+// flash kaliti — chunki kodni ekranda ko'rsatib turish kerak, oddiy toastr
+// xabari kabi darhol g'oyib bo'lmasligi kerak).
+const page = usePage()
+const telegramCode = ref(page.props.flash?.telegramCode || null)
+
+const requestingCode = ref(false)
+const requestCode = () => {
+    requestingCode.value = true
+    router.post(route('admin.my-contract.telegram.code'), {}, {
+        preserveScroll: true,
+        onSuccess: () => { telegramCode.value = page.props.flash?.telegramCode || null },
+        onFinish: () => { requestingCode.value = false },
+    })
+}
+
+const unlinking = ref(false)
+const unlinkTelegram = () => {
+    unlinking.value = true
+    router.post(route('admin.my-contract.telegram.unlink'), {}, {
+        preserveScroll: true,
+        onFinish: () => { unlinking.value = false },
+    })
+}
 
 const formatPrice = (v) => new Intl.NumberFormat('uz-UZ').format(v || 0) + " so'm"
 const formatDate = (v) => v ? new Date(v).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'
@@ -207,6 +303,22 @@ const buy = (provider) => {
     transition: all 0.2s;
 }
 .btn-outline:hover { background: #f9fafb; border-color: #0f3460; }
+.btn-outline-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 0.75rem;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-outline-danger:hover { background: #fef2f2; }
+.btn-outline-danger:disabled { opacity: 0.6; cursor: not-allowed; }
 .hint { color: #9ca3af; font-size: 0.7rem; }
 .btn-pay {
     display: inline-flex;

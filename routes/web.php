@@ -6,6 +6,8 @@ use App\Http\Controllers\Web\CertificateVerifyController;
 use App\Http\Controllers\Web\ClickCallbackController;
 use App\Http\Controllers\Web\PaymeCallbackController;
 use App\Http\Controllers\Web\PublicPaymentReturnController;
+use App\Http\Controllers\Web\TelegramWebhookController;
+use App\Http\Controllers\Web\TurnstileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 
@@ -36,6 +38,19 @@ Route::post('/payments/payme/callback', [PaymeCallbackController::class, 'callba
 // qilinmaydi, chunki to'lovchi tizimda umuman hisobga ega bo'lmasligi
 // mumkin (PublicPaymentReturnController'ga qarang).
 Route::get('/pay/{payment}/return', [PublicPaymentReturnController::class, 'contract'])->name('payments.public.return');
+
+// Telegram bot webhook — Telegram serveridan to'g'ridan-to'g'ri keladi,
+// login talab qilinmaydi, CSRF tekshiruvidan ozod (bootstrap/app.php).
+// Xavfsizlik yo'ldagi maxfiy segment ({secret}, .env'dagi
+// TELEGRAM_WEBHOOK_SECRET bilan mos kelishi shart) orqali ta'minlanadi.
+Route::post('/telegram/webhook/{secret}', [TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
+
+// Turniket (Face ID) tizimi tekshiruv API'si — talaba yuzi
+// skanerlanganda turniket qurilmasi shu manzilga so'rov yuboradi. Login
+// talab qilinmaydi, CSRF'dan ozod, o'rniga Bearer token bilan himoyalangan
+// (TurnstileController'ga qarang — SIZNING aniq tizimingiz formatiga
+// moslashtirish kerak bo'lishi mumkin).
+Route::post('/api/turnstile/check-access', [TurnstileController::class, 'checkAccess'])->name('turnstile.check');
 
 // ─── AUTH ─────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
