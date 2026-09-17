@@ -11,10 +11,17 @@ use RuntimeException;
  * Bitta Hikvision Face ID terminali (DS-K1T671MF va shunga o'xshash access-
  * control terminallar) bilan ISAPI protokoli orqali gaplashadi.
  *
- * Hozircha faqat "voqealar tarixini o'qish" (AcsEvent qidiruv) ishlatiladi —
- * bu terminalning HECH QANDAY sozlamasini o'zgartirmaydi (faqat o'qish),
- * shuning uchun terminalning HTTP Listening orqali eski tizimga xabar
- * yuborishiga umuman ta'sir qilmaydi (parallel, xavfsiz).
+ * IKKI XIL TOIFADAGI METODLAR BOR:
+ *   1) O'QISH (fetchAccessControlEvents, searchAcsEvents, searchUserInfo) —
+ *      terminalning HECH QANDAY sozlamasini o'zgartirmaydi, shuning uchun
+ *      to'liq xavfsiz, eski tizimga (HTTP Listening) hech qanday ta'sir
+ *      qilmaydi.
+ *   2) YOZISH (setUserValid) — terminaldagi bitta shaxsning kirish
+ *      huquqini (Valid.enable) o'zgartiradi. Bu ENDI xavfsiz emas —
+ *      eski tizim ham aynan shu maydonni o'zi boshqarayotgan bo'lishi
+ *      mumkin (TestTurnstileAccessToggle buyrug'iga qarang — bu metod
+ *      HOZIRCHA faqat o'sha qo'lda ishga tushiriladigan sinov buyrug'i
+ *      orqali chaqiriladi, avtomatik/rejalashtirilgan hech narsa yo'q).
  *
  * Autentifikatsiya — HTTP Digest (barcha 12 terminalda bir xil admin
  * login/parol, config/services.php'dagi 'hikvision' bo'limidan olinadi).
@@ -147,6 +154,97 @@ class HikvisionTerminalClient
         if ($response->failed()) {
             throw new RuntimeException(
                 "Hikvision ISAPI so'rovi muvaffaqiyatsiz ({$this->device->name}, HTTP {$response->status()}): "
+                . $response->body()
+            );
+        }
+
+        return $response->json() ?? [];
+    }
+
+    /**
+     * Terminaldagi bitta shaxsning to'liq yozuvini (ism, Valid davri,
+     * doorRight, yuz soni va h.k.) employeeNo bo'yicha qidiradi — FAQAT
+     * O'QISH, hech narsani o'zgartirmaydi.
+     *
+     * @return array<string, mixed>|null Topilmasa — null.
+     */
+    public function searchUserInfo(string $employeeNo): ?array
+    {
+        $url = $this->device->baseUrl() . '/ISAPI/AccessControl/UserInfo/Search?format=json';
+
+        $response = Http::withDigestAuth($this->username, $this->password)
+            ->timeout(20)
+            ->retry(2, 500, throw: false)
+            ->post($url, [
+                'UserInfoSearchCond' => [
+                    'searchID' => (string) str()->uuid(),
+                    'searchResultPosition' => 0,
+                    'maxResults' => 1,
+                    'EmployeeNoList' => [
+                        ['employeeNo' => $employeeNo],
+                    ],
+                ],
+            ]);
+
+        if ($response->failed()) {
+            throw new RuntimeException(
+                "Hikvision ISAPI so'rovi muvaffaqiyatsiz ({$this->device->name}, HTTP {$response->status()}): "
+                . $response->body()
+            );
+        }
+
+        $body = $response->json('UserInfoSearch') ?? [];
+        $list = $body['UserInfo'] ?? [];
+
+        return $list[0] ?? null;
+    }
+
+    /**
+     * Bitta shaxsning "Valid.enable" (kirish huquqi yoqilgan/o'chirilgan)
+     * holatini o'zgartiradi.
+     *
+     * MUHIM XAVFSIZLIK QARORI: bu yerda ATAYLAB $currentValid'dan faqat
+     * 'beginTime'/'endTime'/'timeType'ni saqlab qolib, YANGI so'rovga
+     * FAQAT 'employeeNo' + 'Valid' yuboriladi — boshqa hech qanday maydon
+     * (ism, karta, yuz ma'lumoti va h.k.) qo'shilmaydi. Sabab: Hikvision
+     * ISAPI'ning UserInfo/Modify'i qisman (faqat yuborilgan maydonlarni)
+     * yangilashni qo'llab-quvvatlaydi — agar bo'lmagan maydonlarni ham
+     * (masalan GET'dan olingan butun yozuvni) qaytarib yuborsak va
+     * ulardan biri (masalan 'faceURL' — bu READ-ONLY, hisoblab chiqarilgan
+     * maydon) noto'g'ri bo'lsa, terminal butun so'rovni rad etishi yoki,
+     * eng yomoni, shaxsning yuz ma'lumotini buzib qo'yishi mumkin. Minimal
+     * so'rov — eng kam xavfli yo'l. Agar terminal shu minimal so'rovni
+     * rad etsa (masalan "kerakli maydon yo'q" xatosi), demak bu firmware
+     * to'liq yozuvni talab qiladi — bu holni TestTurnstileAccessToggle
+     * buyrug'i orqali ANIQ shu terminalda sinab bilib olamiz.
+     *
+     * @param array<string, mixed> $currentValid searchUserInfo() natijasidagi 'Valid' massivi
+     * @return array<string, mixed> Terminal javobi (statusCode/statusString)
+     */
+    public function setUserValid(string $employeeNo, array $currentValid, bool $enabled): array
+    {
+        $url = $this->device->baseUrl() . '/ISAPI/AccessControl/UserInfo/Modify?format=json';
+
+        $payload = [
+            'UserInfo' => [
+                'employeeNo' => $employeeNo,
+                'Valid' => [
+                    'enable' => $enabled,
+                    'beginTime' => $currentValid['beginTime'] ?? '2000-01-01T00:00:00',
+                    'endTime' => $currentValid['endTime'] ?? '2037-12-31T23:59:59',
+                    'timeType' => $currentValid['timeType'] ?? 'local',
+                ],
+            ],
+        ];
+
+        $response = Http::withDigestAuth($this->username, $this->password)
+            ->timeout(20)
+            ->retry(1, 500, throw: false)
+            ->put($url, $payload);
+
+        if ($response->failed()) {
+            throw new RuntimeException(
+                "Hikvision ISAPI UserInfo/Modify muvaffaqiyatsiz ({$this->device->name}, HTTP {$response->status()}): "
                 . $response->body()
             );
         }

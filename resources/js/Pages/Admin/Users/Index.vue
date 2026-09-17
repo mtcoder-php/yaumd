@@ -8,10 +8,32 @@
                     <h1 class="text-xl font-bold text-gray-900">Foydalanuvchilar</h1>
                     <p class="text-sm text-gray-500 mt-0.5">Jami: {{ users.total }} ta foydalanuvchi</p>
                 </div>
-                <Link :href="route('admin.users.create')" class="btn-primary">
-                    <Icon icon="mdi:plus" class="w-4 h-4" />
-                    Yangi foydalanuvchi
-                </Link>
+                <div class="flex items-center gap-3">
+                    <button @click="importOpen = true" class="btn-secondary">
+                        <Icon icon="mdi:file-excel-outline" class="w-4 h-4" />
+                        Excel'dan import
+                    </button>
+                    <Link :href="route('admin.users.create')" class="btn-primary">
+                        <Icon icon="mdi:plus" class="w-4 h-4" />
+                        Yangi foydalanuvchi
+                    </Link>
+                </div>
+            </div>
+
+            <!-- Import xatoliklari/eslatmalari -->
+            <div v-if="importErrors.length" class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-semibold text-amber-800 flex items-center gap-2">
+                        <Icon icon="mdi:alert-outline" class="w-4 h-4" />
+                        Import paytida {{ importErrors.length }} ta eslatma/muammo
+                    </p>
+                    <button @click="importErrors = []" class="text-amber-500 hover:text-amber-700">
+                        <Icon icon="mdi:close" class="w-4 h-4" />
+                    </button>
+                </div>
+                <ul class="text-xs text-amber-700 space-y-0.5 max-h-40 overflow-y-auto">
+                    <li v-for="(err, i) in importErrors" :key="i">{{ err }}</li>
+                </ul>
             </div>
 
             <!-- Filters -->
@@ -140,6 +162,47 @@
             </div>
         </div>
 
+        <!-- Import modal -->
+        <div v-if="importOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+             style="background: rgba(0,0,0,0.5)" @click.self="closeImport">
+            <div class="bg-white rounded-2xl w-full max-w-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-gray-900">Xodimlarni Excel'dan import qilish</h3>
+                    <button @click="closeImport" class="text-gray-400 hover:text-gray-600">
+                        <Icon icon="mdi:close" class="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <a :href="route('admin.users.template')"
+                       class="flex items-center gap-2 text-sm font-medium text-[#0f3460] hover:underline">
+                        <Icon icon="mdi:download-outline" class="w-4 h-4" />
+                        Namuna shablonni yuklab olish
+                    </a>
+
+                    <div>
+                        <label class="field-label">Excel fayl (.xlsx, .xls, .csv) <span class="req">*</span></label>
+                        <input type="file" accept=".xlsx,.xls,.csv" @change="onFileChange"
+                               class="field-input" :class="importForm.errors.file ? 'field-error' : ''">
+                        <p v-if="importForm.errors.file" class="err">{{ importForm.errors.file }}</p>
+                    </div>
+
+                    <p class="text-xs text-gray-400">
+                        Email bo'yicha mavjud xodim topilsa — ma'lumotlari yangilanadi (paroli o'zgarmaydi).
+                        Yangi xodim uchun standart parol — Passport seriya raqami (bo'lmasa, avtomatik yaratiladi va natijada ko'rsatiladi).
+                    </p>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button @click="closeImport" class="btn-secondary flex-1">Bekor qilish</button>
+                    <button @click="submitImport" :disabled="importForm.processing" class="btn-primary flex-1">
+                        <Icon v-if="importForm.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                        {{ importForm.processing ? 'Yuklanmoqda...' : 'Import qilish' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Delete modal -->
         <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4"
              style="background: rgba(0,0,0,0.5)" @click.self="deleteTarget = null">
@@ -162,8 +225,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { ref, computed, watch } from 'vue'
+import { Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
@@ -173,7 +236,38 @@ const props = defineProps({
     filters: { type: Object, default: () => ({}) },
 })
 
+const page = usePage()
+
 const deleteTarget = ref(null)
+
+// Import
+const importOpen = ref(false)
+const importErrors = ref([...(page.props.flash?.importErrors || [])])
+
+watch(() => page.props.flash?.importErrors, (val) => {
+    importErrors.value = [...(val || [])]
+})
+
+const importForm = useForm({
+    file: null,
+})
+
+const onFileChange = (e) => {
+    importForm.file = e.target.files[0] || null
+}
+
+const closeImport = () => {
+    importOpen.value = false
+    importForm.reset()
+    importForm.clearErrors()
+}
+
+const submitImport = () => {
+    importForm.post(route('admin.users.import'), {
+        forceFormData: true,
+        onSuccess: () => { importOpen.value = false; importForm.reset() },
+    })
+}
 
 const filters = ref({
     search: props.filters.search || '',
@@ -231,6 +325,29 @@ const formatDate = (date) => {
 </script>
 
 <style scoped>
+.field-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.375rem;
+}
+.req { color: #ef4444; }
+.field-input {
+    width: 100%;
+    padding: 0.6rem 0.875rem;
+    border-radius: 0.625rem;
+    border: 1.5px solid #e5e7eb;
+    font-size: 0.875rem;
+    color: #111827;
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.field-input:focus { border-color: #0f3460; background: white; }
+.field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
+.err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
+
 .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -247,6 +364,7 @@ const formatDate = (date) => {
     transition: all 0.2s;
 }
 .btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .btn-secondary {
     display: inline-flex;

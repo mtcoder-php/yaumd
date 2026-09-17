@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
+use App\Services\UserImportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
@@ -14,6 +15,11 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private readonly UserImportService $importService,
+    ) {
+    }
+
     public function index(Request $request): Response
     {
         // Ro'yxat 20 tadan sahifalangani uchun 77+ foydalanuvchi orasidan
@@ -100,5 +106,35 @@ class UserController extends Controller
 
         $user->delete();
         return back()->with('success', 'Foydalanuvchi o\'chirildi!');
+    }
+
+    public function template()
+    {
+        return response($this->importService->template(), 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="xodimlar_namuna.xlsx"',
+        ]);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
+        ], [
+            'file.required' => 'Fayl yuklang',
+            'file.mimes' => 'Faqat .xlsx, .xls yoki .csv fayl qabul qilinadi',
+        ]);
+
+        $result = $this->importService->import($request->file('file'));
+
+        if ($result['created'] === 0 && $result['updated'] === 0) {
+            return back()->withErrors([
+                'file' => "Birorta ham xodim import qilinmadi. Namuna shablonni yuklab ko'rib chiqing.",
+            ])->with('importErrors', $result['errors']);
+        }
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "Import yakunlandi: {$result['created']} ta yangi, {$result['updated']} ta yangilandi, {$result['skipped']} ta o'tkazib yuborildi.")
+            ->with('importErrors', $result['errors']);
     }
 }
