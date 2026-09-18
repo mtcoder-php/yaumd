@@ -3,7 +3,7 @@
         <div class="space-y-5">
 
             <!-- Header -->
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 flex-wrap">
                 <Link
                     :href="route('admin.contracts.index')"
                     class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition"
@@ -11,31 +11,23 @@
                     <Icon icon="mdi:arrow-left" class="w-5 h-5 text-gray-600" />
                 </Link>
 
-
                 <div>
                     <h1 class="text-xl font-bold text-gray-900">{{ contract.contract_number }}</h1>
                     <p class="text-sm text-gray-500 mt-0.5">Kontrakt tafsiloti</p>
                 </div>
                 <div class="ml-auto flex items-center gap-3">
-                    <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold"
-                          :class="statusBadge(contract.status)">
+                    <span class="badge-pill" :class="statusBadge(contract.status)">
                         {{ statusLabel(contract.status) }}
                     </span>
+                    <Link :href="route('admin.contracts.edit', contract.id)" class="btn-brand">
+                        <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
+                        Tahrirlash
+                    </Link>
+                    <a :href="route('admin.contracts.pdf', contract.id)" target="_blank" class="btn-neutral">
+                        <Icon icon="mdi:file-pdf-box" class="w-4 h-4 text-red-500" />
+                        PDF yuklash
+                    </a>
                 </div>
-                <Link
-                    :href="route('admin.contracts.edit', contract.id)"
-                    class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white"
-                    style="background: linear-gradient(135deg, #0f3460, #533483)"
-                >
-                    <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
-                    Tahrirlash
-                </Link>
-                <a :href="route('admin.contracts.pdf', contract.id)"
-                   target="_blank"
-                   class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 hover:bg-gray-50">
-                    <Icon icon="mdi:file-pdf-box" class="w-4 h-4 text-red-500" />
-                    PDF yuklash
-                </a>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -47,7 +39,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:account-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:account-outline" class="w-4 h-4 text-brand-600" />
                             {{ contract.applicant ? "Abituriyent ma'lumotlari" : "Talaba ma'lumotlari" }}
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -69,8 +61,7 @@
                             </div>
                             <div>
                                 <p class="info-label">Telefon</p>
-                                <a :href="`tel:${person?.phone}`"
-                                   class="info-value text-[#0f3460] hover:underline">
+                                <a :href="`tel:${person?.phone}`" class="info-value text-brand-600 hover:underline">
                                     {{ person?.phone }}
                                 </a>
                             </div>
@@ -85,7 +76,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:school-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:school-outline" class="w-4 h-4 text-brand-600" />
                             Ta'lim ma'lumotlari
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -96,16 +87,13 @@
                             </div>
                             <div>
                                 <p class="info-label">To'lov turi</p>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                      :class="contract.payment_type === 'grant'
-                                        ? 'bg-green-50 text-green-700'
-                                        : 'bg-blue-50 text-blue-700'">
+                                <span class="badge-pill" :class="contract.payment_type === 'grant' ? 'badge-success' : 'badge-brand'">
                                     {{ contract.payment_type === 'grant' ? 'Grant' : 'Kontrakt' }}
                                 </span>
                             </div>
                             <div>
                                 <p class="info-label">Kontrakt summasi</p>
-                                <p class="text-lg font-bold text-[#0f3460]">{{ formatAmount(contract.amount) }}</p>
+                                <p class="text-lg font-bold text-brand-600">{{ formatAmount(contract.amount) }}</p>
                                 <p v-if="hasDiscount" class="text-xs text-gray-400 mt-0.5">
                                     <span class="line-through">{{ formatAmount(contract.base_amount) }}</span>
                                     — {{ contract.discount_percent }}% chegirma
@@ -113,7 +101,7 @@
                             </div>
                             <div v-if="hasDiscount">
                                 <p class="info-label">Chegirma sababi</p>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700">
+                                <span class="badge-pill badge-warning">
                                     {{ discountReasonLabel }}
                                 </span>
                                 <p v-if="contract.discount_reason === 'other' && contract.discount_note"
@@ -138,10 +126,8 @@
                                 v-for="s in statuses"
                                 :key="s.value"
                                 @click="updateStatus(s.value)"
-                                class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left"
-                                :class="contract.status === s.value
-                                    ? s.class + ' ring-2 ring-offset-1 ring-[#0f3460]'
-                                    : s.class + ' opacity-60 hover:opacity-100'"
+                                class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left badge-pill-btn"
+                                :class="[s.class, contract.status === s.value ? 'is-active' : 'is-inactive']"
                             >
                                 <Icon :icon="s.icon" class="w-4 h-4 flex-shrink-0" />
                                 {{ s.label }}
@@ -157,7 +143,7 @@
                         <div class="space-y-3">
                             <div>
                                 <p class="info-label">Kontrakt raqami</p>
-                                <p class="text-sm font-mono font-bold text-[#0f3460]">{{ contract.contract_number }}</p>
+                                <p class="text-sm font-mono font-bold text-brand-600">{{ contract.contract_number }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Yaratilgan sana</p>
@@ -211,14 +197,14 @@ const personAddress = props.contract.applicant
     : (props.contract.student?.address || '')
 
 const statuses = [
-    { value: 'draft',     label: 'Qoralama',  icon: 'mdi:file-outline',         class: 'bg-yellow-50 text-yellow-700' },
-    { value: 'signed',    label: 'Imzolandi', icon: 'mdi:file-sign',             class: 'bg-blue-50 text-blue-700' },
-    { value: 'paid',      label: "To'landi",  icon: 'mdi:check-circle-outline',  class: 'bg-green-50 text-green-700' },
-    { value: 'cancelled', label: 'Bekor',     icon: 'mdi:close-circle-outline',  class: 'bg-red-50 text-red-700' },
+    { value: 'draft',     label: 'Qoralama',  icon: 'mdi:file-outline',         class: 'badge-warning' },
+    { value: 'signed',    label: 'Imzolandi', icon: 'mdi:file-sign',             class: 'badge-brand' },
+    { value: 'paid',      label: "To'landi",  icon: 'mdi:check-circle-outline',  class: 'badge-success' },
+    { value: 'cancelled', label: 'Bekor',     icon: 'mdi:close-circle-outline',  class: 'badge-danger' },
 ]
 
 const statusLabel = (s) => statuses.find(x => x.value === s)?.label || s
-const statusBadge = (s) => statuses.find(x => x.value === s)?.class || 'bg-gray-100 text-gray-600'
+const statusBadge = (s) => statuses.find(x => x.value === s)?.class || 'badge-neutral'
 
 const updateStatus = (status) => {
     // UpdateContractRequest 'base_amount' (va mavjud bo'lsa chegirma
@@ -276,4 +262,11 @@ const formatDate = (date) => {
     font-size: 0.875rem;
     color: #111827;
 }
+
+/* O'ng paneldagi status ro'yxati — badge ranglarini saqlab, tanlangan
+   holatni brand-600 halqa bilan, tanlanmaganlarini xiralashtirib ko'rsatadi */
+.badge-pill-btn { border-radius: 0.75rem; border: 1px solid transparent; }
+.badge-pill-btn.is-active { box-shadow: 0 0 0 2px var(--color-brand-600); }
+.badge-pill-btn.is-inactive { opacity: 0.55; }
+.badge-pill-btn.is-inactive:hover { opacity: 1; }
 </style>

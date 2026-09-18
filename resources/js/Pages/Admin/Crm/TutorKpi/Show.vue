@@ -6,7 +6,7 @@
             <div class="flex items-center justify-between flex-wrap gap-3">
                 <div>
                     <Link v-if="!isSelf" :href="route('admin.crm.tutor-kpi.index')"
-                          class="text-xs text-gray-400 hover:text-gray-600 inline-flex items-center gap-1 mb-1">
+                          class="text-xs text-gray-400 hover:text-brand-600 inline-flex items-center gap-1 mb-1">
                         <Icon icon="mdi:arrow-left" class="w-3.5 h-3.5" />
                         Barcha tutorlar
                     </Link>
@@ -30,13 +30,11 @@
                             foizlari o'rtachasi ({{ report.groups.length }} ta guruh)
                         </p>
                     </div>
-                    <span v-if="report.summary.kpi_eligible"
-                          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold bg-green-50 text-green-700">
+                    <span v-if="report.summary.kpi_eligible" class="badge-pill badge-success">
                         <Icon icon="mdi:trophy-outline" class="w-4 h-4" />
                         KPI'ga mos ({{ threshold }}%+)
                     </span>
-                    <span v-else-if="report.summary.average_percent !== null"
-                          class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-500">
+                    <span v-else-if="report.summary.average_percent !== null" class="badge-pill badge-neutral">
                         Hozircha KPI'ga mos emas
                     </span>
                 </div>
@@ -76,25 +74,25 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full">
+                <div class="table-grid-wrap" style="border: none; border-radius: 0;">
+                    <table class="table-grid">
                         <thead>
-                        <tr class="border-b border-gray-100">
-                            <th class="text-left px-4 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Talaba</th>
-                            <th class="text-right px-4 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Kontrakt summasi</th>
-                            <th class="text-right px-4 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Shu kungacha kerak</th>
-                            <th class="text-right px-4 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">To'langan</th>
-                            <th class="text-left px-4 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Foiz</th>
+                        <tr>
+                            <th>Talaba</th>
+                            <th class="text-right">Kontrakt summasi</th>
+                            <th class="text-right">Shu kungacha kerak</th>
+                            <th class="text-right">To'langan</th>
+                            <th>Foiz</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-50">
-                        <tr v-for="s in group.students" :key="s.id" class="hover:bg-gray-50 transition-colors">
-                            <td class="px-4 py-2.5 text-sm text-gray-800">{{ s.full_name }}</td>
+                        <tbody>
+                        <tr v-for="s in group.students" :key="s.id">
+                            <td class="text-sm text-gray-800">{{ s.full_name }}</td>
                             <template v-if="s.has_contract">
-                                <td class="px-4 py-2.5 text-right text-sm text-gray-600">{{ formatAmount(s.contract_amount) }}</td>
-                                <td class="px-4 py-2.5 text-right text-sm text-gray-600">{{ formatAmount(s.due_to_date) }}</td>
-                                <td class="px-4 py-2.5 text-right text-sm text-gray-600">{{ formatAmount(s.paid_to_date) }}</td>
-                                <td class="px-4 py-2.5">
+                                <td class="text-right text-sm text-gray-600">{{ formatAmount(s.contract_amount) }}</td>
+                                <td class="text-right text-sm text-gray-600">{{ formatAmount(s.due_to_date) }}</td>
+                                <td class="text-right text-sm text-gray-600">{{ formatAmount(s.paid_to_date) }}</td>
+                                <td>
                                     <div class="flex items-center gap-2 min-w-[120px]">
                                         <div class="flex-1 h-1.5 rounded-full overflow-hidden bg-gray-100">
                                             <div class="h-full rounded-full"
@@ -105,7 +103,7 @@
                                 </td>
                             </template>
                             <template v-else>
-                                <td colspan="4" class="px-4 py-2.5 text-xs text-gray-400 italic">Kontrakt asosida o'qimaydi (grant)</td>
+                                <td colspan="4" class="text-xs text-gray-400 italic">Kontrakt asosida o'qimaydi (grant)</td>
                             </template>
                         </tr>
                         </tbody>
@@ -142,9 +140,9 @@ const formatAmount = (v) => {
 }
 
 const barColor = (summary) => {
-    if (summary.kpi_eligible) return 'linear-gradient(90deg,#15803d,#22c55e)'
-    if ((summary.average_percent ?? 0) >= 60) return 'linear-gradient(90deg,#b45309,#f59e0b)'
-    return 'linear-gradient(90deg,#b91c1c,#ef4444)'
+    if (summary.kpi_eligible) return '#22c55e'
+    if ((summary.average_percent ?? 0) >= 60) return '#f59e0b'
+    return '#ef4444'
 }
 
 const percentColor = (p) => {

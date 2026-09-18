@@ -127,8 +127,8 @@
                 :title="sidebarCollapsed ? 'Sidebarni ochish' : 'Sidebarni yig\'ish'"
                 class="hidden lg:flex items-center justify-center h-11 flex-shrink-0 bg-brand-600 text-white hover:bg-brand-700 transition"
             >
-                <ChevronDoubleLeftIcon v-if="!sidebarCollapsed" class="w-5 h-5" />
-                <ChevronDoubleRightIcon v-else class="w-5 h-5" />
+                <ChevronDoubleLeftIcon v-if="!sidebarCollapsed" class="w-10 h-10" />
+                <ChevronDoubleRightIcon v-else class="w-10 h-10" />
             </button>
         </aside>
 

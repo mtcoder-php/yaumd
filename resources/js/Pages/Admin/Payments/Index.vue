@@ -8,33 +8,45 @@
                     <h1 class="text-xl font-bold text-gray-900">To'lovlar</h1>
                     <p class="text-sm text-gray-500 mt-0.5">Jami: {{ payments.total }} ta to'lov</p>
                 </div>
-                <button @click="openAddModal" class="btn-primary">
+                <button @click="openAddModal" class="btn-brand">
                     <Icon icon="mdi:plus" class="w-4 h-4" />
                     To'lov qabul qilish
                 </button>
             </div>
 
             <!-- Stat kartalar -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div class="bg-white rounded-xl border border-gray-100 p-4"
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                      style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                    <p class="text-xs text-gray-400 mb-1">Jami tushum</p>
-                    <p class="text-lg font-bold text-green-600">{{ formatAmount(stats.total) }}</p>
+                    <div class="h-1" style="background:#22c55e" />
+                    <div class="p-4">
+                        <p class="text-xs font-medium text-gray-500 mb-1">Jami tushum</p>
+                        <p class="text-lg font-bold text-gray-900">{{ formatAmount(stats.total) }}</p>
+                    </div>
                 </div>
-                <div class="bg-white rounded-xl border border-gray-100 p-4"
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                      style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                    <p class="text-xs text-gray-400 mb-1">Bugungi tushum</p>
-                    <p class="text-lg font-bold text-[#0f3460]">{{ formatAmount(stats.today) }}</p>
+                    <div class="h-1 bg-brand-600" />
+                    <div class="p-4">
+                        <p class="text-xs font-medium text-gray-500 mb-1">Bugungi tushum</p>
+                        <p class="text-lg font-bold text-gray-900">{{ formatAmount(stats.today) }}</p>
+                    </div>
                 </div>
-                <div class="bg-white rounded-xl border border-gray-100 p-4"
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                      style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                    <p class="text-xs text-gray-400 mb-1">Qabul qilingan</p>
-                    <p class="text-lg font-bold text-gray-800">{{ stats.count }} ta</p>
+                    <div class="h-1" style="background:#9ca3af" />
+                    <div class="p-4">
+                        <p class="text-xs font-medium text-gray-500 mb-1">Qabul qilingan</p>
+                        <p class="text-lg font-bold text-gray-900">{{ stats.count }} ta</p>
+                    </div>
                 </div>
-                <div class="bg-white rounded-xl border border-gray-100 p-4"
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                      style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                    <p class="text-xs text-gray-400 mb-1">Kutilayotgan</p>
-                    <p class="text-lg font-bold text-amber-600">{{ stats.pending }} ta</p>
+                    <div class="h-1" style="background:#f59e0b" />
+                    <div class="p-4">
+                        <p class="text-xs font-medium text-gray-500 mb-1">Kutilayotgan</p>
+                        <p class="text-lg font-bold text-gray-900">{{ stats.pending }} ta</p>
+                    </div>
                 </div>
             </div>
 
@@ -48,14 +60,12 @@
                         v-model="filters.search"
                         type="text"
                         placeholder="Ism, pasport, tranzaksiya ID..."
-                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
+                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-brand-600 bg-gray-50"
                         @input="debouncedSearch"
                     >
                 </div>
 
-                <select v-model="filters.status"
-                        class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
-                        @change="applyFilters">
+                <select v-model="filters.status" class="select-filter" @change="applyFilters">
                     <option value="">Barcha statuslar</option>
                     <option value="pending">Kutilmoqda</option>
                     <option value="paid">To'landi</option>
@@ -63,109 +73,104 @@
                     <option value="refunded">Qaytarildi</option>
                 </select>
 
-                <select v-model="filters.provider"
-                        class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
-                        @change="applyFilters">
+                <select v-model="filters.provider" class="select-filter" @change="applyFilters">
                     <option value="">Barcha turlar</option>
                     <option value="cash">Naqd</option>
                     <option value="click">Click</option>
                     <option value="payme">Payme</option>
                 </select>
 
-                <button v-if="hasFilters" @click="resetFilters"
-                        class="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-1.5">
+                <button v-if="hasFilters" @click="resetFilters" class="btn-neutral">
                     <Icon icon="mdi:close" class="w-4 h-4" />
                     Tozalash
                 </button>
             </div>
 
             <!-- Table -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                        <tr class="border-b border-gray-100">
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Abituriyent</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Kontrakt</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Summa</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">To'lov turi</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sana</th>
-                            <th class="px-4 py-3"></th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                        <tr v-if="!payments.data?.length">
-                            <td colspan="7" class="text-center py-16 text-gray-400">
-                                <Icon icon="mdi:cash-off" class="w-12 h-12 mx-auto mb-3 opacity-40" />
-                                <p class="text-sm">To'lovlar topilmadi</p>
-                            </td>
-                        </tr>
-                        <tr v-for="p in payments.data ?? []" :key="p.id"
-                            class="hover:bg-gray-50 transition-colors">
+            <div class="table-grid-wrap">
+                <table class="table-grid">
+                    <thead>
+                    <tr>
+                        <th>Abituriyent</th>
+                        <th>Kontrakt</th>
+                        <th>Summa</th>
+                        <th>To'lov turi</th>
+                        <th>Status</th>
+                        <th>Sana</th>
+                        <th class="text-right">Amallar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-if="!payments.data?.length">
+                        <td colspan="7" class="text-center py-16 text-gray-400">
+                            <Icon icon="mdi:cash-off" class="w-12 h-12 mx-auto mb-3 opacity-40" />
+                            <p class="text-sm">To'lovlar topilmadi</p>
+                        </td>
+                    </tr>
+                    <tr v-for="p in payments.data ?? []" :key="p.id">
 
-                            <td class="px-4 py-3">
-                                <p class="text-sm font-medium text-gray-900">
-                                    {{ personOf(p)?.last_name }} {{ personOf(p)?.first_name }}
-                                </p>
-                                <p class="text-xs text-gray-400 font-mono">{{ personOf(p)?.passport_series }}</p>
-                            </td>
+                        <td>
+                            <p class="text-sm font-medium text-gray-900">
+                                {{ personOf(p)?.last_name }} {{ personOf(p)?.first_name }}
+                            </p>
+                            <p class="text-xs text-gray-400 font-mono">{{ personOf(p)?.passport_series }}</p>
+                        </td>
 
-                            <td class="px-4 py-3">
-                                <Link :href="route('admin.contracts.show', p.contract_id)"
-                                      class="text-xs font-mono font-semibold text-[#0f3460] hover:underline">
-                                    {{ p.contract?.contract_number }}
-                                </Link>
-                            </td>
+                        <td>
+                            <Link :href="route('admin.contracts.show', p.contract_id)"
+                                  class="text-xs font-mono font-semibold text-brand-600 hover:underline">
+                                {{ p.contract?.contract_number }}
+                            </Link>
+                        </td>
 
-                            <td class="px-4 py-3">
-                                <span class="text-sm font-bold text-gray-800">{{ formatAmount(p.amount) }}</span>
-                            </td>
+                        <td>
+                            <span class="text-sm font-bold text-gray-800">{{ formatAmount(p.amount) }}</span>
+                        </td>
 
-                            <td class="px-4 py-3">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                          :class="providerBadge(p.provider)">
-                                        <Icon :icon="providerIcon(p.provider)" class="w-3 h-3" />
-                                        {{ providerLabel(p.provider) }}
-                                    </span>
-                            </td>
+                        <td>
+                            <span class="badge-pill" :class="providerBadge(p.provider)">
+                                <Icon :icon="providerIcon(p.provider)" class="w-3 h-3" />
+                                {{ providerLabel(p.provider) }}
+                            </span>
+                        </td>
 
-                            <td class="px-4 py-3">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                          :class="statusBadge(p.status)">
-                                        {{ statusLabel(p.status) }}
-                                    </span>
-                            </td>
+                        <td>
+                            <span class="badge-pill" :class="statusBadge(p.status)">
+                                {{ statusLabel(p.status) }}
+                            </span>
+                        </td>
 
-                            <td class="px-4 py-3 text-xs text-gray-400">
-                                {{ formatDate(p.paid_at || p.created_at) }}
-                            </td>
+                        <td class="text-xs text-gray-400">
+                            {{ formatDate(p.paid_at || p.created_at) }}
+                        </td>
 
-                            <td class="px-4 py-3">
-                                <button @click="confirmDelete(p)"
-                                        class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1">
-                                    <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
-                                    O'chirish
+                        <td>
+                            <div class="flex justify-end">
+                                <button @click="confirmDelete(p)" title="O'chirish" class="btn-ghost-icon danger">
+                                    <Icon icon="mdi:delete-outline" class="w-4 h-4" />
                                 </button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
 
                 <!-- Pagination -->
                 <div v-if="(payments.last_page ?? 1) > 1"
-                     class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+                     class="px-4 py-3 border-t border-gray-200 flex items-center justify-between flex-wrap gap-3">
                     <p class="text-xs text-gray-500">{{ payments.from }}–{{ payments.to }} / {{ payments.total }}</p>
-                    <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-1.5">
                         <template v-for="link in (payments.links ?? [])" :key="link.label">
-                            <Link v-if="link.url" :href="link.url"
-                                  class="px-3 py-1.5 text-xs rounded-lg transition"
-                                  :class="link.active ? 'text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'"
-                                  :style="link.active ? 'background:linear-gradient(135deg,#0f3460,#533483)' : ''"
-                                  v-html="link.label" />
-                            <span v-else class="px-3 py-1.5 text-xs text-gray-300" v-html="link.label" />
+                            <component
+                                :is="link.url ? Link : 'span'"
+                                :href="link.url ?? undefined"
+                                class="pagination-btn"
+                                :class="[link.active ? 'active' : '', !link.url ? 'disabled' : '']"
+                            >
+                                <ChevronLeftIcon v-if="isPrevLabel(link.label)" class="w-4 h-4" />
+                                <ChevronRightIcon v-else-if="isNextLabel(link.label)" class="w-4 h-4" />
+                                <span v-else v-html="link.label" />
+                            </component>
                         </template>
                     </div>
                 </div>
@@ -180,7 +185,7 @@
                 <!-- Onlayn to'lov: havola/QR va uning holati -->
                 <template v-if="onlineCheckout">
                     <h3 class="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
-                        <Icon :icon="providerIcon(payForm.provider)" class="w-5 h-5 text-[#0f3460]" />
+                        <Icon :icon="providerIcon(payForm.provider)" class="w-5 h-5 text-brand-600" />
                         {{ providerLabel(payForm.provider) }} orqali to'lov
                     </h3>
 
@@ -195,12 +200,11 @@
                                 <input :value="onlineCheckout.checkoutUrl" readonly
                                        class="field-input flex-1 text-xs font-mono truncate"
                                        @focus="$event.target.select()">
-                                <button @click="copyLink" type="button"
-                                        class="px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 flex-shrink-0">
+                                <button @click="copyLink" type="button" class="btn-neutral flex-shrink-0">
                                     {{ linkCopied ? 'Nusxalandi' : 'Nusxalash' }}
                                 </button>
                             </div>
-                            <div class="flex items-center gap-2 text-xs font-medium" style="color:#d97706">
+                            <div class="flex items-center gap-2 text-xs font-medium text-amber-600">
                                 <Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
                                 To'lov kutilmoqda...
                             </div>
@@ -221,13 +225,13 @@
                         </template>
                     </div>
 
-                    <button @click="closeAddModal" class="btn-secondary w-full mt-6">Yopish</button>
+                    <button @click="closeAddModal" class="btn-neutral w-full justify-center mt-6">Yopish</button>
                 </template>
 
                 <!-- Kontrakt/summa/to'lov turini tanlash -->
                 <template v-else>
                     <h3 class="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
-                        <Icon icon="mdi:cash-plus" class="w-5 h-5 text-[#0f3460]" />
+                        <Icon icon="mdi:cash-plus" class="w-5 h-5 text-brand-600" />
                         To'lov qabul qilish
                     </h3>
 
@@ -235,7 +239,7 @@
 
                         <!-- Kontrakt tanlash -->
                         <div>
-                            <label class="field-label">Kontrakt <span class="req">*</span></label>
+                            <label class="field-label"><span class="req">*</span> Kontrakt</label>
                             <select v-model="payForm.contract_id" class="field-input">
                                 <option value="">Tanlang</option>
                                 <option v-for="c in activeContracts" :key="c.id" :value="c.id">
@@ -247,7 +251,7 @@
 
                         <!-- Summa -->
                         <div>
-                            <label class="field-label">Summa <span class="req">*</span></label>
+                            <label class="field-label"><span class="req">*</span> Summa</label>
                             <div class="relative">
                                 <input
                                     ref="amountRef"
@@ -263,20 +267,18 @@
 
                         <!-- To'lov turi -->
                         <div>
-                            <label class="field-label">To'lov turi <span class="req">*</span></label>
+                            <label class="field-label"><span class="req">*</span> To'lov turi</label>
                             <div class="flex gap-2">
                                 <button v-for="pv in providers" :key="pv.value" type="button"
                                         @click="payForm.provider = pv.value"
                                         class="flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 cursor-pointer transition-all"
-                                        :style="payForm.provider === pv.value
-                ? 'border-color:#0f3460; background:linear-gradient(135deg,#eff6ff,#f5f3ff)'
-                : 'border-color:#e5e7eb; background:#fafafa'">
+                                        :class="payForm.provider === pv.value ? 'option-active' : 'option-idle'">
                                     <Icon :icon="pv.icon" class="w-5 h-5"
-                                          :style="payForm.provider === pv.value ? 'color:#0f3460' : 'color:#9ca3af'" />
+                                          :class="payForm.provider === pv.value ? 'text-brand-600' : 'text-gray-400'" />
                                     <span class="text-xs font-semibold"
-                                          :style="payForm.provider === pv.value ? 'color:#0f3460' : 'color:#374151'">
-                {{ pv.label }}
-            </span>
+                                          :class="payForm.provider === pv.value ? 'text-brand-600' : 'text-gray-700'">
+                                        {{ pv.label }}
+                                    </span>
                                 </button>
                             </div>
                             <p v-if="payForm.provider !== 'cash'" class="text-xs text-gray-400 mt-1.5">
@@ -289,13 +291,13 @@
                     </div>
 
                     <div class="flex gap-3 mt-6">
-                        <button @click="closeAddModal" class="btn-secondary flex-1">Bekor qilish</button>
-                        <button v-if="payForm.provider === 'cash'" @click="submitPayment" :disabled="paying" class="btn-primary flex-1">
+                        <button @click="closeAddModal" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                        <button v-if="payForm.provider === 'cash'" @click="submitPayment" :disabled="paying" class="btn-brand flex-1 justify-center">
                             <Icon v-if="paying" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                             <Icon v-else icon="mdi:check" class="w-4 h-4" />
                             {{ paying ? 'Saqlanmoqda...' : 'Qabul qilish' }}
                         </button>
-                        <button v-else @click="startOnlineCheckout" :disabled="creatingLink" class="btn-primary flex-1">
+                        <button v-else @click="startOnlineCheckout" :disabled="creatingLink" class="btn-brand flex-1 justify-center">
                             <Icon v-if="creatingLink" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                             <Icon v-else icon="mdi:qrcode" class="w-4 h-4" />
                             {{ creatingLink ? 'Yaratilmoqda...' : 'Havola/QR yaratish' }}
@@ -317,8 +319,8 @@
                     {{ formatAmount(deleteTarget?.amount) }} miqdoridagi to'lovni o'chirasizmi?
                 </p>
                 <div class="flex gap-3">
-                    <button @click="deleteTarget = null" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitDelete" class="btn-danger flex-1">O'chirish</button>
+                    <button @click="deleteTarget = null" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitDelete" class="btn-danger-pill flex-1">O'chirish</button>
                 </div>
             </div>
         </div>
@@ -330,6 +332,7 @@
 import { ref, computed, nextTick, onBeforeUnmount } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import IMask from 'imask'
 import QRCode from 'qrcode'
@@ -539,20 +542,20 @@ const providers = [
 const providerLabel = (p) => providers.find(x => x.value === p)?.label || p
 const providerIcon  = (p) => providers.find(x => x.value === p)?.icon  || 'mdi:cash'
 const providerBadge = (p) => ({
-    cash:  'bg-green-50 text-green-700',
-    click: 'bg-blue-50 text-blue-700',
-    payme: 'bg-purple-50 text-purple-700',
-}[p] || 'bg-gray-100 text-gray-600')
+    cash:  'badge-success',
+    click: 'badge-brand',
+    payme: 'badge-warning',
+}[p] || 'badge-neutral')
 
 const statuses = [
-    { value: 'pending',  label: 'Kutilmoqda', class: 'bg-yellow-50 text-yellow-700' },
-    { value: 'paid',     label: "To'landi",   class: 'bg-green-50 text-green-700' },
-    { value: 'failed',   label: 'Xato',       class: 'bg-red-50 text-red-700' },
-    { value: 'refunded', label: 'Qaytarildi', class: 'bg-gray-100 text-gray-600' },
+    { value: 'pending',  label: 'Kutilmoqda', class: 'badge-warning' },
+    { value: 'paid',     label: "To'landi",   class: 'badge-success' },
+    { value: 'failed',   label: 'Xato',       class: 'badge-danger' },
+    { value: 'refunded', label: 'Qaytarildi', class: 'badge-neutral' },
 ]
 
 const statusLabel = (s) => statuses.find(x => x.value === s)?.label || s
-const statusBadge = (s) => statuses.find(x => x.value === s)?.class || 'bg-gray-100 text-gray-600'
+const statusBadge = (s) => statuses.find(x => x.value === s)?.class || 'badge-neutral'
 
 const formatAmount = (amount) => {
     if (!amount) return '0 so\'m'
@@ -566,20 +569,22 @@ const formatDate = (date) => {
         hour: '2-digit', minute: '2-digit',
     })
 }
+
+// Laravel'ning standart pagination yorliqlari o'rniga sof strelka
+// ikonkalarini ko'rsatish uchun (Foydalanuvchilar sahifasidagi bilan
+// bir xil naqsh).
+const isPrevLabel = (label) => /Previous|&laquo;|«/i.test(label)
+const isNextLabel = (label) => /Next|&raquo;|»/i.test(label)
 </script>
 
 <style scoped>
 .field-label { display: block; font-size: 0.78rem; font-weight: 600; color: #374151; margin-bottom: 0.375rem; }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .field-input { width: 100%; padding: 0.6rem 0.875rem; border-radius: 0.625rem; border: 1.5px solid #e5e7eb; font-size: 0.875rem; color: #111827; background: #fafafa; outline: none; transition: border-color 0.2s; appearance: auto; }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-.btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.75rem; background: linear-gradient(135deg, #0f3460, #533483); color: white; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; text-decoration: none; transition: all 0.2s; }
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-.btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.75rem; background: white; color: #374151; font-size: 0.875rem; font-weight: 600; border: 1.5px solid #e5e7eb; cursor: pointer; transition: all 0.2s; }
-.btn-secondary:hover { background: #f9fafb; }
-.btn-danger { display: inline-flex; align-items: center; justify-content: center; padding: 0.625rem 1.25rem; border-radius: 0.75rem; background: #ef4444; color: white; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; }
-.btn-danger:hover { background: #dc2626; }
+
+.option-idle { border-color: #e5e7eb; background: #fafafa; }
+.option-active { border-color: var(--color-brand-600); background: var(--color-brand-50); }
 </style>

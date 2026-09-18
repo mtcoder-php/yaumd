@@ -25,13 +25,13 @@
                         <!-- Ta'lim ma'lumotlari -->
                         <div class="bg-white rounded-2xl border border-gray-100 p-5">
                             <h2 class="section-title">
-                                <Icon icon="mdi:school-outline" class="w-4 h-4 text-[#0f3460]" />
+                                <Icon icon="mdi:school-outline" class="w-4 h-4 text-brand-600" />
                                 Ta'lim ma'lumotlari
                             </h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                                 <div>
-                                    <label class="field-label">Ta'lim turi <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Ta'lim turi</label>
                                     <select v-model="form.education_type" class="field-input" :class="errors.education_type ? 'field-error' : ''">
                                         <option value="bachelor">Bakalavr</option>
                                         <option value="master">Magistr</option>
@@ -42,7 +42,7 @@
                                 </div>
 
                                 <div>
-                                    <label class="field-label">Ta'lim shakli <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Ta'lim shakli</label>
                                     <select v-model="form.study_form" class="field-input" :class="errors.study_form ? 'field-error' : ''">
                                         <option value="full_time">Kunduzgi</option>
                                         <option value="evening" :disabled="form.education_type === 'master'">Kechki</option>
@@ -60,7 +60,7 @@
                                 </div>
 
                                 <div>
-                                    <label class="field-label">Yo'nalish <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Yo'nalish</label>
                                     <select v-model="form.direction_id" class="field-input" :class="errors.direction_id ? 'field-error' : ''">
                                         <option value="">Tanlang</option>
                                         <option v-for="d in filteredDirections" :key="d.id" :value="d.id">
@@ -76,14 +76,14 @@
                         <!-- Shaxsiy ma'lumotlar -->
                         <div class="bg-white rounded-2xl border border-gray-100 p-5">
                             <h2 class="section-title">
-                                <Icon icon="mdi:account-outline" class="w-4 h-4 text-[#0f3460]" />
+                                <Icon icon="mdi:account-outline" class="w-4 h-4 text-brand-600" />
                                 Shaxsiy ma'lumotlar
                             </h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                                 <!-- Familiya = last_name -->
                                 <div>
-                                    <label class="field-label">Familiya <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Familiya</label>
                                     <input v-model="form.last_name" type="text" class="field-input"
                                            :class="errors.last_name ? 'field-error' : ''"
                                            @input="form.last_name = form.last_name.toUpperCase()">
@@ -92,7 +92,7 @@
 
                                 <!-- Ism = first_name -->
                                 <div>
-                                    <label class="field-label">Ism <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Ism</label>
                                     <input v-model="form.first_name" type="text" class="field-input"
                                            :class="errors.first_name ? 'field-error' : ''"
                                            @input="form.first_name = form.first_name.toUpperCase()">
@@ -100,7 +100,7 @@
                                 </div>
 
                                 <div class="sm:col-span-2">
-                                    <label class="field-label">Otasining ismi <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Otasining ismi</label>
                                     <input v-model="form.middle_name" type="text" class="field-input"
                                            :class="errors.middle_name ? 'field-error' : ''"
                                            @input="form.middle_name = form.middle_name.toUpperCase()">
@@ -109,7 +109,7 @@
 
                                 <!-- Tug'ilgan sana: kun/oy/yil -->
                                 <div class="sm:col-span-2">
-                                    <label class="field-label">Tug'ilgan sana <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Tug'ilgan sana</label>
                                     <div class="grid grid-cols-3 gap-3">
                                         <div>
                                             <input v-model="form.birth_day" type="number" placeholder="Kun"
@@ -135,14 +135,13 @@
                                 </div>
 
                                 <div>
-                                    <label class="field-label">Jins <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Jins</label>
                                     <div class="flex gap-6 mt-2">
                                         <label v-for="g in genders" :key="g.value" class="flex items-center gap-2 cursor-pointer">
                                             <input type="radio" v-model="form.gender" :value="g.value" class="hidden">
                                             <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
-                                                 :style="form.gender === g.value ? 'border-color:#0f3460' : 'border-color:#d1d5db'">
-                                                <div v-if="form.gender === g.value"
-                                                     class="w-2.5 h-2.5 rounded-full" style="background:#0f3460"></div>
+                                                 :class="form.gender === g.value ? 'border-brand-600' : 'border-gray-300'">
+                                                <div v-if="form.gender === g.value" class="w-2.5 h-2.5 rounded-full bg-brand-600"></div>
                                             </div>
                                             <span class="text-sm text-gray-700">{{ g.label }}</span>
                                         </label>
@@ -156,13 +155,13 @@
                         <!-- Hujjat va aloqa -->
                         <div class="bg-white rounded-2xl border border-gray-100 p-5">
                             <h2 class="section-title">
-                                <Icon icon="mdi:card-account-details-outline" class="w-4 h-4 text-[#0f3460]" />
+                                <Icon icon="mdi:card-account-details-outline" class="w-4 h-4 text-brand-600" />
                                 Hujjat va aloqa
                             </h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                                 <div>
-                                    <label class="field-label">Pasport seriyasi <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Pasport seriyasi</label>
                                     <input v-model="form.passport_series" type="text" maxlength="9"
                                            class="field-input font-mono" :class="errors.passport_series ? 'field-error' : ''"
                                            @input="form.passport_series = form.passport_series.toUpperCase()">
@@ -177,7 +176,7 @@
                                 </div>
 
                                 <div>
-                                    <label class="field-label">Telefon <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Telefon</label>
                                     <input v-model="form.phone" type="tel" class="field-input"
                                            :class="errors.phone ? 'field-error' : ''">
                                     <p v-if="errors.phone" class="err">{{ errors.phone }}</p>
@@ -189,7 +188,7 @@
                                 </div>
 
                                 <div>
-                                    <label class="field-label">Viloyat <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Viloyat</label>
                                     <select v-model="form.region_id" class="field-input"
                                             :class="errors.region_id ? 'field-error' : ''"
                                             @change="form.district_id = ''">
@@ -200,7 +199,7 @@
                                 </div>
 
                                 <div>
-                                    <label class="field-label">Tuman <span class="req">*</span></label>
+                                    <label class="field-label"><span class="req">*</span> Tuman</label>
                                     <select v-model="form.district_id" class="field-input"
                                             :class="errors.district_id ? 'field-error' : ''"
                                             :disabled="!form.region_id">
@@ -224,21 +223,14 @@
                     <div class="space-y-5">
 
                         <!-- Saqlash -->
-                        <div class="bg-white rounded-2xl border border-gray-100 p-5">
-                            <button
-                                type="submit"
-                                :disabled="form.processing"
-                                class="w-full btn-primary"
-                            >
+                        <div class="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+                            <button type="submit" :disabled="form.processing" class="btn-brand w-full justify-center">
                                 <Icon v-if="form.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                                 <Icon v-else icon="mdi:content-save-outline" class="w-4 h-4" />
                                 {{ form.processing ? 'Saqlanmoqda...' : 'Saqlash' }}
                             </button>
 
-                            <Link
-                                :href="route('admin.applicants.show', applicant.id)"
-                                class="w-full mt-3 btn-secondary flex items-center justify-center gap-2"
-                            >
+                            <Link :href="route('admin.applicants.show', applicant.id)" class="btn-neutral w-full justify-center">
                                 <Icon icon="mdi:close" class="w-4 h-4" />
                                 Bekor qilish
                             </Link>
@@ -247,18 +239,17 @@
                         <!-- Ariza ma'lumotlari -->
                         <div class="bg-white rounded-2xl border border-gray-100 p-5">
                             <h2 class="section-title mb-3">
-                                <Icon icon="mdi:information-outline" class="w-4 h-4 text-[#0f3460]" />
+                                <Icon icon="mdi:information-outline" class="w-4 h-4 text-brand-600" />
                                 Ariza
                             </h2>
                             <div class="space-y-2.5">
                                 <div>
                                     <p class="info-label">Ariza raqami</p>
-                                    <p class="text-sm font-mono font-bold text-[#0f3460]">{{ applicant.application_number }}</p>
+                                    <p class="text-sm font-mono font-bold text-brand-600">{{ applicant.application_number }}</p>
                                 </div>
                                 <div>
                                     <p class="info-label">Status</p>
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                          :class="statusBadge(applicant.status)">
+                                    <span class="badge-pill" :class="statusBadge(applicant.status)">
                                         {{ statusLabel(applicant.status) }}
                                     </span>
                                 </div>
@@ -340,17 +331,17 @@ const submit = () => {
 }
 
 const statuses = [
-    { value: 'new',        label: 'Yangi',            class: 'bg-blue-50 text-blue-700' },
-    { value: 'accepted',   label: 'Qabul qilindi',    class: 'bg-green-50 text-green-700' },
-    { value: 'interview',  label: 'Suhbat',           class: 'bg-yellow-50 text-yellow-700' },
-    { value: 'tested',     label: 'Test',             class: 'bg-purple-50 text-purple-700' },
-    { value: 'contracted', label: 'Kontrakt',         class: 'bg-indigo-50 text-indigo-700' },
-    { value: 'enrolled',   label: "Ro'yxatga olindi", class: 'bg-teal-50 text-teal-700' },
-    { value: 'rejected',   label: 'Rad etildi',       class: 'bg-red-50 text-red-700' },
+    { value: 'new',        label: 'Yangi',            class: 'badge-neutral' },
+    { value: 'accepted',   label: 'Qabul qilindi',    class: 'badge-brand' },
+    { value: 'interview',  label: 'Suhbat',           class: 'badge-warning' },
+    { value: 'tested',     label: 'Test',             class: 'badge-warning' },
+    { value: 'contracted', label: 'Kontrakt',         class: 'badge-brand' },
+    { value: 'enrolled',   label: "Ro'yxatga olindi", class: 'badge-success' },
+    { value: 'rejected',   label: 'Rad etildi',       class: 'badge-danger' },
 ]
 
 const statusLabel = (s) => statuses.find(x => x.value === s)?.label || s
-const statusBadge = (s) => statuses.find(x => x.value === s)?.class || 'bg-gray-50 text-gray-600'
+const statusBadge = (s) => statuses.find(x => x.value === s)?.class || 'badge-neutral'
 
 const formatDate = (date) => {
     if (!date) return '—'
@@ -379,7 +370,7 @@ const formatDate = (date) => {
     color: #374151;
     margin-bottom: 0.375rem;
 }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .field-input {
     width: 100%;
     padding: 0.6rem 0.875rem;
@@ -392,7 +383,7 @@ const formatDate = (date) => {
     transition: border-color 0.2s;
     appearance: auto;
 }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
 .field-input:disabled { opacity: 0.5; cursor: not-allowed; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
@@ -404,40 +395,4 @@ const formatDate = (date) => {
     letter-spacing: 0.05em;
     margin-bottom: 0.25rem;
 }
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.625rem 1.5rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-}
-.btn-secondary:hover { background: #f9fafb; }
 </style>

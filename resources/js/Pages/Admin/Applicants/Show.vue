@@ -3,7 +3,7 @@
         <div class="space-y-5">
 
             <!-- Header -->
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 flex-wrap">
                 <Link :href="route('admin.applicants.index')"
                       class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition">
                     <Icon icon="mdi:arrow-left" class="w-5 h-5 text-gray-600" />
@@ -15,9 +15,7 @@
                     <p class="text-sm text-gray-500 mt-0.5">{{ applicant.application_number }}</p>
                 </div>
                 <div class="ml-auto flex items-center gap-3">
-                    <Link :href="route('admin.applicants.edit', applicant.id)"
-                          class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition"
-                          style="background: linear-gradient(135deg, #0f3460, #533483)">
+                    <Link :href="route('admin.applicants.edit', applicant.id)" class="btn-brand">
                         <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                         Tahrirlash
                     </Link>
@@ -25,7 +23,7 @@
                     <!-- Status dropdown -->
                     <select
                         :value="applicant.status"
-                        class="px-3 py-2 text-sm font-semibold rounded-xl border-2 cursor-pointer outline-none"
+                        class="badge-pill status-select"
                         :class="statusBadge(applicant.status)"
                         @change="updateStatus($event.target.value)"
                     >
@@ -43,13 +41,13 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:school-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:school-outline" class="w-4 h-4 text-brand-600" />
                             Ta'lim ma'lumotlari
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="info-label">Ta'lim turi</p>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+                                <span class="badge-pill badge-brand">
                                     {{ educationTypeLabel(applicant.education_type) }}
                                 </span>
                             </div>
@@ -69,7 +67,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:account-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:account-outline" class="w-4 h-4 text-brand-600" />
                             Shaxsiy ma'lumotlar
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -104,7 +102,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:card-account-details-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:card-account-details-outline" class="w-4 h-4 text-brand-600" />
                             Hujjat va aloqa
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -118,14 +116,14 @@
                             </div>
                             <div>
                                 <p class="info-label">Telefon</p>
-                                <a :href="`tel:${applicant.phone}`" class="info-value text-[#0f3460] hover:underline">
+                                <a :href="`tel:${applicant.phone}`" class="info-value text-brand-600 hover:underline">
                                     {{ applicant.phone }}
                                 </a>
                             </div>
                             <div>
                                 <p class="info-label">Qo'shimcha raqam</p>
                                 <a v-if="applicant.extra_phone" :href="`tel:${applicant.extra_phone}`"
-                                   class="info-value text-[#0f3460] hover:underline">
+                                   class="info-value text-brand-600 hover:underline">
                                     {{ applicant.extra_phone }}
                                 </a>
                                 <p v-else class="info-value">—</p>
@@ -143,16 +141,13 @@
                     <div v-if="applicant.interview" class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:account-check-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:account-check-outline" class="w-4 h-4 text-brand-600" />
                             Suhbat natijasi
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="info-label">Natija</p>
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-                                      :class="applicant.interview.result === 'passed'
-                                        ? 'bg-green-50 text-green-700'
-                                        : 'bg-red-50 text-red-700'">
+                                <span class="badge-pill" :class="applicant.interview.result === 'passed' ? 'badge-success' : 'badge-danger'">
                                     <Icon :icon="applicant.interview.result === 'passed'
                                         ? 'mdi:check-circle' : 'mdi:close-circle'" class="w-3.5 h-3.5" />
                                     {{ applicant.interview.result === 'passed' ? "O'tdi" : "O'tmadi" }}
@@ -173,13 +168,13 @@
                     <div v-if="applicant.test_session" class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:clipboard-text-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:clipboard-text-outline" class="w-4 h-4 text-brand-600" />
                             Test ma'lumotlari
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="info-label">Login</p>
-                                <p class="info-value font-mono font-bold text-[#0f3460]">{{ applicant.test_session.login }}</p>
+                                <p class="info-value font-mono font-bold text-brand-600">{{ applicant.test_session.login }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Parol</p>
@@ -187,13 +182,7 @@
                             </div>
                             <div>
                                 <p class="info-label">Status</p>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                      :class="{
-                                        'bg-yellow-50 text-yellow-700': applicant.test_session.status === 'pending',
-                                        'bg-green-50 text-green-700':  applicant.test_session.status === 'active',
-                                        'bg-blue-50 text-blue-700':    applicant.test_session.status === 'completed',
-                                        'bg-red-50 text-red-700':      applicant.test_session.status === 'expired',
-                                    }">
+                                <span class="badge-pill" :class="testSessionBadge(applicant.test_session.status)">
                                     {{ {pending:'Kutilmoqda', active:'Faol', completed:'Yakunlangan', expired:"Muddati o'tgan"}[applicant.test_session.status] }}
                                 </span>
                             </div>
@@ -208,13 +197,13 @@
                     <div v-if="applicant.contract" class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:file-document-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:file-document-outline" class="w-4 h-4 text-brand-600" />
                             Kontrakt
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="info-label">Kontrakt raqami</p>
-                                <p class="text-sm font-mono font-bold text-[#0f3460]">{{ applicant.contract.contract_number }}</p>
+                                <p class="text-sm font-mono font-bold text-brand-600">{{ applicant.contract.contract_number }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Kontrakt summasi</p>
@@ -222,13 +211,7 @@
                             </div>
                             <div>
                                 <p class="info-label">Status</p>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                      :class="{
-                                        'bg-yellow-50 text-yellow-700': applicant.contract.status === 'draft',
-                                        'bg-blue-50 text-blue-700':    applicant.contract.status === 'signed',
-                                        'bg-green-50 text-green-700':  applicant.contract.status === 'paid',
-                                        'bg-red-50 text-red-700':      applicant.contract.status === 'cancelled',
-                                    }">
+                                <span class="badge-pill" :class="contractBadge(applicant.contract.status)">
                                     {{ {draft:'Qoralama', signed:'Imzolandi', paid:"To'landi", cancelled:'Bekor'}[applicant.contract.status] }}
                                 </span>
                             </div>
@@ -249,7 +232,7 @@
                                      class="flex items-center justify-between py-2 border-b border-gray-50">
                                     <div class="flex items-center gap-2">
                                         <span class="text-xs text-gray-400">{{ formatDate(pay.paid_at) }}</span>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700">
+                                        <span class="badge-pill badge-success">
                                             {{ {cash:'Naqd', click:'Click', payme:'Payme'}[pay.provider] }}
                                         </span>
                                     </div>
@@ -260,9 +243,7 @@
 
                         <!-- PDF -->
                         <div class="mt-4">
-                            <a :href="route('admin.contracts.pdf', applicant.contract.id)"
-                               target="_blank"
-                               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 hover:bg-gray-50 transition">
+                            <a :href="route('admin.contracts.pdf', applicant.contract.id)" target="_blank" class="btn-neutral">
                                 <Icon icon="mdi:file-pdf-box" class="w-4 h-4 text-red-500" />
                                 PDF yuklash
                             </a>
@@ -281,10 +262,8 @@
                         <div class="flex flex-col gap-2">
                             <button v-for="s in statuses" :key="s.value"
                                     @click="updateStatus(s.value)"
-                                    class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left"
-                                    :class="applicant.status === s.value
-                                    ? s.activeClass + ' ring-2 ring-offset-1 ring-[#0f3460]'
-                                    : s.activeClass + ' opacity-50 hover:opacity-100'">
+                                    class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left badge-pill-btn"
+                                    :class="[s.class, applicant.status === s.value ? 'is-active' : 'is-inactive']">
                                 <Icon :icon="s.icon" class="w-4 h-4 flex-shrink-0" />
                                 {{ s.label }}
                                 <Icon v-if="applicant.status === s.value" icon="mdi:check" class="w-4 h-4 ml-auto" />
@@ -299,7 +278,7 @@
                         <div class="space-y-3">
                             <div>
                                 <p class="info-label">Ariza raqami</p>
-                                <p class="text-sm font-mono font-bold text-[#0f3460]">{{ applicant.application_number }}</p>
+                                <p class="text-sm font-mono font-bold text-brand-600">{{ applicant.application_number }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Topshirilgan sana</p>
@@ -329,27 +308,28 @@ const paidAmount = computed(() =>
 )
 
 const statuses = [
-    { value: 'new',        label: 'Yangi',            icon: 'mdi:file-outline',          activeClass: 'bg-blue-50 text-blue-700' },
-    { value: 'accepted',   label: 'Qabul qilindi',    icon: 'mdi:check-circle-outline',  activeClass: 'bg-green-50 text-green-700' },
-    { value: 'interview',  label: 'Suhbat',           icon: 'mdi:account-voice',         activeClass: 'bg-yellow-50 text-yellow-700' },
-    { value: 'tested',     label: 'Test',             icon: 'mdi:clipboard-text-outline', activeClass: 'bg-purple-50 text-purple-700' },
-    { value: 'contracted', label: 'Kontrakt',         icon: 'mdi:file-sign',             activeClass: 'bg-indigo-50 text-indigo-700' },
-    { value: 'enrolled',   label: "Ro'yxatga olindi", icon: 'mdi:school-outline',        activeClass: 'bg-teal-50 text-teal-700' },
-    { value: 'rejected',   label: 'Rad etildi',       icon: 'mdi:close-circle-outline',  activeClass: 'bg-red-50 text-red-700' },
+    { value: 'new',        label: 'Yangi',            icon: 'mdi:file-outline',          class: 'badge-neutral' },
+    { value: 'accepted',   label: 'Qabul qilindi',    icon: 'mdi:check-circle-outline',  class: 'badge-brand' },
+    { value: 'interview',  label: 'Suhbat',           icon: 'mdi:account-voice',         class: 'badge-warning' },
+    { value: 'tested',     label: 'Test',             icon: 'mdi:clipboard-text-outline', class: 'badge-warning' },
+    { value: 'contracted', label: 'Kontrakt',         icon: 'mdi:file-sign',             class: 'badge-brand' },
+    { value: 'enrolled',   label: "Ro'yxatga olindi", icon: 'mdi:school-outline',        class: 'badge-success' },
+    { value: 'rejected',   label: 'Rad etildi',       icon: 'mdi:close-circle-outline',  class: 'badge-danger' },
 ]
 
-const statusBadge = (status) => {
-    const badges = {
-        new:        'bg-blue-50 text-blue-700 border-blue-200',
-        accepted:   'bg-green-50 text-green-700 border-green-200',
-        interview:  'bg-yellow-50 text-yellow-700 border-yellow-200',
-        tested:     'bg-purple-50 text-purple-700 border-purple-200',
-        contracted: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-        enrolled:   'bg-teal-50 text-teal-700 border-teal-200',
-        rejected:   'bg-red-50 text-red-700 border-red-200',
-    }
-    return badges[status] || 'bg-gray-50 text-gray-600 border-gray-200'
-}
+const statusBadge = (status) => statuses.find(s => s.value === status)?.class || 'badge-neutral'
+const testSessionBadge = (status) => ({
+    pending:   'badge-warning',
+    active:    'badge-success',
+    completed: 'badge-brand',
+    expired:   'badge-danger',
+}[status] || 'badge-neutral')
+const contractBadge = (status) => ({
+    draft:     'badge-warning',
+    signed:    'badge-brand',
+    paid:      'badge-success',
+    cancelled: 'badge-danger',
+}[status] || 'badge-neutral')
 
 const updateStatus = (status) => {
     if (status === props.applicant.status) return
@@ -405,4 +385,23 @@ const formatDate = (date) => {
     font-size: 0.875rem;
     color: #111827;
 }
+.status-select {
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    outline: none;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.85rem;
+}
+.status-select.badge-brand   { border-color: var(--color-brand-200); }
+.status-select.badge-success { border-color: #a7f3d0; }
+.status-select.badge-neutral { border-color: #e5e7eb; }
+.status-select.badge-warning { border-color: #fde68a; }
+.status-select.badge-danger  { border-color: #fecaca; }
+
+/* O'ng paneldagi status ro'yxati — badge ranglarini saqlab, tanlangan
+   holatni brand-600 halqa bilan, tanlanmaganlarini xiralashtirib ko'rsatadi */
+.badge-pill-btn { border-radius: 0.75rem; border: 1px solid transparent; }
+.badge-pill-btn.is-active { box-shadow: 0 0 0 2px var(--color-brand-600); }
+.badge-pill-btn.is-inactive { opacity: 0.55; }
+.badge-pill-btn.is-inactive:hover { opacity: 1; }
 </style>

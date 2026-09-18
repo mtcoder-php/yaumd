@@ -33,8 +33,8 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1 block">Turi</label>
-                        <select v-model="form.type" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50">
+                        <label class="field-label">Turi</label>
+                        <select v-model="form.type" class="field-input">
                             <option value="call">Qo'ng'iroq</option>
                             <option value="email">Email</option>
                             <option value="meeting">Uchrashuv</option>
@@ -42,8 +42,8 @@
                         </select>
                     </div>
                     <div v-if="form.type === 'call' || form.type === 'email'">
-                        <label class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1 block">Yo'nalishi</label>
-                        <select v-model="form.direction" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50">
+                        <label class="field-label">Yo'nalishi</label>
+                        <select v-model="form.direction" class="field-input">
                             <option value="outgoing">Chiquvchi (biz qildik)</option>
                             <option value="incoming">Kiruvchi (u qildi)</option>
                         </select>
@@ -51,14 +51,14 @@
                 </div>
 
                 <div>
-                    <label class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1 block">Mazmuni</label>
+                    <label class="field-label">Mazmuni</label>
                     <textarea v-model="form.summary" rows="3"
                               placeholder="Masalan: ota-onasi bilan gaplashdim, oy oxirigacha to'lashga va'da berishdi"
-                              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50 resize-none"></textarea>
-                    <p v-if="form.errors.summary" class="text-xs text-red-600 mt-1">{{ form.errors.summary }}</p>
+                              class="field-input" style="resize:none"></textarea>
+                    <p v-if="form.errors.summary" class="err">{{ form.errors.summary }}</p>
                 </div>
 
-                <button @click="submit" :disabled="form.processing" class="btn-primary">
+                <button @click="submit" :disabled="form.processing" class="btn-brand">
                     <Icon v-if="form.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                     <span v-else>Saqlash</span>
                 </button>
@@ -141,7 +141,7 @@ const typeIcon = (v) => ({
     note:    'mdi:note-text-outline',
 }[v] || 'mdi:note-text-outline')
 const typeClass = (v) => ({
-    call:    'bg-blue-50 text-blue-700',
+    call:    'bg-brand-50 text-brand-600',
     email:   'bg-purple-50 text-purple-700',
     meeting: 'bg-green-50 text-green-700',
     note:    'bg-gray-100 text-gray-500',
@@ -153,20 +153,25 @@ const formatDateTime = (v) => v
 </script>
 
 <style scoped>
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
+.field-label {
+    display: block;
+    font-size: 0.78rem;
     font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
+    color: #374151;
+    margin-bottom: 0.375rem;
 }
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.field-input {
+    width: 100%;
+    padding: 0.6rem 0.875rem;
+    border-radius: 0.625rem;
+    border: 1.5px solid #e5e7eb;
+    font-size: 0.875rem;
+    color: #111827;
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: auto;
+}
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
+.err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
 </style>

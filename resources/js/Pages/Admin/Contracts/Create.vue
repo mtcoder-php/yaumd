@@ -21,7 +21,7 @@
 
                     <!-- Abituriyent tanlash -->
                     <div>
-                        <label class="field-label">Abituriyent <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Abituriyent</label>
                         <select
                             v-model="form.applicant_id"
                             class="field-input"
@@ -46,7 +46,7 @@
 
                     <!-- To'lov turi -->
                     <div>
-                        <label class="field-label">To'lov turi <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> To'lov turi</label>
                         <div class="flex gap-3">
                             <button
                                 v-for="pt in paymentTypes"
@@ -54,15 +54,13 @@
                                 type="button"
                                 @click="form.payment_type = pt.value"
                                 class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left"
-                                :style="form.payment_type === pt.value
-                                    ? 'border-color:#0f3460; background:linear-gradient(135deg,#eff6ff,#f5f3ff)'
-                                    : 'border-color:#e5e7eb; background:#fafafa'"
+                                :class="form.payment_type === pt.value ? 'option-active' : 'option-idle'"
                             >
                                 <Icon :icon="pt.icon" class="w-5 h-5"
-                                      :style="form.payment_type === pt.value ? 'color:#0f3460' : 'color:#9ca3af'" />
+                                      :class="form.payment_type === pt.value ? 'text-brand-600' : 'text-gray-400'" />
                                 <div>
                                     <p class="text-sm font-semibold"
-                                       :style="form.payment_type === pt.value ? 'color:#0f3460' : 'color:#374151'">
+                                       :class="form.payment_type === pt.value ? 'text-brand-600' : 'text-gray-700'">
                                         {{ pt.label }}
                                     </p>
                                     <p class="text-xs text-gray-400">{{ pt.desc }}</p>
@@ -75,8 +73,7 @@
                     <!-- Summa (chegirmasiz, to'liq narx) -->
                     <div>
                         <label class="field-label">
-                            To'liq narx / yillik to'lov (so'm)
-                            <span class="req">*</span>
+                            <span class="req">*</span> To'liq narx / yillik to'lov (so'm)
                         </label>
                         <div class="relative">
                             <input
@@ -111,9 +108,7 @@
                                 type="button"
                                 @click="onDiscountPercentChange(p)"
                                 class="px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all"
-                                :style="Number(form.discount_percent) === p
-                                    ? 'border-color:#0f3460; background:linear-gradient(135deg,#eff6ff,#f5f3ff); color:#0f3460'
-                                    : 'border-color:#e5e7eb; background:#fafafa; color:#6b7280'"
+                                :class="Number(form.discount_percent) === p ? 'discount-active' : 'discount-idle'"
                             >
                                 {{ p === 0 ? "Yo'q" : `${p}%` }}
                             </button>
@@ -121,7 +116,7 @@
 
                         <div v-if="form.discount_percent > 0" class="mt-3 space-y-3">
                             <div>
-                                <label class="field-label">Chegirma sababi <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> Chegirma sababi</label>
                                 <select v-model="form.discount_reason" class="field-input"
                                         :class="form.errors.discount_reason ? 'field-error' : ''">
                                     <option value="">Tanlang</option>
@@ -132,17 +127,16 @@
                                 <p v-if="form.errors.discount_reason" class="err">{{ form.errors.discount_reason }}</p>
                             </div>
                             <div v-if="form.discount_reason === 'other'">
-                                <label class="field-label">Izoh <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> Izoh</label>
                                 <textarea v-model="form.discount_note" rows="2" class="field-input"
                                           :class="form.errors.discount_note ? 'field-error' : ''"
                                           placeholder="Sababni qisqacha yozing" />
                                 <p v-if="form.errors.discount_note" class="err">{{ form.errors.discount_note }}</p>
                             </div>
 
-                            <div class="px-4 py-3 rounded-xl flex items-center justify-between"
-                                 style="background: linear-gradient(135deg,#eff6ff,#f5f3ff)">
+                            <div class="px-4 py-3 rounded-xl flex items-center justify-between bg-brand-50">
                                 <span class="text-xs font-semibold text-gray-500">Yakuniy summa (chegirma bilan)</span>
-                                <span class="text-sm font-bold" style="color:#0f3460">{{ formatAmount(netAmount) }}</span>
+                                <span class="text-sm font-bold text-brand-600">{{ formatAmount(netAmount) }}</span>
                             </div>
                         </div>
                     </div>
@@ -151,19 +145,11 @@
 
                 <!-- Tugmalar -->
                 <div class="flex gap-3 mt-6">
-                    <Link
-                        :href="route('admin.contracts.index')"
-                        class="btn-secondary flex-1 flex items-center justify-center gap-2"
-                    >
+                    <Link :href="route('admin.contracts.index')" class="btn-neutral flex-1 justify-center">
                         <Icon icon="mdi:close" class="w-4 h-4" />
                         Bekor qilish
                     </Link>
-                    <button
-                        type="button"
-                        @click="submit"
-                        :disabled="form.processing"
-                        class="btn-primary flex-1"
-                    >
+                    <button type="button" @click="submit" :disabled="form.processing" class="btn-brand flex-1 justify-center">
                         <Icon v-if="form.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                         <Icon v-else icon="mdi:content-save-outline" class="w-4 h-4" />
                         {{ form.processing ? 'Saqlanmoqda...' : 'Yaratish' }}
@@ -258,7 +244,7 @@ const formatAmount = (amount) => {
     color: #374151;
     margin-bottom: 0.375rem;
 }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .field-input {
     width: 100%;
     padding: 0.6rem 0.875rem;
@@ -271,44 +257,14 @@ const formatAmount = (amount) => {
     transition: border-color 0.2s;
     appearance: auto;
 }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
 .field-input:disabled { opacity: 0.6; cursor: not-allowed; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
 
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.5rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.option-idle { border-color: #e5e7eb; background: #fafafa; }
+.option-active { border-color: var(--color-brand-600); background: var(--color-brand-50); }
 
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-}
-.btn-secondary:hover { background: #f9fafb; }
+.discount-idle { border-color: #e5e7eb; background: #fafafa; color: #6b7280; }
+.discount-active { border-color: var(--color-brand-600); background: var(--color-brand-50); color: var(--color-brand-600); }
 </style>

@@ -10,14 +10,11 @@
             <!-- KPI kartalar -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div v-for="card in statCards" :key="card.label"
-                     class="bg-white rounded-2xl border border-gray-100 p-5 flex items-start gap-4"
+                     class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                      style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                    <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                         :style="{ background: card.bg }">
-                        <Icon :icon="card.icon" class="w-5 h-5 text-white" />
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-gray-400 mb-0.5">{{ card.label }}</p>
+                    <div class="h-1" :style="{ background: card.color }" />
+                    <div class="p-4">
+                        <p class="text-xs font-medium text-gray-500 mb-1">{{ card.label }}</p>
                         <p class="text-2xl font-bold text-gray-900 truncate" :title="card.fullValue">{{ card.value }}</p>
                     </div>
                 </div>
@@ -28,11 +25,11 @@
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                 <div class="flex items-center justify-between mb-2">
                     <h2 class="text-sm font-bold text-gray-700">Qarzdorlar ulushi</h2>
-                    <span class="text-sm font-bold" style="color:#0f3460">{{ debtorSharePercent }}%</span>
+                    <span class="text-sm font-bold text-brand-600">{{ debtorSharePercent }}%</span>
                 </div>
-                <div class="h-3 rounded-full overflow-hidden" style="background: rgba(15,52,96,0.10)">
-                    <div class="h-full rounded-full transition-all duration-500"
-                         :style="{ width: debtorSharePercent + '%', background: 'linear-gradient(90deg,#0f3460,#533483)' }" />
+                <div class="h-3 rounded-full overflow-hidden bg-brand-50">
+                    <div class="h-full rounded-full transition-all duration-500 bg-brand-600"
+                         :style="{ width: debtorSharePercent + '%' }" />
                 </div>
                 <p class="text-xs text-gray-400 mt-2">
                     {{ kpi.debtors_count }} / {{ contractStudentsTotal }} kontrakt asosidagi talaba qarzdor
@@ -49,9 +46,9 @@
                         <p class="text-lg font-bold" :style="{ color: card.color }" :title="card.fullValue">{{ card.value }}</p>
                     </div>
                 </div>
-                <div class="h-3 rounded-full overflow-hidden mt-4" style="background: rgba(15,52,96,0.10)">
-                    <div class="h-full rounded-full transition-all duration-500"
-                         :style="{ width: collectedSharePercent + '%', background: 'linear-gradient(90deg,#15803d,#22c55e)' }" />
+                <div class="h-3 rounded-full overflow-hidden mt-4 bg-green-50">
+                    <div class="h-full rounded-full transition-all duration-500" style="background:#22c55e"
+                         :style="{ width: collectedSharePercent + '%' }" />
                 </div>
                 <p class="text-xs text-gray-400 mt-2">
                     Maqsaddan {{ collectedSharePercent }}% yig'ilgan ({{ formatAmount(kpi.collected_total) }} / {{ formatAmount(kpi.contract_target_total) }})
@@ -67,7 +64,7 @@
                 </div>
                 <div class="h-3 rounded-full overflow-hidden" style="background: rgba(124,58,237,0.10)">
                     <div class="h-full rounded-full transition-all duration-500"
-                         :style="{ width: (kpi.discount_percent_of_gross || 0) + '%', background: 'linear-gradient(90deg,#7c3aed,#c026d3)' }" />
+                         :style="{ width: (kpi.discount_percent_of_gross || 0) + '%', background: '#7c3aed' }" />
                 </div>
                 <p class="text-xs text-gray-400 mt-2">
                     Chegirmasiz {{ formatAmount(kpi.gross_potential_total) }} bo'lardi, chegirma bilan {{ formatAmount(kpi.contract_target_total) }}
@@ -171,8 +168,7 @@
                 <div class="flex items-center justify-between mb-2">
                     <h2 class="text-sm font-bold text-gray-700">Oylik to'lovlar dinamikasi (oxirgi 6 oy)</h2>
                     <span v-if="latestChangePercent !== null"
-                          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-                          :class="latestChangePercent >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">
+                          class="badge-pill" :class="latestChangePercent >= 0 ? 'badge-success' : 'badge-danger'">
                         <Icon :icon="latestChangePercent >= 0 ? 'mdi:trending-up' : 'mdi:trending-down'" class="w-3.5 h-3.5" />
                         {{ latestChangePercent >= 0 ? '+' : '' }}{{ latestChangePercent }}% o'tgan oyga nisbatan
                     </span>
@@ -215,29 +211,25 @@ const statCards = computed(() => [
         label: 'Jami talabalar',
         value: compactNumber(props.kpi.students_total),
         fullValue: props.kpi.students_total,
-        icon: 'mdi:account-school-outline',
-        bg: 'linear-gradient(135deg, #0f3460, #533483)',
+        color: 'var(--color-brand-600)',
     },
     {
         label: 'Qarzdorlar soni',
         value: compactNumber(props.kpi.debtors_count),
         fullValue: props.kpi.debtors_count,
-        icon: 'mdi:account-alert-outline',
-        bg: 'linear-gradient(135deg, #d97706, #f59e0b)',
+        color: '#f59e0b',
     },
     {
         label: 'Jami qarz summasi',
         value: compactNumber(props.kpi.debtors_amount) + " so'm",
         fullValue: formatAmount(props.kpi.debtors_amount),
-        icon: 'mdi:cash-remove',
-        bg: 'linear-gradient(135deg, #b91c1c, #ef4444)',
+        color: '#ef4444',
     },
     {
         label: "Shu oy to'langan",
         value: compactNumber(props.kpi.paid_this_month) + " so'm",
         fullValue: formatAmount(props.kpi.paid_this_month),
-        icon: 'mdi:cash-check',
-        bg: 'linear-gradient(135deg, #15803d, #22c55e)',
+        color: '#22c55e',
     },
 ])
 
@@ -261,7 +253,7 @@ const financeCards = computed(() => [
         label: 'Kontrakt maqsadi (chegirma bilan)',
         value: compactNumber(props.kpi.contract_target_total) + " so'm",
         fullValue: formatAmount(props.kpi.contract_target_total),
-        color: '#0f3460',
+        color: 'var(--color-brand-600)',
     },
     {
         label: "Hozircha yig'ilgan",
