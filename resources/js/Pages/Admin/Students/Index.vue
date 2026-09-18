@@ -3,21 +3,21 @@
         <div class="space-y-5">
 
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between flex-wrap gap-3">
                 <div>
                     <h1 class="text-xl font-bold text-gray-900">Talabalar</h1>
                     <p class="text-sm text-gray-500 mt-0.5">Jami: {{ students.total }} ta talaba</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <a :href="exportUrl" class="btn-secondary">
+                <div class="flex items-center gap-2">
+                    <a :href="exportUrl" class="btn-neutral">
                         <Icon icon="mdi:file-download-outline" class="w-4 h-4" />
                         Excel'ga eksport
                     </a>
-                    <button @click="importOpen = true" class="btn-secondary">
+                    <button @click="importOpen = true" class="btn-brand-outline">
                         <Icon icon="mdi:file-excel-outline" class="w-4 h-4" />
                         HEMIS'dan import
                     </button>
-                    <Link :href="route('admin.students.create')" class="btn-primary">
+                    <Link :href="route('admin.students.create')" class="btn-brand">
                         <Icon icon="mdi:plus" class="w-4 h-4" />
                         Yangi talaba
                     </Link>
@@ -50,139 +50,123 @@
                         v-model="filters.search"
                         type="text"
                         placeholder="Ism, familiya, talaba raqami, HEMIS ID..."
-                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
+                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-brand-600 bg-gray-50"
                         @input="debouncedSearch"
                     >
                 </div>
 
-                <select v-model="filters.academic_year_id" @change="applyFilters"
-                        class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50">
+                <select v-model="filters.academic_year_id" @change="applyFilters" class="select-filter">
                     <option value="">Barcha o'quv yillari</option>
                     <option v-for="y in academicYears" :key="y.id" :value="y.id">{{ y.name }}</option>
                 </select>
 
-                <select v-model="filters.direction_id" @change="applyFilters"
-                        class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50">
+                <select v-model="filters.direction_id" @change="applyFilters" class="select-filter">
                     <option value="">Barcha yo'nalishlar</option>
                     <option v-for="d in directions" :key="d.id" :value="d.id">{{ d.name_uz }}</option>
                 </select>
 
-                <select v-model="filters.course_year" @change="applyFilters"
-                        class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50">
+                <select v-model="filters.course_year" @change="applyFilters" class="select-filter">
                     <option value="">Barcha kurslar</option>
                     <option v-for="c in 6" :key="c" :value="c">{{ c }}-kurs</option>
                 </select>
 
-                <select v-model="filters.status" @change="applyFilters"
-                        class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50">
+                <select v-model="filters.status" @change="applyFilters" class="select-filter">
                     <option value="">Barcha statuslar</option>
                     <option v-for="s in statusOptions" :key="s.value" :value="s.value">{{ s.label }}</option>
                 </select>
 
-                <button v-if="hasFilters" @click="resetFilters"
-                        class="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-1.5">
+                <button v-if="hasFilters" @click="resetFilters" class="btn-neutral">
                     <Icon icon="mdi:close" class="w-4 h-4" />
                     Tozalash
                 </button>
             </div>
 
             <!-- Table -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                        <tr class="border-b border-gray-100">
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Talaba</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Yo'nalish</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">O'quv yili</th>
-                            <th class="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Kurs</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Holati</th>
-                            <th class="px-4 py-3"></th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                        <tr v-if="!students.data?.length">
-                            <td colspan="6" class="text-center py-16 text-gray-400">
-                                <Icon icon="mdi:account-school-outline" class="w-12 h-12 mx-auto mb-3 opacity-40" />
-                                <p class="text-sm">Talaba topilmadi</p>
-                            </td>
-                        </tr>
-                        <tr v-for="s in students.data ?? []" :key="s.id" class="hover:bg-gray-50 transition-colors">
+            <div class="table-grid-wrap">
+                <table class="table-grid">
+                    <thead>
+                    <tr>
+                        <th>Talaba</th>
+                        <th>Yo'nalish</th>
+                        <th>O'quv yili</th>
+                        <th class="text-center">Kurs</th>
+                        <th>Holati</th>
+                        <th class="text-right">Amallar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-if="!students.data?.length">
+                        <td colspan="6" class="text-center py-16 text-gray-400">
+                            <Icon icon="mdi:account-school-outline" class="w-12 h-12 mx-auto mb-3 opacity-40" />
+                            <p class="text-sm">Talaba topilmadi</p>
+                        </td>
+                    </tr>
+                    <tr v-for="s in students.data ?? []" :key="s.id">
 
-                            <!-- Talaba -->
-                            <td class="px-4 py-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xs flex-shrink-0"
-                                         style="background: linear-gradient(135deg, #0f3460, #533483)">
-                                        {{ initials(s) }}
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-gray-900">{{ fullName(s) }}</p>
-                                        <p class="text-xs text-gray-400 font-mono">{{ s.student_number || s.hemis_id || '—' }}</p>
-                                    </div>
+                        <!-- Talaba -->
+                        <td>
+                            <Link :href="route('admin.students.show', s.id)" class="flex items-center gap-3 group">
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-xs flex-shrink-0 bg-brand-600">
+                                    {{ initials(s) }}
                                 </div>
-                            </td>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900 group-hover:text-brand-600 transition">{{ fullName(s) }}</p>
+                                    <p class="text-xs text-gray-400 font-mono">{{ s.student_number || s.hemis_id || '—' }}</p>
+                                </div>
+                            </Link>
+                        </td>
 
-                            <!-- Yo'nalish -->
-                            <td class="px-4 py-3 text-sm text-gray-600">{{ s.direction?.name_uz || '—' }}</td>
+                        <!-- Yo'nalish -->
+                        <td class="text-sm text-gray-600">{{ s.direction?.name_uz || '—' }}</td>
 
-                            <!-- O'quv yili -->
-                            <td class="px-4 py-3 text-sm text-gray-600">{{ s.academic_year?.name || '—' }}</td>
+                        <!-- O'quv yili -->
+                        <td class="text-sm text-gray-600">{{ s.academic_year?.name || '—' }}</td>
 
-                            <!-- Kurs -->
-                            <td class="px-4 py-3 text-center">
-                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl text-sm font-bold"
-                                  style="background: linear-gradient(135deg, #eff6ff, #f5f3ff); color: #0f3460">
-                                {{ s.course_year }}
-                            </span>
-                            </td>
+                        <!-- Kurs -->
+                        <td class="text-center">
+                            <span class="badge-pill badge-brand">{{ s.course_year }}-kurs</span>
+                        </td>
 
-                            <!-- Holati -->
-                            <td class="px-4 py-3">
-                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                  :class="statusClass(s.status)">
+                        <!-- Holati -->
+                        <td>
+                            <span class="badge-pill" :class="statusClass(s.status)">
                                 {{ statusLabel(s.status) }}
                             </span>
-                            </td>
+                        </td>
 
-                            <!-- Amallar -->
-                            <td class="px-4 py-3">
-                                <div class="flex items-center gap-3">
-                                    <Link :href="route('admin.students.show', s.id)"
-                                          class="text-xs font-medium text-gray-500 hover:text-gray-800 flex items-center gap-1">
-                                        <Icon icon="mdi:eye-outline" class="w-3.5 h-3.5" />
-                                        Ko'rish
-                                    </Link>
-                                    <Link :href="route('admin.students.edit', s.id)"
-                                          class="text-xs font-medium text-amber-600 hover:text-amber-800 flex items-center gap-1">
-                                        <Icon icon="mdi:pencil-outline" class="w-3.5 h-3.5" />
-                                        Tahrir
-                                    </Link>
-                                    <button @click="confirmDelete(s)"
-                                            class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1">
-                                        <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
-                                        O'chirish
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+                        <!-- Amallar -->
+                        <td>
+                            <div class="flex items-center justify-end gap-1">
+                                <Link :href="route('admin.students.show', s.id)" title="Ko'rish" class="btn-ghost-icon">
+                                    <Icon icon="mdi:eye-outline" class="w-4 h-4" />
+                                </Link>
+                                <Link :href="route('admin.students.edit', s.id)" title="Tahrirlash" class="btn-ghost-icon">
+                                    <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
+                                </Link>
+                                <button @click="confirmDelete(s)" title="O'chirish" class="btn-ghost-icon danger">
+                                    <Icon icon="mdi:delete-outline" class="w-4 h-4" />
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
 
                 <!-- Pagination -->
-                <div v-if="(students.last_page ?? 1) > 1"
-                     class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+                <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-between flex-wrap gap-3">
                     <p class="text-xs text-gray-500">{{ students.from }}–{{ students.to }} / {{ students.total }}</p>
-                    <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-1.5">
                         <template v-for="link in (students.links ?? [])" :key="link.label">
-                            <Link v-if="link.url" :href="link.url"
-                                  class="px-3 py-1.5 text-xs rounded-lg transition"
-                                  :class="link.active ? 'text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'"
-                                  :style="link.active ? 'background:linear-gradient(135deg,#0f3460,#533483)' : ''"
-                                  v-html="link.label" />
-                            <span v-else class="px-3 py-1.5 text-xs text-gray-300" v-html="link.label" />
+                            <component
+                                :is="link.url ? Link : 'span'"
+                                :href="link.url ?? undefined"
+                                class="pagination-btn"
+                                :class="[link.active ? 'active' : '', !link.url ? 'disabled' : '']"
+                            >
+                                <ChevronLeftIcon v-if="isPrevLabel(link.label)" class="w-4 h-4" />
+                                <ChevronRightIcon v-else-if="isNextLabel(link.label)" class="w-4 h-4" />
+                                <span v-else v-html="link.label" />
+                            </component>
                         </template>
                     </div>
                 </div>
@@ -202,13 +186,13 @@
 
                 <div class="space-y-4">
                     <a :href="route('admin.students.template')"
-                       class="flex items-center gap-2 text-sm font-medium text-[#0f3460] hover:underline">
+                       class="flex items-center gap-2 text-sm font-medium text-brand-600 hover:underline">
                         <Icon icon="mdi:download-outline" class="w-4 h-4" />
                         Namuna shablonni yuklab olish
                     </a>
 
                     <div>
-                        <label class="field-label">O'quv yili <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> O'quv yili</label>
                         <select v-model="importForm.academic_year_id" class="field-input"
                                 :class="importForm.errors.academic_year_id ? 'field-error' : ''">
                             <option value="">Tanlang</option>
@@ -218,7 +202,7 @@
                     </div>
 
                     <div>
-                        <label class="field-label">Excel fayl (.xlsx, .xls, .csv) <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Excel fayl (.xlsx, .xls, .csv)</label>
                         <input type="file" accept=".xlsx,.xls,.csv" @change="onFileChange"
                                class="field-input" :class="importForm.errors.file ? 'field-error' : ''">
                         <p v-if="importForm.errors.file" class="err">{{ importForm.errors.file }}</p>
@@ -226,8 +210,8 @@
                 </div>
 
                 <div class="flex gap-3 mt-6">
-                    <button @click="closeImport" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitImport" :disabled="importForm.processing" class="btn-primary flex-1">
+                    <button @click="closeImport" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitImport" :disabled="importForm.processing" class="btn-brand flex-1 justify-center">
                         <Icon v-if="importForm.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                         {{ importForm.processing ? 'Yuklanmoqda...' : 'Import qilish' }}
                     </button>
@@ -247,8 +231,8 @@
                     <strong>{{ fullName(deleteTarget) }}</strong>ni o'chirasizmi?
                 </p>
                 <div class="flex gap-3">
-                    <button @click="deleteTarget = null" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitDelete" class="btn-danger flex-1">O'chirish</button>
+                    <button @click="deleteTarget = null" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitDelete" class="btn-danger-pill flex-1">O'chirish</button>
                 </div>
             </div>
         </div>
@@ -260,6 +244,7 @@
 import { ref, computed, watch } from 'vue'
 import { Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
@@ -284,12 +269,12 @@ const statusOptions = [
 
 const statusLabel = (v) => statusOptions.find(s => s.value === v)?.label || v
 const statusClass = (v) => ({
-    active:         'bg-green-50 text-green-700',
-    academic_leave: 'bg-amber-50 text-amber-700',
-    expelled:       'bg-red-50 text-red-700',
-    graduated:      'bg-blue-50 text-blue-700',
-    transferred:    'bg-gray-100 text-gray-500',
-}[v] || 'bg-gray-100 text-gray-500')
+    active:         'badge-success',
+    academic_leave: 'badge-warning',
+    expelled:       'badge-danger',
+    graduated:      'badge-brand',
+    transferred:    'badge-neutral',
+}[v] || 'badge-neutral')
 
 const fullName = (s) => [s.last_name, s.first_name, s.middle_name].filter(Boolean).join(' ')
 const initials = (s) => [s.last_name, s.first_name].filter(Boolean).map(n => n[0]).join('').toUpperCase()
@@ -372,6 +357,12 @@ const submitDelete = () => {
         onSuccess: () => { deleteTarget.value = null },
     })
 }
+
+// Laravel'ning standart pagination yorliqlari o'rniga sof strelka
+// ikonkalarini ko'rsatish uchun (Foydalanuvchilar sahifasidagi bilan
+// bir xil naqsh).
+const isPrevLabel = (label) => /Previous|&laquo;|«/i.test(label)
+const isNextLabel = (label) => /Next|&raquo;|»/i.test(label)
 </script>
 
 <style scoped>
@@ -382,7 +373,7 @@ const submitDelete = () => {
     color: #374151;
     margin-bottom: 0.375rem;
 }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .field-input {
     width: 100%;
     padding: 0.6rem 0.875rem;
@@ -395,58 +386,7 @@ const submitDelete = () => {
     transition: border-color 0.2s;
     appearance: auto;
 }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-secondary:hover { background: #f9fafb; }
-
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: #ef4444;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-}
-.btn-danger:hover { background: #dc2626; }
 </style>

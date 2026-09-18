@@ -237,6 +237,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/',          [AcademicYearController::class, 'index'])->name('index')->middleware('permission:academic.view');
         Route::get('/create',    [AcademicYearController::class, 'create'])->name('create')->middleware('permission:academic.create');
         Route::post('/',         [AcademicYearController::class, 'store'])->name('store')->middleware('permission:academic.create');
+        Route::get('/{id}',      [AcademicYearController::class, 'show'])->name('show')->middleware('permission:academic.view');
         Route::get('/{id}/edit', [AcademicYearController::class, 'edit'])->name('edit')->middleware('permission:academic.edit');
         Route::put('/{id}',      [AcademicYearController::class, 'update'])->name('update')->middleware('permission:academic.edit');
         Route::delete('/{id}',   [AcademicYearController::class, 'destroy'])->name('destroy')->middleware('permission:academic.delete');

@@ -3,13 +3,12 @@
         <div class="space-y-5">
 
             <!-- Header -->
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 flex-wrap">
                 <Link :href="route('admin.students.index')"
                       class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition">
                     <Icon icon="mdi:arrow-left" class="w-5 h-5 text-gray-600" />
                 </Link>
-                <div class="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white text-sm flex-shrink-0"
-                     style="background: linear-gradient(135deg, #0f3460, #533483)">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white text-sm flex-shrink-0 bg-brand-600">
                     {{ initials }}
                 </div>
                 <div>
@@ -17,9 +16,7 @@
                     <p class="text-sm text-gray-500 mt-0.5 font-mono">{{ student.student_number || student.hemis_id || '—' }}</p>
                 </div>
                 <div class="ml-auto flex items-center gap-3">
-                    <Link :href="route('admin.students.edit', student.id)"
-                          class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition"
-                          style="background: linear-gradient(135deg, #0f3460, #533483)">
+                    <Link :href="route('admin.students.edit', student.id)" class="btn-brand">
                         <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                         Tahrirlash
                     </Link>
@@ -35,7 +32,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:school-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:school-outline" class="w-4 h-4 text-brand-600" />
                             Akademik ma'lumotlar
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -71,7 +68,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:account-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:account-outline" class="w-4 h-4 text-brand-600" />
                             Shaxsiy ma'lumotlar
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -110,13 +107,13 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:card-account-phone-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:card-account-phone-outline" class="w-4 h-4 text-brand-600" />
                             Aloqa ma'lumotlari
                         </h2>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="info-label">Telefon</p>
-                                <a v-if="student.phone" :href="`tel:${student.phone}`" class="info-value text-[#0f3460] hover:underline">
+                                <a v-if="student.phone" :href="`tel:${student.phone}`" class="info-value text-brand-600 hover:underline">
                                     {{ student.phone }}
                                 </a>
                                 <p v-else class="info-value">—</p>
@@ -136,7 +133,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:account-group-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:account-group-outline" class="w-4 h-4 text-brand-600" />
                             Guruhi
                         </h2>
                         <div v-if="student.groups?.length" class="space-y-2">
@@ -146,8 +143,7 @@
                                     <p class="text-sm font-semibold text-gray-800">{{ g.name }}</p>
                                     <p class="text-xs text-gray-400">{{ studyFormLabel(g.study_form) }} · {{ g.course_year }}-kurs</p>
                                 </div>
-                                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                      :class="g.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'">
+                                <span class="badge-pill" :class="g.is_active ? 'badge-success' : 'badge-neutral'">
                                     {{ g.is_active ? 'Faol' : 'Nofaol' }}
                                 </span>
                             </div>
@@ -162,7 +158,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">
-                            <Icon icon="mdi:book-open-outline" class="w-4 h-4 text-[#0f3460]" />
+                            <Icon icon="mdi:book-open-outline" class="w-4 h-4 text-brand-600" />
                             Kurslari (LMS)
                         </h2>
                         <div v-if="student.enrollments?.length" class="space-y-2">
@@ -172,9 +168,7 @@
                                     <p class="text-sm font-semibold text-gray-800">{{ e.course?.title || '—' }}</p>
                                     <p class="text-xs text-gray-400">Progress: {{ e.progress ?? 0 }}%</p>
                                 </div>
-                                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
-                                    {{ e.status }}
-                                </span>
+                                <span class="badge-pill badge-brand">{{ e.status }}</span>
                             </div>
                         </div>
                         <div v-else class="text-center py-8 text-gray-400">
@@ -193,8 +187,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-5"
                          style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                         <h2 class="section-title">Holati</h2>
-                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold"
-                              :class="statusClass(student.status)">
+                        <span class="badge-pill" :class="statusClass(student.status)">
                             {{ statusLabel(student.status) }}
                         </span>
                     </div>
@@ -206,11 +199,11 @@
                         <div class="space-y-3">
                             <div>
                                 <p class="info-label">HEMIS ID</p>
-                                <p class="text-sm font-mono font-bold text-[#0f3460]">{{ student.hemis_id || '—' }}</p>
+                                <p class="text-sm font-mono font-bold text-brand-600">{{ student.hemis_id || '—' }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Talaba raqami</p>
-                                <p class="text-sm font-mono font-bold text-[#0f3460]">{{ student.student_number || '—' }}</p>
+                                <p class="text-sm font-mono font-bold text-brand-600">{{ student.student_number || '—' }}</p>
                             </div>
                             <div>
                                 <p class="info-label">Tizimga qo'shilgan sana</p>
@@ -225,7 +218,7 @@
                         <h2 class="section-title">Tezkor amallar</h2>
                         <div class="flex flex-col gap-2">
                             <Link :href="route('admin.students.edit', student.id)"
-                                  class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 transition">
+                                  class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium border border-gray-200 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition">
                                 <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                                 Tahrirlash
                             </Link>
@@ -253,8 +246,8 @@
                     <strong>{{ fullName }}</strong>ni o'chirasizmi?
                 </p>
                 <div class="flex gap-3">
-                    <button @click="confirmDelete = false" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitDelete" class="btn-danger flex-1">O'chirish</button>
+                    <button @click="confirmDelete = false" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitDelete" class="btn-danger-pill flex-1">O'chirish</button>
                 </div>
             </div>
         </div>
@@ -284,14 +277,14 @@ const degreeLabel = (v) => ({ bachelor: 'Bakalavr', master: 'Magistr' }[v] || v)
 const studyFormLabel = (v) => ({ full_time: 'Kunduzgi', evening: 'Kechki', distance: 'Sirtqi' }[v] || v)
 
 const statusOptions = {
-    active:         { label: "O'qimoqda", cls: 'bg-green-50 text-green-700' },
-    academic_leave: { label: "Akademik ta'til", cls: 'bg-amber-50 text-amber-700' },
-    expelled:       { label: 'Chetlashtirilgan', cls: 'bg-red-50 text-red-700' },
-    graduated:      { label: 'Bitirgan', cls: 'bg-blue-50 text-blue-700' },
-    transferred:    { label: "Ko'chirilgan", cls: 'bg-gray-100 text-gray-500' },
+    active:         { label: "O'qimoqda", cls: 'badge-success' },
+    academic_leave: { label: "Akademik ta'til", cls: 'badge-warning' },
+    expelled:       { label: 'Chetlashtirilgan', cls: 'badge-danger' },
+    graduated:      { label: 'Bitirgan', cls: 'badge-brand' },
+    transferred:    { label: "Ko'chirilgan", cls: 'badge-neutral' },
 }
 const statusLabel = (v) => statusOptions[v]?.label || v
-const statusClass = (v) => statusOptions[v]?.cls || 'bg-gray-100 text-gray-500'
+const statusClass = (v) => statusOptions[v]?.cls || 'badge-neutral'
 
 const formatDate = (date) => {
     if (!date) return '—'
@@ -330,32 +323,4 @@ const submitDelete = () => {
     font-size: 0.875rem;
     color: #111827;
 }
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-}
-.btn-secondary:hover { background: #f9fafb; }
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: #ef4444;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-}
-.btn-danger:hover { background: #dc2626; }
 </style>

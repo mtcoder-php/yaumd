@@ -1,6 +1,6 @@
 <template>
     <AppLayout :title="pageTitle">
-        <div class="max-w-3xl mx-auto space-y-5">
+        <div class="max-w-4xl mx-auto space-y-5">
 
             <!-- Header -->
             <div class="flex items-center gap-4">
@@ -17,6 +17,21 @@
             <div class="bg-white rounded-2xl border border-gray-100 p-6"
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
 
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-sm font-bold text-gray-800">Talaba ma'lumotlari</h2>
+                    <div class="flex items-center gap-2">
+                        <Link :href="route('admin.students.index')" class="btn-neutral">
+                            <Icon icon="mdi:arrow-left" class="w-4 h-4" />
+                            Orqaga
+                        </Link>
+                        <button type="button" @click="submit" :disabled="form.processing" class="btn-brand">
+                            <Icon v-if="form.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                            <Icon v-else icon="mdi:content-save-outline" class="w-4 h-4" />
+                            {{ form.processing ? 'Saqlanmoqda...' : 'Saqlash' }}
+                        </button>
+                    </div>
+                </div>
+
                 <div class="space-y-6">
 
                     <!-- Akademik ma'lumotlar -->
@@ -24,7 +39,7 @@
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Akademik ma'lumotlar</p>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label class="field-label">O'quv yili <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> O'quv yili</label>
                                 <select v-model="form.academic_year_id" class="field-input"
                                         :class="form.errors.academic_year_id ? 'field-error' : ''">
                                     <option value="">Tanlang</option>
@@ -43,7 +58,7 @@
                                 <p class="hint">Avval kafedrani tanlang — yo'nalishlar shunga qarab chiqadi</p>
                             </div>
                             <div>
-                                <label class="field-label">Yo'nalish <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> Yo'nalish</label>
                                 <select v-model="form.direction_id" class="field-input"
                                         :class="form.errors.direction_id ? 'field-error' : ''"
                                         :disabled="!form.department_id">
@@ -56,14 +71,14 @@
                                 <p v-if="form.errors.direction_id" class="err">{{ form.errors.direction_id }}</p>
                             </div>
                             <div>
-                                <label class="field-label">Ta'lim darajasi <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> Ta'lim darajasi</label>
                                 <select v-model="form.degree" class="field-input">
                                     <option value="bachelor">Bakalavr</option>
                                     <option value="master">Magistr</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="field-label">Ta'lim shakli <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> Ta'lim shakli</label>
                                 <select v-model="form.study_form" class="field-input">
                                     <option value="full_time">Kunduzgi</option>
                                     <option value="evening">Kechki</option>
@@ -72,13 +87,13 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="field-label">Kurs <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> Kurs</label>
                                 <select v-model.number="form.course_year" class="field-input">
                                     <option v-for="c in courseYearOptions" :key="c" :value="c">{{ c }}-kurs</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="field-label">Holati <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> Holati</label>
                                 <select v-model="form.status" class="field-input">
                                     <option value="active">O'qimoqda</option>
                                     <option value="academic_leave">Akademik ta'til</option>
@@ -88,7 +103,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="field-label">Moliyalashtirish turi <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> Moliyalashtirish turi</label>
                                 <select v-model="form.funding_type" class="field-input"
                                         :class="form.errors.funding_type ? 'field-error' : ''">
                                     <option value="contract">Kontrakt (pullik)</option>
@@ -124,14 +139,14 @@
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Shaxsiy ma'lumotlar</p>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label class="field-label">Familiya <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> Familiya</label>
                                 <input v-model="form.last_name" type="text" placeholder="PASSPORTDAGIDEK" class="field-input"
                                        :class="form.errors.last_name ? 'field-error' : ''"
                                        @input="form.last_name = toLatinUpper(form.last_name)">
                                 <p v-if="form.errors.last_name" class="err">{{ form.errors.last_name }}</p>
                             </div>
                             <div>
-                                <label class="field-label">Ism <span class="req">*</span></label>
+                                <label class="field-label"><span class="req">*</span> Ism</label>
                                 <input v-model="form.first_name" type="text" placeholder="PASSPORTDAGIDEK" class="field-input"
                                        :class="form.errors.first_name ? 'field-error' : ''"
                                        @input="form.first_name = toLatinUpper(form.first_name)">
@@ -197,14 +212,13 @@
 
                 </div>
 
-                <!-- Tugmalar -->
+                <!-- Tugmalar (pastda ham) -->
                 <div class="flex gap-3 mt-6">
-                    <Link :href="route('admin.students.index')"
-                          class="btn-secondary flex-1 flex items-center justify-center gap-2">
+                    <Link :href="route('admin.students.index')" class="btn-neutral flex-1 justify-center">
                         <Icon icon="mdi:close" class="w-4 h-4" />
                         Bekor qilish
                     </Link>
-                    <button type="button" @click="submit" :disabled="form.processing" class="btn-primary flex-1">
+                    <button type="button" @click="submit" :disabled="form.processing" class="btn-brand flex-1 justify-center">
                         <Icon v-if="form.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                         <Icon v-else icon="mdi:content-save-outline" class="w-4 h-4" />
                         {{ form.processing ? 'Saqlanmoqda...' : 'Saqlash' }}
@@ -372,7 +386,7 @@ const submit = () => {
     color: #374151;
     margin-bottom: 0.375rem;
 }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .field-input {
     width: 100%;
     padding: 0.6rem 0.875rem;
@@ -385,45 +399,9 @@ const submit = () => {
     transition: border-color 0.2s;
     appearance: auto;
 }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
 .field-input:disabled { opacity: 0.6; cursor: not-allowed; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
 .hint { color: #9ca3af; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.5rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-}
-.btn-secondary:hover { background: #f9fafb; }
 </style>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAcademicYearRequest;
 use App\Http\Requests\UpdateAcademicYearRequest;
 use App\Models\AcademicYear;
+use App\Models\StudentGroup;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -40,6 +41,18 @@ class AcademicYearController extends Controller
 
         return redirect()->route('admin.academic-years.index')
             ->with('success', "O'quv yili yaratildi!");
+    }
+
+    public function show(int $id): Response
+    {
+        return Inertia::render('Admin/AcademicYears/Show', [
+            'academicYear' => AcademicYear::withCount(['students', 'groups'])->findOrFail($id),
+            'groups'       => StudentGroup::where('academic_year_id', $id)
+                ->with(['direction', 'department'])
+                ->withCount('students')
+                ->orderBy('name')
+                ->get(),
+        ]);
     }
 
     public function edit(int $id): Response
