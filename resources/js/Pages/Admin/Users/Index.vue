@@ -9,11 +9,11 @@
                     <p class="text-sm text-gray-500 mt-0.5">Jami: {{ users.total }} ta foydalanuvchi</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button @click="importOpen = true" class="btn-secondary">
+                    <button @click="importOpen = true" class="btn-brand-outline">
                         <Icon icon="mdi:file-excel-outline" class="w-4 h-4" />
                         Excel'dan import
                     </button>
-                    <Link :href="route('admin.users.create')" class="btn-primary">
+                    <Link :href="route('admin.users.create')" class="btn-brand">
                         <Icon icon="mdi:plus" class="w-4 h-4" />
                         Yangi foydalanuvchi
                     </Link>
@@ -47,14 +47,14 @@
                         v-model="filters.search"
                         type="text"
                         placeholder="Ism yoki email bo'yicha qidirish..."
-                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
+                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-brand-500 bg-gray-50"
                         @input="debouncedSearch"
                     >
                 </div>
 
                 <!-- Role -->
                 <select v-model="filters.role"
-                        class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
+                        class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-brand-500 bg-gray-50"
                         @change="applyFilters">
                     <option value="">Barcha rollar</option>
                     <option v-for="r in roles" :key="r.value" :value="r.value">{{ r.label }}</option>
@@ -68,34 +68,35 @@
                 </button>
             </div>
 
-            <!-- Table -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                <table class="w-full">
+            <!-- Table — to'liq to'r (grid) chegarali dizayn, referensdagi
+                 (billing.e-edu.uz "Shartnoma shablonlari") ko'rinishiga mos:
+                 ustunlar orasida ham, qatorlar orasida ham chiziqlar bor.
+                 Bu global .table-grid* klasslari (app.css) — shu naqsh
+                 boshqa barcha jadval sahifalarida ham qo'llanilishi kerak. -->
+            <div class="table-grid-wrap">
+                <table class="table-grid">
                     <thead>
-                    <tr class="border-b border-gray-100">
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Foydalanuvchi</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Rol</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Oxirgi kirish</th>
-                        <th class="px-4 py-3"></th>
+                    <tr>
+                        <th>Foydalanuvchi</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Oxirgi kirish</th>
+                        <th class="text-right">Amallar</th>
                     </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-50">
+                    <tbody>
                     <tr v-if="!users.data?.length">
                         <td colspan="5" class="text-center py-16 text-gray-400">
                             <Icon icon="mdi:account-off-outline" class="w-12 h-12 mx-auto mb-3 opacity-40" />
                             <p class="text-sm">Foydalanuvchi topilmadi</p>
                         </td>
                     </tr>
-                    <tr v-for="u in users.data ?? []" :key="u.id"
-                        class="hover:bg-gray-50 transition-colors">
+                    <tr v-for="u in users.data ?? []" :key="u.id">
 
                         <!-- Avatar + Ism -->
-                        <td class="px-4 py-3">
+                        <td>
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm text-white flex-shrink-0"
-                                     style="background: linear-gradient(135deg, #0f3460, #533483)">
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm text-white flex-shrink-0 bg-brand-600">
                                     {{ u.full_name?.charAt(0)?.toUpperCase() || 'U' }}
                                 </div>
                                 <div>
@@ -106,37 +107,37 @@
                         </td>
 
                         <!-- Email -->
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ u.email }}</td>
+                        <td class="text-gray-600">{{ u.email }}</td>
 
                         <!-- Rol -->
-                        <td class="px-4 py-3">
+                        <td>
                                 <span v-for="role in u.roles" :key="role.id"
-                                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold mr-1"
+                                      class="badge-pill mr-1"
                                       :class="roleBadge(role.name)">
                                     {{ roleLabel(role.name) }}
                                 </span>
                         </td>
 
                         <!-- Oxirgi kirish -->
-                        <td class="px-4 py-3 text-xs text-gray-400">
+                        <td class="text-xs text-gray-400">
                             {{ u.last_login_at ? formatDate(u.last_login_at) : 'Hali kirmagan' }}
                         </td>
 
                         <!-- Amallar -->
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-3">
+                        <td>
+                            <div class="flex items-center justify-end gap-1">
                                 <Link
                                     :href="route('admin.users.edit', u.id)"
-                                    class="text-xs font-medium text-amber-600 hover:text-amber-800 flex items-center gap-1">
-                                    <Icon icon="mdi:pencil-outline" class="w-3.5 h-3.5" />
-                                    Tahrir
+                                    title="Tahrirlash"
+                                    class="btn-ghost-icon">
+                                    <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                                 </Link>
                                 <button
                                     v-if="!u.roles?.some(r => r.name === 'super-admin')"
                                     @click="confirmDelete(u)"
-                                    class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1">
-                                    <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
-                                    O'chirish
+                                    title="O'chirish"
+                                    class="btn-ghost-icon danger">
+                                    <Icon icon="mdi:delete-outline" class="w-4 h-4" />
                                 </button>
                             </div>
                         </td>
@@ -144,19 +145,29 @@
                     </tbody>
                 </table>
 
-                <!-- Pagination -->
-                <div v-if="(users.last_page ?? 1) > 1"
-                     class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-                    <p class="text-xs text-gray-500">{{ users.from }}–{{ users.to }} / {{ users.total }}</p>
-                    <div class="flex items-center gap-1">
+                <!-- Pagination — konturli (outline) sahifa raqamlari +
+                     "N / page" tanlovchisi, referensdagi kabi. Oldin/Keyingi
+                     tugmalari endi Laravel'ning "&laquo; Previous" kabi
+                     matn yorlig'i o'rniga sof < > strelka ikonkalarida. -->
+                <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-between flex-wrap gap-3">
+                    <p class="text-xs text-gray-500">Jami {{ users.total }} ta</p>
+                    <div class="flex items-center gap-1.5">
                         <template v-for="link in (users.links ?? [])" :key="link.label">
-                            <Link v-if="link.url" :href="link.url"
-                                  class="px-3 py-1.5 text-xs rounded-lg transition"
-                                  :class="link.active ? 'text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'"
-                                  :style="link.active ? 'background:linear-gradient(135deg,#0f3460,#533483)' : ''"
-                                  v-html="link.label" />
-                            <span v-else class="px-3 py-1.5 text-xs text-gray-300" v-html="link.label" />
+                            <component
+                                :is="link.url ? Link : 'span'"
+                                :href="link.url ?? undefined"
+                                class="pagination-btn"
+                                :class="[link.active ? 'active' : '', !link.url ? 'disabled' : '']"
+                            >
+                                <ChevronLeftIcon v-if="isPrevLabel(link.label)" class="w-4 h-4" />
+                                <ChevronRightIcon v-else-if="isNextLabel(link.label)" class="w-4 h-4" />
+                                <span v-else v-html="link.label" />
+                            </component>
                         </template>
+
+                        <select v-model.number="filters.per_page" @change="applyFilters" class="select-filter ml-1">
+                            <option v-for="n in perPageOptions" :key="n" :value="n">{{ n }} / page</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -175,7 +186,7 @@
 
                 <div class="space-y-4">
                     <a :href="route('admin.users.template')"
-                       class="flex items-center gap-2 text-sm font-medium text-[#0f3460] hover:underline">
+                       class="flex items-center gap-2 text-sm font-medium text-brand-600 hover:underline">
                         <Icon icon="mdi:download-outline" class="w-4 h-4" />
                         Namuna shablonni yuklab olish
                     </a>
@@ -194,8 +205,8 @@
                 </div>
 
                 <div class="flex gap-3 mt-6">
-                    <button @click="closeImport" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitImport" :disabled="importForm.processing" class="btn-primary flex-1">
+                    <button @click="closeImport" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitImport" :disabled="importForm.processing" class="btn-brand flex-1 justify-center">
                         <Icon v-if="importForm.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                         {{ importForm.processing ? 'Yuklanmoqda...' : 'Import qilish' }}
                     </button>
@@ -215,8 +226,8 @@
                     <strong>{{ deleteTarget?.full_name }}</strong> ni o'chirasizmi?
                 </p>
                 <div class="flex gap-3">
-                    <button @click="deleteTarget = null" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitDelete" class="btn-danger flex-1">O'chirish</button>
+                    <button @click="deleteTarget = null" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitDelete" class="btn-danger-pill flex-1">O'chirish</button>
                 </div>
             </div>
         </div>
@@ -228,6 +239,7 @@
 import { ref, computed, watch } from 'vue'
 import { Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
@@ -269,9 +281,13 @@ const submitImport = () => {
     })
 }
 
+// Sahifadagi qatorlar soni — referensdagi kabi tanlanadigan, standart 20.
+const perPageOptions = [20, 30, 50, 100, 150, 200]
+
 const filters = ref({
-    search: props.filters.search || '',
-    role:   props.filters.role   || '',
+    search:   props.filters.search   || '',
+    role:     props.filters.role     || '',
+    per_page: Number(props.filters.per_page) || 20,
 })
 
 const hasFilters = computed(() => filters.value.search || filters.value.role)
@@ -289,23 +305,28 @@ const debouncedSearch = () => {
 }
 
 const resetFilters = () => {
-    filters.value = { search: '', role: '' }
+    filters.value = { search: '', role: '', per_page: filters.value.per_page }
     applyFilters()
 }
 
+// Laravel'ning standart pagination yorliqlari ("&laquo; Previous",
+// "Next &raquo;") o'rniga sof strelka ikonkalarini ko'rsatish uchun.
+const isPrevLabel = (label) => /Previous|&laquo;|«/i.test(label)
+const isNextLabel = (label) => /Next|&raquo;|»/i.test(label)
+
 const roles = [
-    { value: 'super-admin', label: 'Super Admin', class: 'bg-red-50 text-red-700' },
-    { value: 'admin',       label: 'Admin',       class: 'bg-purple-50 text-purple-700' },
-    { value: 'admission',   label: 'Qabul',       class: 'bg-blue-50 text-blue-700' },
-    { value: 'teacher',     label: "O'qituvchi",  class: 'bg-green-50 text-green-700' },
-    { value: 'tutor',       label: 'Tutor',       class: 'bg-indigo-50 text-indigo-700' },
-    { value: 'finance',     label: 'Moliya',      class: 'bg-yellow-50 text-yellow-700' },
-    { value: 'librarian',   label: 'Kutubxonachi',class: 'bg-teal-50 text-teal-700' },
-    { value: 'student',     label: 'Talaba',      class: 'bg-gray-100 text-gray-600' },
+    { value: 'super-admin', label: 'Super Admin', class: 'bg-red-50 text-red-700 border-red-200' },
+    { value: 'admin',       label: 'Admin',       class: 'bg-purple-50 text-purple-700 border-purple-200' },
+    { value: 'admission',   label: 'Qabul',       class: 'badge-brand' },
+    { value: 'teacher',     label: "O'qituvchi",  class: 'badge-success' },
+    { value: 'tutor',       label: 'Tutor',       class: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+    { value: 'finance',     label: 'Moliya',      class: 'badge-warning' },
+    { value: 'librarian',   label: 'Kutubxonachi',class: 'bg-teal-50 text-teal-700 border-teal-200' },
+    { value: 'student',     label: 'Talaba',      class: 'badge-neutral' },
 ]
 
 const roleLabel = (name) => roles.find(r => r.value === name)?.label || name
-const roleBadge = (name) => roles.find(r => r.value === name)?.class || 'bg-gray-100 text-gray-600'
+const roleBadge = (name) => roles.find(r => r.value === name)?.class || 'badge-neutral'
 
 const confirmDelete = (u) => { deleteTarget.value = u }
 
@@ -344,56 +365,7 @@ const formatDate = (date) => {
     outline: none;
     transition: border-color 0.2s;
 }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-secondary:hover { background: #f9fafb; }
-
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: #ef4444;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-}
-.btn-danger:hover { background: #dc2626; }
 </style>

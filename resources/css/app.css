@@ -7,7 +7,27 @@
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Brend rangi — billing.e-edu.uz namunasidan olingan indigo/siyoh-ko'k
+       (avvalgi versiyada telefon kamerasi surati asosida to'q-navy ko'k
+       taxmin qilingan edi — aniq skrinshotlardan piksel bo'yicha o'lchab
+       ko'rilganda haqiqiy rang aslida indigo #6366f1 ekani aniqlandi,
+       shuning uchun quyidagi shkala shunga moslab TUZATILDI).
+       Admin panelni shu palitraga moslashtirish uchun barcha sahifalarda
+       shu --color-brand-* o'zgaruvchilaridan foydalaniladi (Tailwind v4
+       avtomatik ravishda bg-brand-600, text-brand-600, border-brand-600
+       kabi klasslarni shu yerdan generatsiya qiladi). */
+    --color-brand-50:  #f5f5ff;
+    --color-brand-100: #eef2ff;
+    --color-brand-200: #e0e7ff;
+    --color-brand-300: #c7d2fe;
+    --color-brand-400: #a5b4fc;
+    --color-brand-500: #818cf8;
+    --color-brand-600: #6366f1;
+    --color-brand-700: #4f46e5;
+    --color-brand-800: #4338ca;
+    --color-brand-900: #3730a3;
 }
 html, body {
     overflow-x: hidden;
@@ -19,3 +39,231 @@ html, body {
     margin: auto;
 }
 
+/* =========================================================================
+   Admin panel — umumiy dizayn tizimi (2026-09 yangilanish)
+   Barcha admin sahifalarida shu global klasslardan foydalanish tavsiya
+   etiladi — har bir faylda alohida gradient/tugma uslubini takrorlash
+   o'rniga, shu yerda BIR MARTA belgilanadi. Rang o'zgarsa — faqat shu
+   fayldagi --color-brand-* qiymatlarini o'zgartirish kifoya.
+
+   MUHIM: shu klasslar @layer components ichida — shunda masalan
+   class="badge-pill bg-red-50 text-red-700 border-red-200" yozilganda
+   Tailwind'ning border-red-200 (utilities qatlami) har doim ushbu
+   komponent klassidan (components qatlami) USTUN turadi. Aks holda CSS
+   Cascade Layers qoidasiga ko'ra qatlamsiz/utilities'dan past qatlamdagi
+   qoida ustunlik topolmay, chegara rangi doim shaffof bo'lib qolar edi.
+   ========================================================================= */
+@layer components {
+
+    .btn-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.25rem;
+        border-radius: 9999px;
+        background: var(--color-brand-600);
+        color: #fff;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: 1.5px solid var(--color-brand-600);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.15s;
+        white-space: nowrap;
+    }
+    .btn-brand:hover { background: var(--color-brand-700); border-color: var(--color-brand-700); }
+
+    .btn-brand-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.25rem;
+        border-radius: 9999px;
+        background: #fff;
+        color: var(--color-brand-600);
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: 1.5px solid var(--color-brand-200);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.15s;
+        white-space: nowrap;
+    }
+    .btn-brand-outline:hover { background: var(--color-brand-50); border-color: var(--color-brand-400); }
+
+    .btn-neutral {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.25rem;
+        border-radius: 9999px;
+        background: #fff;
+        color: #374151;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: 1.5px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+    }
+    .btn-neutral:hover { background: #f9fafb; }
+
+    .btn-danger-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.25rem;
+        border-radius: 9999px;
+        background: #dc2626;
+        color: #fff;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+    }
+    .btn-danger-pill:hover { background: #b91c1c; }
+
+    .btn-brand:disabled,
+    .btn-brand-outline:disabled,
+    .btn-neutral:disabled,
+    .btn-danger-pill:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* Chegarali (bordered) ikonka tugmasi — jadval qatoridagi
+       Tahrirlash/O'chirish kabi amallar uchun (referensdagi "Amallar" ustuni
+       kabi: yumaloq emas, nozik chegarali, ozgina burchak yumaloqligi bilan
+       kvadratcha tugma). */
+    .btn-ghost-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.5rem;
+        color: #6b7280;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.15s;
+        flex-shrink: 0;
+    }
+    .btn-ghost-icon:hover { background: var(--color-brand-50); color: var(--color-brand-600); border-color: var(--color-brand-200); }
+    .btn-ghost-icon.danger:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
+    /* Pill-shakldagi status belgilari (badge) — rangli chegara + och fon */
+    .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.2rem 0.7rem;
+        border-radius: 9999px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+    .badge-brand   { background: var(--color-brand-50); color: var(--color-brand-700); border-color: var(--color-brand-200); }
+    .badge-success { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+    .badge-neutral { background: #f9fafb; color: #4b5563; border-color: #e5e7eb; }
+    .badge-warning { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+    .badge-danger  { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+    /* =========================================================================
+       To'liq to'r (grid) chegarali jadval — referensdagi (billing.e-edu.uz,
+       "Shartnoma shablonlari" sahifasi) ko'rinishiga mos: ustunlar orasida ham,
+       qatorlar orasida ham nozik chiziqlar ko'rinadi (oddiy divide-y'dan farqli
+       o'laroq). SHU KUNDAN BOSHLAB — barcha jadval sahifalari (Foydalanuvchilar,
+       Talabalar, Kontraktlar va h.k.) shu .table-grid* klasslariga o'tishi kerak,
+       bitta umumiy naqsh sifatida. */
+    .table-grid-wrap {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+    .table-grid {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .table-grid thead th {
+        background: var(--color-brand-600);
+        color: #fff;
+        text-align: left;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        white-space: nowrap;
+        border-right: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .table-grid thead th:last-child { border-right: none; }
+    .table-grid tbody td {
+        padding: 0.7rem 1rem;
+        font-size: 0.875rem;
+        color: #374151;
+        vertical-align: middle;
+        border-right: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .table-grid tbody td:last-child { border-right: none; }
+    .table-grid tbody tr:last-child td { border-bottom: none; }
+    .table-grid tbody tr:hover td { background: #f9fafb; }
+
+    /* Jadval ichidagi oq fonli fayl/hujjat tugmasi ("Yuklab olish" kabi) */
+    .btn-file {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 0.5rem;
+        background: #fff;
+        color: #374151;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border: 1px solid #d1d5db;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+    }
+    .btn-file:hover { background: #f9fafb; border-color: #9ca3af; }
+
+    /* Jadval ustidagi filtr dropdown'lari (select) — referensdagi oq fon,
+       nozik chegarali uslub */
+    .select-filter {
+        padding: 0.55rem 0.9rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: #374151;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+    .select-filter:focus { outline: none; border-color: var(--color-brand-400); }
+
+    /* Pagination — referensdagi kabi KONTUR (outline) uslubidagi sahifa
+       raqamlari: faol sahifa indigo chegara+matn bilan, boshqalari oddiy
+       kulrang chegarali kvadratcha (avvalgi to'liq indigo pill emas). */
+    .pagination-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.1rem;
+        height: 2.1rem;
+        padding: 0 0.55rem;
+        border-radius: 0.55rem;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: #4b5563;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .pagination-btn:hover:not(.disabled):not(.active) { background: #f9fafb; border-color: #d1d5db; color: #111827; }
+    .pagination-btn.active { border-color: var(--color-brand-600); color: var(--color-brand-600); background: var(--color-brand-50); font-weight: 700; }
+    .pagination-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+
+} /* @layer components */

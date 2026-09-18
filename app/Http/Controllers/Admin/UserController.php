@@ -40,10 +40,19 @@ class UserController extends Controller
             $query->whereHas('roles', fn ($q) => $q->where('name', $request->role));
         }
 
+        // Sahifadagi qatorlar soni — referensdagi kabi tanlanadigan
+        // (20/30/50/100/150/200), standart holatda 20 ta. Ruxsat etilgan
+        // ro'yxatdan tashqari (masalan qo'lda URL'ga yozilgan) qiymat
+        // kelsa — standart 20 ga qaytariladi.
+        $perPage = (int) $request->input('per_page', 20);
+        if (! in_array($perPage, [20, 30, 50, 100, 150, 200], true)) {
+            $perPage = 20;
+        }
+
         return Inertia::render('Admin/Users/Index', [
-            'users'   => $query->paginate(20)->withQueryString(),
+            'users'   => $query->paginate($perPage)->withQueryString(),
             'roles'   => Role::all(),
-            'filters' => $request->only(['search', 'role']),
+            'filters' => $request->only(['search', 'role', 'per_page']),
         ]);
     }
 
