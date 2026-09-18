@@ -8,7 +8,7 @@
                     <h1 class="text-xl font-bold text-gray-900">Yo'nalishlar</h1>
                     <p class="text-sm text-gray-500 mt-0.5">Barcha bakalavr va magistr yo'nalishlari</p>
                 </div>
-                <Link :href="route('admin.directions.create')" class="btn-primary">
+                <Link :href="route('admin.directions.create')" class="btn-brand">
                     <Icon icon="mdi:plus" class="w-4 h-4" />
                     Yangi yo'nalish
                 </Link>
@@ -21,7 +21,7 @@
                         @click="activeDepartment = null"
                         class="px-4 py-2 text-sm font-medium rounded-xl border transition-all whitespace-nowrap"
                         :class="activeDepartment === null
-                            ? 'border-[#0f3460] text-[#0f3460] bg-blue-50'
+                            ? 'border-brand-600 text-brand-600 bg-brand-50'
                             : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                     >
                         Barchasi ({{ totalDirections }})
@@ -32,7 +32,7 @@
                         @click="activeDepartment = dep.id"
                         class="px-4 py-2 text-sm font-medium rounded-xl border transition-all whitespace-nowrap"
                         :class="activeDepartment === dep.id
-                            ? 'border-[#0f3460] text-[#0f3460] bg-blue-50'
+                            ? 'border-brand-600 text-brand-600 bg-brand-50'
                             : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                     >
                         {{ dep.short_name || dep.name_uz }} ({{ dep.directions?.length || 0 }})
@@ -40,90 +40,84 @@
                 </div>
             </div>
 
-            <!-- Table -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                <table class="w-full">
+            <!-- Table — to'liq to'r (grid) chegarali dizayn (Foydalanuvchilar
+                 sahifasida o'rnatilgan .table-grid* naqshi). Serverda pagination
+                 yo'q — kafedra tablari orqali mijoz tomonda filtrlash saqlanadi. -->
+            <div class="table-grid-wrap">
+                <table class="table-grid">
                     <thead>
-                    <tr class="border-b border-gray-100">
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Yo'nalish</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Fakultet</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Daraja</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Kvota</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Ariza</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-3"></th>
+                    <tr>
+                        <th>Yo'nalish</th>
+                        <th>Fakultet</th>
+                        <th>Daraja</th>
+                        <th class="text-center">Kvota</th>
+                        <th class="text-center">Ariza</th>
+                        <th>Status</th>
+                        <th class="text-right">Amallar</th>
                     </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-50">
+                    <tbody>
                     <tr v-if="!filteredDirections.length">
                         <td colspan="7" class="text-center py-16 text-gray-400">
                             <Icon icon="mdi:school-off-outline" class="w-12 h-12 mx-auto mb-3 opacity-40" />
                             <p class="text-sm">Yo'nalish topilmadi</p>
                         </td>
                     </tr>
-                    <tr v-for="d in filteredDirections" :key="d.id"
-                        class="hover:bg-gray-50 transition-colors">
+                    <tr v-for="d in filteredDirections" :key="d.id">
 
                         <!-- Yo'nalish -->
-                        <td class="px-4 py-3">
-                            <p class="text-sm font-medium text-gray-900">{{ d.name_uz }}</p>
-                            <p class="text-xs text-gray-400">{{ d.hemis_code || '—' }}</p>
+                        <td>
+                            <Link :href="route('admin.directions.show', d.id)" class="group">
+                                <p class="text-sm font-semibold text-gray-900 group-hover:text-brand-600 transition">{{ d.name_uz }}</p>
+                                <p class="text-xs text-gray-400">{{ d.hemis_code || '—' }}</p>
+                            </Link>
                         </td>
 
                         <!-- Fakultet -->
-                        <td class="px-4 py-3">
-                            <p class="text-xs text-gray-600">{{ d.faculty?.short_name || d.faculty?.name_uz }}</p>
+                        <td class="text-sm text-gray-600">
+                            {{ d.faculty?.short_name || d.faculty?.name_uz || '—' }}
                         </td>
 
                         <!-- Daraja -->
-                        <td class="px-4 py-3">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                      :class="d.degree === 'bachelor'
-                                        ? 'bg-blue-50 text-blue-700'
-                                        : 'bg-purple-50 text-purple-700'">
-                                    {{ d.degree === 'bachelor' ? 'Bakalavr' : 'Magistr' }}
-                                    {{ d.duration_years }}y
-                                </span>
+                        <td>
+                            <span class="badge-pill" :class="d.degree === 'bachelor' ? 'badge-brand' : 'badge-warning'">
+                                {{ d.degree === 'bachelor' ? 'Bakalavr' : 'Magistr' }} · {{ d.duration_years }}y
+                            </span>
                         </td>
 
                         <!-- Kvota -->
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-1 text-xs text-gray-600">
+                        <td class="text-center">
+                            <div class="flex items-center justify-center gap-1 text-xs">
                                 <span class="text-green-600 font-semibold">{{ d.quota_grant || 0 }}</span>
                                 <span class="text-gray-300">/</span>
                                 <span class="text-blue-600 font-semibold">{{ d.quota_contract || 0 }}</span>
                             </div>
-                            <p class="text-xs text-gray-400">Grant / Kontrakt</p>
+                            <p class="text-[10px] text-gray-400">Grant / Kontrakt</p>
                         </td>
 
                         <!-- Arizalar -->
-                        <td class="px-4 py-3">
-                                <span class="text-sm font-semibold text-gray-700">
-                                    {{ d.applicants_count || 0 }}
-                                </span>
+                        <td class="text-center">
+                            <span class="badge-pill badge-neutral">{{ d.applicants_count || 0 }}</span>
                         </td>
 
                         <!-- Status -->
-                        <td class="px-4 py-3">
-                                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                      :class="d.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'">
-                                    {{ d.is_active ? 'Faol' : 'Nofaol' }}
-                                </span>
+                        <td>
+                            <span class="badge-pill" :class="d.is_active ? 'badge-success' : 'badge-neutral'">
+                                {{ d.is_active ? 'Faol' : 'Nofaol' }}
+                            </span>
                         </td>
 
                         <!-- Amallar -->
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-3">
-                                <Link :href="route('admin.directions.edit', d.id)"
-                                      class="text-xs font-medium text-amber-600 hover:text-amber-800 flex items-center gap-1">
-                                    <Icon icon="mdi:pencil-outline" class="w-3.5 h-3.5" />
-                                    Tahrir
+                        <td>
+                            <div class="flex items-center justify-end gap-1">
+                                <Link :href="route('admin.directions.show', d.id)" title="Ko'rish" class="btn-ghost-icon">
+                                    <Icon icon="mdi:eye-outline" class="w-4 h-4" />
                                 </Link>
-                                <button @click="confirmDelete(d)"
-                                        class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1">
-                                    <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
-                                    O'chirish
+                                <Link :href="route('admin.directions.edit', d.id)" title="Tahrirlash" class="btn-ghost-icon">
+                                    <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
+                                </Link>
+                                <button @click="confirmDelete(d)" title="O'chirish" class="btn-ghost-icon danger">
+                                    <Icon icon="mdi:delete-outline" class="w-4 h-4" />
                                 </button>
                             </div>
                         </td>
@@ -145,8 +139,8 @@
                     <strong>{{ deleteTarget?.name_uz }}</strong> yo'nalishini o'chirasizmi?
                 </p>
                 <div class="flex gap-3">
-                    <button @click="deleteTarget = null" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitDelete" class="btn-danger flex-1">O'chirish</button>
+                    <button @click="deleteTarget = null" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitDelete" class="btn-danger-pill flex-1">O'chirish</button>
                 </div>
             </div>
         </div>
@@ -191,52 +185,4 @@ const submitDelete = () => {
 <style scoped>
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
-
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-secondary:hover { background: #f9fafb; }
-
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: #ef4444;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-}
-.btn-danger:hover { background: #dc2626; }
 </style>

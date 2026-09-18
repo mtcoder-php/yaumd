@@ -47,6 +47,15 @@ class DirectionController extends Controller
             ->with('success', "Yo'nalish yaratildi!");
     }
 
+    public function show(int $id): Response
+    {
+        return Inertia::render('Admin/Directions/Show', [
+            'direction' => Direction::with(['faculty', 'department'])
+                ->withCount(['students', 'applicants'])
+                ->findOrFail($id),
+        ]);
+    }
+
     public function edit(int $id): Response
     {
         return Inertia::render('Admin/Directions/Edit', [

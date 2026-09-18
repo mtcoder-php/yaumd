@@ -199,6 +199,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/',          [FacultyController::class, 'index'])->name('index')->middleware('permission:academic.view');
         Route::get('/create',    [FacultyController::class, 'create'])->name('create')->middleware('permission:academic.create');
         Route::post('/',         [FacultyController::class, 'store'])->name('store')->middleware('permission:academic.create');
+        Route::get('/{id}',      [FacultyController::class, 'show'])->name('show')->middleware('permission:academic.view');
         Route::get('/{id}/edit', [FacultyController::class, 'edit'])->name('edit')->middleware('permission:academic.edit');
         Route::put('/{id}',      [FacultyController::class, 'update'])->name('update')->middleware('permission:academic.edit');
         Route::delete('/{id}',   [FacultyController::class, 'destroy'])->name('destroy')->middleware('permission:academic.delete');
@@ -208,6 +209,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/',          [DirectionController::class, 'index'])->name('index')->middleware('permission:academic.view');
         Route::get('/create',    [DirectionController::class, 'create'])->name('create')->middleware('permission:academic.create');
         Route::post('/',         [DirectionController::class, 'store'])->name('store')->middleware('permission:academic.create');
+        Route::get('/{id}',      [DirectionController::class, 'show'])->name('show')->middleware('permission:academic.view');
         Route::get('/{id}/edit', [DirectionController::class, 'edit'])->name('edit')->middleware('permission:academic.edit');
         Route::put('/{id}',      [DirectionController::class, 'update'])->name('update')->middleware('permission:academic.edit');
         Route::delete('/{id}',   [DirectionController::class, 'destroy'])->name('destroy')->middleware('permission:academic.delete');
@@ -218,6 +220,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/',          [DepartmentController::class, 'index'])->name('index')->middleware('permission:academic.view');
         Route::get('/create',    [DepartmentController::class, 'create'])->name('create')->middleware('permission:academic.create');
         Route::post('/',         [DepartmentController::class, 'store'])->name('store')->middleware('permission:academic.create');
+        Route::get('/{id}',      [DepartmentController::class, 'show'])->name('show')->middleware('permission:academic.view');
         Route::get('/{id}/edit', [DepartmentController::class, 'edit'])->name('edit')->middleware('permission:academic.edit');
         Route::put('/{id}',      [DepartmentController::class, 'update'])->name('update')->middleware('permission:academic.edit');
         Route::delete('/{id}',   [DepartmentController::class, 'destroy'])->name('destroy')->middleware('permission:academic.delete');
