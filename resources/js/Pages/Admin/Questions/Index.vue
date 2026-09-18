@@ -3,7 +3,7 @@
         <div class="space-y-5">
 
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between flex-wrap gap-3">
                 <div class="flex items-center gap-4">
                     <Link
                         :href="route('admin.subjects.index')"
@@ -19,11 +19,11 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
                     <!-- Namuna shablon -->
                     <a
                         :href="route('admin.subjects.questions.template', subject.id)"
-                        class="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                        class="btn-neutral"
                     >
                         <Icon icon="mdi:download-outline" class="w-4 h-4" />
                         Namuna
@@ -32,8 +32,7 @@
                     <!-- Import -->
                     <button
                         @click="importModal = true"
-                        class="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition"
-                        style="border-color:#0f3460; color:#0f3460"
+                        class="btn-brand-outline"
                     >
                         <Icon icon="mdi:upload-outline" class="w-4 h-4" />
                         Fayldan yuklash
@@ -42,7 +41,7 @@
                     <!-- Yangi savol -->
                     <Link
                         :href="route('admin.subjects.questions.create', subject.id)"
-                        class="btn-primary"
+                        class="btn-brand"
                     >
                         <Icon icon="mdi:plus" class="w-4 h-4" />
                         Yangi savol
@@ -56,7 +55,7 @@
                     :href="route('admin.subjects.questions.index', subject.id)"
                     class="px-4 py-2 text-sm font-medium rounded-xl border transition-all"
                     :class="!activeLang
-                        ? 'border-[#0f3460] text-[#0f3460] bg-blue-50'
+                        ? 'border-brand-600 text-brand-600 bg-brand-50'
                         : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                 >
                     Barchasi ({{ questions.total }})
@@ -65,7 +64,7 @@
                     :href="route('admin.subjects.questions.index', subject.id) + '?lang=uz'"
                     class="px-4 py-2 text-sm font-medium rounded-xl border transition-all"
                     :class="activeLang === 'uz'
-                        ? 'border-[#0f3460] text-[#0f3460] bg-blue-50'
+                        ? 'border-brand-600 text-brand-600 bg-brand-50'
                         : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                 >
                     O'zbek tili ({{ uzCount }})
@@ -82,19 +81,18 @@
             </div>
 
             <!-- Table -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                <table class="w-full">
+            <div class="table-grid-wrap">
+                <table class="table-grid">
                     <thead>
-                    <tr class="border-b border-gray-100">
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-10">#</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Savol va variantlar</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">To'g'ri javob</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-3"></th>
+                    <tr>
+                        <th class="w-10">#</th>
+                        <th>Savol va variantlar</th>
+                        <th>To'g'ri javob</th>
+                        <th>Status</th>
+                        <th class="text-right">Amallar</th>
                     </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-50">
+                    <tbody>
                     <tr v-if="!questions.data?.length">
                         <td colspan="5" class="text-center py-16 text-gray-400">
                             <Icon icon="mdi:help-circle-outline" class="w-12 h-12 mx-auto mb-3 opacity-40" />
@@ -102,15 +100,11 @@
                             <p class="text-xs mt-1">Yangi savol yarating yoki fayldan yuklang</p>
                         </td>
                     </tr>
-                    <tr
-                        v-for="(q, i) in questions.data"
-                        :key="q.id"
-                        class="hover:bg-gray-50 transition-colors"
-                    >
-                        <td class="px-4 py-4 text-xs text-gray-400 font-mono">
+                    <tr v-for="(q, i) in questions.data" :key="q.id">
+                        <td class="text-xs text-gray-400 font-mono">
                             {{ (questions.current_page - 1) * questions.per_page + i + 1 }}
                         </td>
-                        <td class="px-4 py-4">
+                        <td>
                             <p class="text-sm font-medium text-gray-800 mb-2">{{ q.question }}</p>
                             <div class="flex flex-wrap gap-2">
                                     <span
@@ -125,35 +119,28 @@
                                     </span>
                             </div>
                         </td>
-                        <td class="px-4 py-4">
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700">
-                                    <Icon icon="mdi:check-circle" class="w-3.5 h-3.5" />
-                                    {{ q.correct_answer?.toUpperCase() }}
-                                </span>
+                        <td>
+                            <span class="badge-pill badge-success">
+                                <Icon icon="mdi:check-circle" class="w-3.5 h-3.5" />
+                                {{ q.correct_answer?.toUpperCase() }}
+                            </span>
                         </td>
-                        <td class="px-4 py-4">
-                                <span
-                                    class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                    :class="q.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
-                                >
-                                    {{ q.is_active ? 'Faol' : 'Nofaol' }}
-                                </span>
+                        <td>
+                            <span class="badge-pill" :class="q.is_active ? 'badge-success' : 'badge-neutral'">
+                                {{ q.is_active ? 'Faol' : 'Nofaol' }}
+                            </span>
                         </td>
-                        <td class="px-4 py-4">
-                            <div class="flex items-center gap-3">
+                        <td>
+                            <div class="flex items-center justify-end gap-1">
                                 <Link
                                     :href="route('admin.subjects.questions.edit', [subject.id, q.id])"
-                                    class="text-xs font-medium text-amber-600 hover:text-amber-800 flex items-center gap-1"
+                                    title="Tahrirlash"
+                                    class="btn-ghost-icon"
                                 >
-                                    <Icon icon="mdi:pencil-outline" class="w-3.5 h-3.5" />
-                                    Tahrir
+                                    <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                                 </Link>
-                                <button
-                                    @click="confirmDelete(q)"
-                                    class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1"
-                                >
-                                    <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
-                                    O'chirish
+                                <button @click="confirmDelete(q)" title="O'chirish" class="btn-ghost-icon danger">
+                                    <Icon icon="mdi:delete-outline" class="w-4 h-4" />
                                 </button>
                             </div>
                         </td>
@@ -163,21 +150,22 @@
 
                 <!-- Pagination -->
                 <div v-if="(questions.last_page ?? 1) > 1"
-                     class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+                     class="px-4 py-3 border-t border-gray-200 flex items-center justify-between flex-wrap gap-3">
                     <p class="text-xs text-gray-500">
                         {{ questions.from }}–{{ questions.to }} / {{ questions.total }}
                     </p>
-                    <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-1.5">
                         <template v-for="link in (questions.links ?? [])" :key="link.label">
-                            <Link
-                                v-if="link.url"
-                                :href="link.url"
-                                class="px-3 py-1.5 text-xs rounded-lg transition"
-                                :class="link.active ? 'text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'"
-                                :style="link.active ? 'background:linear-gradient(135deg,#0f3460,#533483)' : ''"
-                                v-html="link.label"
-                            />
-                            <span v-else class="px-3 py-1.5 text-xs text-gray-300" v-html="link.label" />
+                            <component
+                                :is="link.url ? Link : 'span'"
+                                :href="link.url ?? undefined"
+                                class="pagination-btn"
+                                :class="[link.active ? 'active' : '', !link.url ? 'disabled' : '']"
+                            >
+                                <ChevronLeftIcon v-if="isPrevLabel(link.label)" class="w-4 h-4" />
+                                <ChevronRightIcon v-else-if="isNextLabel(link.label)" class="w-4 h-4" />
+                                <span v-else v-html="link.label" />
+                            </component>
                         </template>
                     </div>
                 </div>
@@ -193,7 +181,7 @@
         >
             <div class="bg-white rounded-2xl w-full max-w-md p-6">
                 <h3 class="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
-                    <Icon icon="mdi:upload-outline" class="w-5 h-5 text-[#0f3460]" />
+                    <Icon icon="mdi:upload-outline" class="w-5 h-5 text-brand-600" />
                     Fayldan savollar yuklash
                 </h3>
                 <p class="text-xs text-gray-400 mb-5">
@@ -203,7 +191,7 @@
                 <div class="space-y-4">
                     <!-- Savol tili -->
                     <div>
-                        <label class="field-label">Savol tili <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Savol tili</label>
                         <div class="flex gap-3">
                             <button
                                 v-for="lang in languages"
@@ -211,9 +199,9 @@
                                 type="button"
                                 @click="importForm.language = lang.value"
                                 class="flex-1 py-2 rounded-xl border-2 text-sm font-medium transition-all"
-                                :style="importForm.language === lang.value
-                                    ? 'border-color:#0f3460; background:#eff6ff; color:#0f3460'
-                                    : 'border-color:#e5e7eb; color:#6b7280'"
+                                :class="importForm.language === lang.value
+                                    ? 'border-brand-600 bg-brand-50 text-brand-600'
+                                    : 'border-gray-200 text-gray-500'"
                             >
                                 {{ lang.label }}
                             </button>
@@ -222,10 +210,10 @@
 
                     <!-- Fayl -->
                     <div>
-                        <label class="field-label">Fayl (.txt yoki .docx) <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Fayl (.txt yoki .docx)</label>
                         <div
                             class="border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all"
-                            :class="importForm.file ? 'border-green-400 bg-green-50' : 'border-gray-200 hover:border-[#0f3460]'"
+                            :class="importForm.file ? 'border-green-400 bg-green-50' : 'border-gray-200 hover:border-brand-600'"
                             @click="$refs.fileInput.click()"
                             @dragover.prevent
                             @drop.prevent="handleDrop"
@@ -249,8 +237,7 @@
 
                     <a
                         :href="route('admin.subjects.questions.template', subject.id)"
-                        class="flex items-center gap-1.5 text-xs hover:underline"
-                        style="color:#0f3460"
+                        class="flex items-center gap-1.5 text-xs text-brand-600 hover:underline"
                     >
                         <Icon icon="mdi:download-outline" class="w-3.5 h-3.5" />
                         Namuna shablonni yuklab olish
@@ -258,8 +245,8 @@
                 </div>
 
                 <div class="flex gap-3 mt-6">
-                    <button @click="importModal = false" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitImport" :disabled="importing" class="btn-primary flex-1">
+                    <button @click="importModal = false" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitImport" :disabled="importing" class="btn-brand flex-1 justify-center">
                         <Icon v-if="importing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                         <Icon v-else icon="mdi:upload" class="w-4 h-4" />
                         {{ importing ? 'Yuklanmoqda...' : 'Yuklash' }}
@@ -283,8 +270,8 @@
                 <p class="text-sm text-gray-500 text-center mb-2 line-clamp-2">{{ deleteTarget?.question }}</p>
                 <p class="text-xs text-red-400 text-center mb-6">Bu amalni ortga qaytarib bo'lmaydi!</p>
                 <div class="flex gap-3">
-                    <button @click="deleteTarget = null" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="deleteQuestion" class="btn-danger flex-1">O'chirish</button>
+                    <button @click="deleteTarget = null" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="deleteQuestion" class="btn-danger-pill flex-1">O'chirish</button>
                 </div>
             </div>
         </div>
@@ -296,6 +283,7 @@
 import { ref } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
@@ -356,6 +344,12 @@ const deleteQuestion = () => {
         onSuccess: () => { deleteTarget.value = null },
     })
 }
+
+// Laravel'ning standart pagination yorliqlari o'rniga sof strelka
+// ikonkalarini ko'rsatish uchun (Foydalanuvchilar sahifasidagi bilan
+// bir xil naqsh).
+const isPrevLabel = (label) => /Previous|&laquo;|«/i.test(label)
+const isNextLabel = (label) => /Next|&raquo;|»/i.test(label)
 </script>
 
 <style scoped>
@@ -366,57 +360,6 @@ const deleteQuestion = () => {
     color: #374151;
     margin-bottom: 0.375rem;
 }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-secondary:hover { background: #f9fafb; }
-
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: #ef4444;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-}
-.btn-danger:hover { background: #dc2626; }
 </style>

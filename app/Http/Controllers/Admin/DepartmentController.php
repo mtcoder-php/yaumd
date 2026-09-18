@@ -31,6 +31,18 @@ class DepartmentController extends Controller
         ]);
     }
 
+    public function show(int $id): Response
+    {
+        return Inertia::render('Admin/Departments/Show', [
+            'department' => Department::with([
+                'faculty', 'head',
+                'directions' => fn ($q) => $q->orderBy('name_uz'),
+            ])
+                ->withCount('directions')
+                ->findOrFail($id),
+        ]);
+    }
+
     public function store(StoreDepartmentRequest $request)
     {
         Department::create($request->validated());

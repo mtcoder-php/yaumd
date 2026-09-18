@@ -1,6 +1,6 @@
 <template>
     <AppLayout :title="isEdit ? 'Savolni tahrirlash' : 'Yangi savol'">
-        <div class="max-w-2xl mx-auto space-y-5">
+        <div class="max-w-3xl mx-auto space-y-5">
 
             <!-- Header -->
             <div class="flex items-center gap-4">
@@ -22,11 +22,26 @@
             <div class="bg-white rounded-2xl border border-gray-100 p-6"
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
 
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-sm font-bold text-gray-800">Savol ma'lumotlari</h2>
+                    <div class="flex items-center gap-2">
+                        <Link :href="route('admin.subjects.questions.index', subject.id)" class="btn-neutral">
+                            <Icon icon="mdi:arrow-left" class="w-4 h-4" />
+                            Orqaga
+                        </Link>
+                        <button type="button" @click="submit" :disabled="form.processing" class="btn-brand">
+                            <Icon v-if="form.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                            <Icon v-else icon="mdi:content-save-outline" class="w-4 h-4" />
+                            {{ form.processing ? 'Saqlanmoqda...' : 'Saqlash' }}
+                        </button>
+                    </div>
+                </div>
+
                 <div class="space-y-5">
 
                     <!-- Savol tili -->
                     <div>
-                        <label class="field-label">Savol tili <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Savol tili</label>
                         <div class="flex gap-3">
                             <button
                                 v-for="lang in languages"
@@ -34,9 +49,9 @@
                                 type="button"
                                 @click="form.language = lang.value"
                                 class="flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all"
-                                :style="form.language === lang.value
-                                    ? 'border-color:#0f3460; background:linear-gradient(135deg,#eff6ff,#f5f3ff); color:#0f3460'
-                                    : 'border-color:#e5e7eb; background:#fafafa; color:#6b7280'"
+                                :class="form.language === lang.value
+                                    ? 'border-brand-600 bg-brand-50 text-brand-600'
+                                    : 'border-gray-200 bg-gray-50 text-gray-500'"
                             >
                                 {{ lang.label }}
                             </button>
@@ -46,7 +61,7 @@
 
                     <!-- Savol matni -->
                     <div>
-                        <label class="field-label">Savol matni <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Savol matni</label>
                         <textarea
                             v-model="form.question"
                             rows="3"
@@ -60,8 +75,8 @@
 
                     <!-- Variantlar -->
                     <div>
-                        <label class="field-label">Javob variantlari <span class="req">*</span></label>
-                        <p class="text-xs text-gray-400 mb-3">To'g'ri javobni chapдagi tugmacha bilan belgilang</p>
+                        <label class="field-label"><span class="req">*</span> Javob variantlari</label>
+                        <p class="text-xs text-gray-400 mb-3">To'g'ri javobni chapdagi tugmacha bilan belgilang</p>
 
                         <div class="space-y-2.5">
                             <div v-for="opt in options" :key="opt.key" class="flex items-center gap-3">
@@ -70,9 +85,9 @@
                                     type="button"
                                     @click="form.correct_answer = opt.key"
                                     class="w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all font-bold text-sm"
-                                    :style="form.correct_answer === opt.key
-                                        ? 'border-color:#0f3460; background:linear-gradient(135deg,#0f3460,#533483); color:white'
-                                        : 'border-color:#e5e7eb; background:#f9fafb; color:#9ca3af'"
+                                    :class="form.correct_answer === opt.key
+                                        ? 'border-brand-600 bg-brand-600 text-white'
+                                        : 'border-gray-200 bg-gray-50 text-gray-400'"
                                 >
                                     {{ opt.key.toUpperCase() }}
                                 </button>
@@ -110,9 +125,7 @@
                             type="button"
                             @click="form.is_active = !form.is_active"
                             class="relative w-11 h-6 rounded-full transition-all duration-300"
-                            :style="form.is_active
-                                ? 'background:linear-gradient(135deg,#0f3460,#533483)'
-                                : 'background:#e5e7eb'"
+                            :class="form.is_active ? 'bg-brand-600' : 'bg-gray-200'"
                         >
                             <span
                                 class="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-300"
@@ -123,12 +136,9 @@
 
                 </div>
 
-                <!-- Tugmalar -->
+                <!-- Tugmalar (pastda ham) -->
                 <div class="flex gap-3 mt-6">
-                    <Link
-                        :href="route('admin.subjects.questions.index', subject.id)"
-                        class="btn-secondary flex-1 flex items-center justify-center gap-2"
-                    >
+                    <Link :href="route('admin.subjects.questions.index', subject.id)" class="btn-neutral flex-1 justify-center">
                         <Icon icon="mdi:close" class="w-4 h-4" />
                         Bekor qilish
                     </Link>
@@ -136,7 +146,7 @@
                         type="button"
                         @click="submit"
                         :disabled="form.processing"
-                        class="btn-primary flex-1"
+                        class="btn-brand flex-1 justify-center"
                     >
                         <Icon v-if="form.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                         <Icon v-else icon="mdi:content-save-outline" class="w-4 h-4" />
@@ -202,7 +212,7 @@ const submit = () => {
     color: #374151;
     margin-bottom: 0.375rem;
 }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .field-input {
     width: 100%;
     padding: 0.6rem 0.875rem;
@@ -214,44 +224,8 @@ const submit = () => {
     outline: none;
     transition: border-color 0.2s, background 0.2s;
 }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .correct-option { border-color: #22c55e !important; background: #f0fdf4 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.5rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-}
-.btn-secondary:hover { background: #f9fafb; }
 </style>

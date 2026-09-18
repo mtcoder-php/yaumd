@@ -29,6 +29,19 @@ class FacultyController extends Controller
         ]);
     }
 
+    public function show(int $id): Response
+    {
+        return Inertia::render('Admin/Faculties/Show', [
+            'faculty' => Faculty::with([
+                'dean',
+                'departments' => fn ($q) => $q->with('head')->orderBy('name_uz'),
+                'directions'  => fn ($q) => $q->orderBy('name_uz'),
+            ])
+                ->withCount(['directions', 'departments'])
+                ->findOrFail($id),
+        ]);
+    }
+
     public function store(StoreFacultyRequest $request)
     {
         Faculty::create($request->validated());
