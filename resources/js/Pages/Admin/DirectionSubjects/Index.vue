@@ -19,7 +19,7 @@
                         @click="activeDept = dept.id"
                         class="px-4 py-2 text-sm font-medium rounded-xl border transition-all whitespace-nowrap"
                         :class="activeDept === dept.id
-                            ? 'border-[#0f3460] text-[#0f3460] bg-blue-50'
+                            ? 'border-brand-600 text-brand-600 bg-brand-50'
                             : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                     >
                         {{ dept.short_name || dept.name_uz }}
@@ -33,8 +33,7 @@
 
                 <!-- Kafedra nomi -->
                 <div class="flex items-center gap-3 px-1">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                         style="background: linear-gradient(135deg, #0f3460, #533483)">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0 bg-brand-600">
                         {{ activeDeptData.short_name?.substring(0, 2) || 'K' }}
                     </div>
                     <div>
@@ -58,8 +57,7 @@
                     style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)"
                 >
                     <!-- Yo'nalish header -->
-                    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-50"
-                         style="background: linear-gradient(135deg, #f8faff, #f5f3ff)">
+                    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-brand-50">
                         <div>
                             <p class="text-sm font-bold text-gray-900">{{ direction.name_uz }}</p>
                             <p class="text-xs text-gray-400 mt-0.5">
@@ -71,14 +69,13 @@
                         <div class="flex items-center gap-3">
                             <div class="text-right">
                                 <p class="text-xs text-gray-400">Jami ball</p>
-                                <p class="text-sm font-bold" style="color:#0f3460">
+                                <p class="text-sm font-bold text-brand-600">
                                     {{ totalScore(direction) }}
                                 </p>
                             </div>
                             <button
                                 @click="openAdd(direction)"
-                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition"
-                                style="background: linear-gradient(135deg, #0f3460, #533483)"
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 transition"
                             >
                                 <Icon icon="mdi:plus" class="w-3.5 h-3.5" />
                                 Fan biriktirish
@@ -92,47 +89,45 @@
                         <p class="text-xs">Hali fan biriktirilmagan</p>
                     </div>
 
-                    <table v-else class="w-full">
+                    <table v-else class="table-grid">
                         <thead>
-                        <tr class="border-b border-gray-50">
-                            <th class="text-left px-5 py-2 text-xs font-semibold text-gray-400">Fan</th>
-                            <th class="text-left px-3 py-2 text-xs font-semibold text-gray-400">Blok</th>
-                            <th class="text-center px-3 py-2 text-xs font-semibold text-gray-400">Savollar</th>
-                            <th class="text-center px-3 py-2 text-xs font-semibold text-gray-400">Ball/savol</th>
-                            <th class="text-center px-3 py-2 text-xs font-semibold text-gray-400">Jami</th>
-                            <th class="px-3 py-2"></th>
+                        <tr>
+                            <th>Fan</th>
+                            <th>Blok</th>
+                            <th class="text-center">Savollar</th>
+                            <th class="text-center">Ball/savol</th>
+                            <th class="text-center">Jami</th>
+                            <th class="text-right">Amallar</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-50">
-                        <tr v-for="ds in direction.subjects" :key="ds.id"
-                            class="hover:bg-gray-50 transition-colors">
-                            <td class="px-5 py-3">
+                        <tbody>
+                        <tr v-for="ds in direction.subjects" :key="ds.id">
+                            <td>
                                 <p class="text-sm font-medium text-gray-800">{{ ds.subject?.name_uz }}</p>
                                 <p class="text-xs text-gray-400">{{ ds.subject?.name_ru }}</p>
                             </td>
-                            <td class="px-3 py-3">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold"
-                                          :class="blockBadge(ds.block_type)">
-                                        {{ blockLabel(ds.block_type) }}
-                                    </span>
+                            <td>
+                                <span class="badge-pill" :class="blockBadge(ds.block_type)">
+                                    {{ blockLabel(ds.block_type) }}
+                                </span>
                             </td>
-                            <td class="px-3 py-3 text-center">
+                            <td class="text-center">
                                 <span class="text-sm font-bold text-gray-700">{{ ds.questions_count }}</span>
                             </td>
-                            <td class="px-3 py-3 text-center">
-                                <span class="text-sm font-bold" style="color:#0f3460">{{ ds.score_per_question }}</span>
+                            <td class="text-center">
+                                <span class="text-sm font-bold text-brand-600">{{ ds.score_per_question }}</span>
                             </td>
-                            <td class="px-3 py-3 text-center">
+                            <td class="text-center">
                                     <span class="text-sm font-bold text-green-600">
                                         {{ (ds.questions_count * ds.score_per_question).toFixed(1) }}
                                     </span>
                             </td>
-                            <td class="px-3 py-3">
-                                <div class="flex items-center gap-2">
-                                    <button @click="openEdit(ds)" class="text-amber-600 hover:text-amber-800">
+                            <td>
+                                <div class="flex items-center justify-end gap-1">
+                                    <button @click="openEdit(ds)" title="Tahrirlash" class="btn-ghost-icon">
                                         <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                                     </button>
-                                    <button @click="confirmDelete(ds)" class="text-red-500 hover:text-red-700">
+                                    <button @click="confirmDelete(ds)" title="O'chirish" class="btn-ghost-icon danger">
                                         <Icon icon="mdi:delete-outline" class="w-4 h-4" />
                                     </button>
                                 </div>
@@ -153,7 +148,7 @@
                 <p class="text-xs text-gray-400 mb-5">{{ selectedDirection?.name_uz }}</p>
                 <div class="space-y-4">
                     <div>
-                        <label class="field-label">Fan <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Fan</label>
                         <select v-model="addForm.subject_id" class="field-input">
                             <option value="">Tanlang</option>
                             <option v-for="s in subjects" :key="s.id" :value="s.id">{{ s.name_uz }}</option>
@@ -161,24 +156,24 @@
                         <p v-if="addErrors.subject_id" class="err">{{ addErrors.subject_id }}</p>
                     </div>
                     <div>
-                        <label class="field-label">Blok turi <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Blok turi</label>
                         <div class="flex flex-col gap-2">
                             <button v-for="bt in blockTypes" :key="bt.value" type="button"
                                     @click="selectBlockType(bt)"
                                     class="flex items-center justify-between px-4 py-3 rounded-xl border-2 text-left transition-all"
-                                    :style="addForm.block_type === bt.value
-                                    ? 'border-color:#0f3460; background:linear-gradient(135deg,#eff6ff,#f5f3ff)'
-                                    : 'border-color:#e5e7eb; background:#fafafa'">
+                                    :class="addForm.block_type === bt.value
+                                        ? 'border-brand-600 bg-brand-50'
+                                        : 'border-gray-200 bg-gray-50'">
                                 <div>
                                     <p class="text-sm font-semibold"
-                                       :style="addForm.block_type === bt.value ? 'color:#0f3460' : 'color:#374151'">
+                                       :class="addForm.block_type === bt.value ? 'text-brand-600' : 'text-gray-700'">
                                         {{ bt.label }}
                                     </p>
                                     <p class="text-xs text-gray-400">{{ bt.desc }}</p>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-xs text-gray-400">Standart</p>
-                                    <p class="text-xs font-semibold" style="color:#0f3460">
+                                    <p class="text-xs font-semibold text-brand-600">
                                         {{ bt.defaultCount }} savol × {{ bt.defaultScore }} ball
                                     </p>
                                 </div>
@@ -188,30 +183,29 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="field-label">Savollar soni <span class="req">*</span></label>
+                            <label class="field-label"><span class="req">*</span> Savollar soni</label>
                             <input v-model="addForm.questions_count" type="number" min="1" max="100"
                                    class="field-input" :class="addErrors.questions_count ? 'field-error' : ''">
                             <p v-if="addErrors.questions_count" class="err">{{ addErrors.questions_count }}</p>
                         </div>
                         <div>
-                            <label class="field-label">Ball/savol <span class="req">*</span></label>
+                            <label class="field-label"><span class="req">*</span> Ball/savol</label>
                             <input v-model="addForm.score_per_question" type="number" min="0.1" max="10" step="0.1"
                                    class="field-input" :class="addErrors.score_per_question ? 'field-error' : ''">
                             <p v-if="addErrors.score_per_question" class="err">{{ addErrors.score_per_question }}</p>
                         </div>
                     </div>
                     <div v-if="addForm.questions_count && addForm.score_per_question"
-                         class="p-3 rounded-xl text-center"
-                         style="background: linear-gradient(135deg, #eff6ff, #f5f3ff)">
+                         class="p-3 rounded-xl text-center bg-brand-50">
                         <p class="text-xs text-gray-500">Jami ball</p>
-                        <p class="text-xl font-bold" style="color:#0f3460">
+                        <p class="text-xl font-bold text-brand-600">
                             {{ (addForm.questions_count * addForm.score_per_question).toFixed(1) }}
                         </p>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
-                    <button @click="addModal = false" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitAdd" :disabled="adding" class="btn-primary flex-1">
+                    <button @click="addModal = false" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitAdd" :disabled="adding" class="btn-brand flex-1 justify-center">
                         <Icon v-if="adding" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                         Biriktirish
                     </button>
@@ -243,17 +237,16 @@
                         </div>
                     </div>
                     <div v-if="editForm.questions_count && editForm.score_per_question"
-                         class="p-3 rounded-xl text-center"
-                         style="background: linear-gradient(135deg, #eff6ff, #f5f3ff)">
+                         class="p-3 rounded-xl text-center bg-brand-50">
                         <p class="text-xs text-gray-500">Jami ball</p>
-                        <p class="text-xl font-bold" style="color:#0f3460">
+                        <p class="text-xl font-bold text-brand-600">
                             {{ (editForm.questions_count * editForm.score_per_question).toFixed(1) }}
                         </p>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
-                    <button @click="editModal = false" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitEdit" class="btn-primary flex-1">Saqlash</button>
+                    <button @click="editModal = false" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitEdit" class="btn-brand flex-1 justify-center">Saqlash</button>
                 </div>
             </div>
         </div>
@@ -270,8 +263,8 @@
                     <strong>{{ deleteTarget?.subject?.name_uz }}</strong> fanini olib tashlaysizmi?
                 </p>
                 <div class="flex gap-3">
-                    <button @click="deleteTarget = null" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitDelete" class="btn-danger flex-1">O'chirish</button>
+                    <button @click="deleteTarget = null" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitDelete" class="btn-danger-pill flex-1">O'chirish</button>
                 </div>
             </div>
         </div>
@@ -337,10 +330,10 @@ const totalScore = (direction) => {
 
 const blockLabel = (type) => blockTypes.find(b => b.value === type)?.label || type
 const blockBadge = (type) => ({
-    mandatory:   'bg-blue-50 text-blue-700',
-    specialty_1: 'bg-green-50 text-green-700',
-    specialty_2: 'bg-orange-50 text-orange-700',
-}[type] || 'bg-gray-100 text-gray-600')
+    mandatory:   'badge-brand',
+    specialty_1: 'badge-success',
+    specialty_2: 'badge-warning',
+}[type] || 'badge-neutral')
 
 const selectBlockType = (bt) => {
     addForm.value.block_type         = bt.value
@@ -396,16 +389,9 @@ const submitDelete  = () => {
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .field-label { display: block; font-size: 0.78rem; font-weight: 600; color: #374151; margin-bottom: 0.375rem; }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .field-input { width: 100%; padding: 0.6rem 0.875rem; border-radius: 0.625rem; border: 1.5px solid #e5e7eb; font-size: 0.875rem; color: #111827; background: #fafafa; outline: none; transition: border-color 0.2s; appearance: auto; }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-.btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.75rem; background: linear-gradient(135deg, #0f3460, #533483); color: white; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-.btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 0.75rem; background: white; color: #374151; font-size: 0.875rem; font-weight: 600; border: 1.5px solid #e5e7eb; cursor: pointer; }
-.btn-secondary:hover { background: #f9fafb; }
-.btn-danger { display: inline-flex; align-items: center; justify-content: center; padding: 0.625rem 1.25rem; border-radius: 0.75rem; background: #ef4444; color: white; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; }
-.btn-danger:hover { background: #dc2626; }
 </style>

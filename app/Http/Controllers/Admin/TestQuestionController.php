@@ -29,7 +29,7 @@ class TestQuestionController extends Controller
 
         return Inertia::render('Admin/Questions/Index', [
             'subject'    => $subject,
-            'questions'  => $query->paginate(20)->withQueryString(),
+            'questions'  => $query->paginate(10)->withQueryString(),
             'activeLang' => $lang,
             'uzCount'    => TestQuestion::where('subject_id', $id)->where('language', 'uz')->count(),
             'ruCount'    => TestQuestion::where('subject_id', $id)->where('language', 'ru')->count(),
