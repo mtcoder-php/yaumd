@@ -37,7 +37,7 @@ class AuditLogController extends Controller
         }
 
         return Inertia::render('Admin/AuditLogs/Index', [
-            'logs'    => $query->paginate(30)->withQueryString(),
+            'logs'    => $query->paginate(10)->withQueryString(),
             'filters' => $request->only(['action', 'user_id', 'model_type', 'date']),
         ]);
     }

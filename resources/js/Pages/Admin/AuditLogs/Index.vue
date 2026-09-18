@@ -15,11 +15,7 @@
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
 
                 <!-- Action filter -->
-                <select
-                    v-model="filters.action"
-                    class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
-                    @change="applyFilters"
-                >
+                <select v-model="filters.action" class="select-filter" @change="applyFilters">
                     <option value="">Barcha amallar</option>
                     <option value="login">Login</option>
                     <option value="logout">Logout</option>
@@ -29,11 +25,7 @@
                 </select>
 
                 <!-- Model filter -->
-                <select
-                    v-model="filters.model_type"
-                    class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
-                    @change="applyFilters"
-                >
+                <select v-model="filters.model_type" class="select-filter" @change="applyFilters">
                     <option value="">Barcha modellar</option>
                     <option value="Applicant">Abituriyent</option>
                     <option value="User">Foydalanuvchi</option>
@@ -41,19 +33,10 @@
                 </select>
 
                 <!-- Sana filter -->
-                <input
-                    v-model="filters.date"
-                    type="date"
-                    class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
-                    @change="applyFilters"
-                >
+                <input v-model="filters.date" type="date" class="select-filter" @change="applyFilters">
 
                 <!-- Reset -->
-                <button
-                    v-if="hasFilters"
-                    @click="resetFilters"
-                    class="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-1.5"
-                >
+                <button v-if="hasFilters" @click="resetFilters" class="btn-neutral">
                     <Icon icon="mdi:close" class="w-4 h-4" />
                     Tozalash
                 </button>
@@ -64,101 +47,94 @@
             </div>
 
             <!-- Table -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                        <tr class="border-b border-gray-100">
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Amal</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Foydalanuvchi</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Model</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">IP manzil</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sana</th>
-                            <th class="px-4 py-3"></th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                        <tr v-if="!logs.data?.length">
-                            <td colspan="6" class="text-center py-16 text-gray-400">
-                                <Icon icon="mdi:shield-search" class="w-12 h-12 mx-auto mb-3 opacity-40" />
-                                <p class="text-sm">Log yozuvlari topilmadi</p>
-                            </td>
-                        </tr>
-                        <tr
-                            v-for="log in logs.data"
-                            :key="log.id"
-                            class="hover:bg-gray-50 transition-colors"
-                        >
-                            <!-- Amal -->
-                            <td class="px-4 py-3">
-                                    <span
-                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-                                        :class="actionBadge(log.action)"
-                                    >
-                                        <Icon :icon="actionIcon(log.action)" class="w-3 h-3" />
-                                        {{ actionLabel(log.action) }}
-                                    </span>
-                            </td>
+            <div class="table-grid-wrap">
+                <table class="table-grid">
+                    <thead>
+                    <tr>
+                        <th>Amal</th>
+                        <th>Foydalanuvchi</th>
+                        <th>Model</th>
+                        <th>IP manzil</th>
+                        <th>Sana</th>
+                        <th class="text-right">Amallar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-if="!logs.data?.length">
+                        <td colspan="6" class="text-center py-16 text-gray-400">
+                            <Icon icon="mdi:shield-search" class="w-12 h-12 mx-auto mb-3 opacity-40" />
+                            <p class="text-sm">Log yozuvlari topilmadi</p>
+                        </td>
+                    </tr>
+                    <tr v-for="log in logs.data" :key="log.id">
 
-                            <!-- Foydalanuvchi -->
-                            <td class="px-4 py-3">
-                                <p class="text-sm text-gray-800 font-medium">
-                                    {{ log.user?.full_name || 'Tizim' }}
-                                </p>
-                                <p class="text-xs text-gray-400">{{ log.user?.email || '—' }}</p>
-                            </td>
+                        <!-- Amal -->
+                        <td>
+                            <span class="badge-pill" :class="actionBadge(log.action)">
+                                <Icon :icon="actionIcon(log.action)" class="w-3 h-3" />
+                                {{ actionLabel(log.action) }}
+                            </span>
+                        </td>
 
-                            <!-- Model -->
-                            <td class="px-4 py-3">
-                                <p class="text-xs text-gray-600">{{ shortModelName(log.model_type) }}</p>
-                                <p v-if="log.model_id" class="text-xs text-gray-400">#{{ log.model_id }}</p>
-                            </td>
+                        <!-- Foydalanuvchi -->
+                        <td>
+                            <p class="text-sm text-gray-800 font-medium">
+                                {{ log.user?.full_name || 'Tizim' }}
+                            </p>
+                            <p class="text-xs text-gray-400">{{ log.user?.email || '—' }}</p>
+                        </td>
 
-                            <!-- IP -->
-                            <td class="px-4 py-3">
-                                <span class="text-xs font-mono text-gray-600">{{ log.ip_address || '—' }}</span>
-                            </td>
+                        <!-- Model -->
+                        <td>
+                            <p class="text-xs text-gray-600">{{ shortModelName(log.model_type) }}</p>
+                            <p v-if="log.model_id" class="text-xs text-gray-400">#{{ log.model_id }}</p>
+                        </td>
 
-                            <!-- Sana -->
-                            <td class="px-4 py-3 text-xs text-gray-400">
-                                {{ formatDate(log.created_at) }}
-                            </td>
+                        <!-- IP -->
+                        <td>
+                            <span class="text-xs font-mono text-gray-600">{{ log.ip_address || '—' }}</span>
+                        </td>
 
-                            <!-- Detail -->
-                            <td class="px-4 py-3">
+                        <!-- Sana -->
+                        <td class="text-xs text-gray-400">
+                            {{ formatDate(log.created_at) }}
+                        </td>
+
+                        <!-- Detail -->
+                        <td>
+                            <div class="flex items-center justify-end gap-1">
                                 <button
                                     v-if="log.old_values || log.new_values"
                                     @click="openDetail(log)"
-                                    class="text-xs font-medium flex items-center gap-1 transition"
-                                    style="color: #0f3460"
+                                    title="Detail"
+                                    class="btn-ghost-icon"
                                 >
-                                    <Icon icon="mdi:eye-outline" class="w-3.5 h-3.5" />
-                                    Detail
+                                    <Icon icon="mdi:eye-outline" class="w-4 h-4" />
                                 </button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
 
                 <!-- Pagination -->
                 <div v-if="(logs.last_page ?? 1) > 1"
-                     class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+                     class="px-4 py-3 border-t border-gray-200 flex items-center justify-between flex-wrap gap-3">
                     <p class="text-xs text-gray-500">
                         {{ logs.from }}–{{ logs.to }} / {{ logs.total }}
                     </p>
-                    <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-1.5">
                         <template v-for="link in (logs.links ?? [])" :key="link.label">
-                            <Link
-                                v-if="link.url"
-                                :href="link.url"
-                                class="px-3 py-1.5 text-xs rounded-lg transition"
-                                :class="link.active ? 'text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'"
-                                :style="link.active ? 'background:linear-gradient(135deg,#0f3460,#533483)' : ''"
-                                v-html="link.label"
-                            />
-                            <span v-else class="px-3 py-1.5 text-xs rounded-lg text-gray-300" v-html="link.label" />
+                            <component
+                                :is="link.url ? Link : 'span'"
+                                :href="link.url ?? undefined"
+                                class="pagination-btn"
+                                :class="[link.active ? 'active' : '', !link.url ? 'disabled' : '']"
+                            >
+                                <ChevronLeftIcon v-if="isPrevLabel(link.label)" class="w-4 h-4" />
+                                <ChevronRightIcon v-else-if="isNextLabel(link.label)" class="w-4 h-4" />
+                                <span v-else v-html="link.label" />
+                            </component>
                         </template>
                     </div>
                 </div>
@@ -177,8 +153,7 @@
                 <!-- Modal header -->
                 <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                     <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-                              :class="actionBadge(selectedLog.action)">
+                        <span class="badge-pill" :class="actionBadge(selectedLog.action)">
                             <Icon :icon="actionIcon(selectedLog.action)" class="w-3 h-3" />
                             {{ actionLabel(selectedLog.action) }}
                         </span>
@@ -241,6 +216,7 @@
 import { ref, computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
@@ -301,13 +277,13 @@ const actionIcon = (action) => {
 
 const actionBadge = (action) => {
     const badges = {
-        login:   'bg-blue-50 text-blue-700',
-        logout:  'bg-gray-100 text-gray-600',
-        created: 'bg-green-50 text-green-700',
-        updated: 'bg-yellow-50 text-yellow-700',
-        deleted: 'bg-red-50 text-red-700',
+        login:   'badge-brand',
+        logout:  'badge-neutral',
+        created: 'badge-success',
+        updated: 'badge-warning',
+        deleted: 'badge-danger',
     }
-    return badges[action] || 'bg-gray-50 text-gray-600'
+    return badges[action] || 'badge-neutral'
 }
 
 const shortModelName = (modelType) => {
@@ -322,4 +298,10 @@ const formatDate = (date) => {
         hour: '2-digit', minute: '2-digit', second: '2-digit'
     })
 }
+
+// Laravel'ning standart pagination yorliqlari o'rniga sof strelka
+// ikonkalarini ko'rsatish uchun (Foydalanuvchilar sahifasidagi bilan
+// bir xil naqsh).
+const isPrevLabel = (label) => /Previous|&laquo;|«/i.test(label)
+const isNextLabel = (label) => /Next|&raquo;|»/i.test(label)
 </script>
