@@ -12,7 +12,7 @@
                     <div>
                         <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
                             {{ course.title_uz }}
-                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold" :class="statusClass(course.status)">
+                            <span class="badge-pill" :class="statusClass(course.status)">
                                 {{ statusLabel(course.status) }}
                             </span>
                         </h1>
@@ -20,11 +20,11 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <Link :href="route('admin.courses.enrollments.index', course.id)" class="btn-secondary">
+                    <Link :href="route('admin.courses.enrollments.index', course.id)" class="btn-neutral">
                         <Icon icon="mdi:account-group-outline" class="w-4 h-4" />
                         O'quvchilarni boshqarish
                     </Link>
-                    <Link :href="route('admin.courses.edit', course.id)" class="btn-secondary">
+                    <Link :href="route('admin.courses.edit', course.id)" class="btn-brand">
                         <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                         Tahrirlash
                     </Link>
@@ -73,7 +73,7 @@
             <!-- Modul qo'shish -->
             <div class="flex items-center justify-between">
                 <p class="text-base font-bold text-gray-900">O'quv dasturi (modullar va darslar)</p>
-                <button @click="openModuleModal()" class="btn-primary">
+                <button @click="openModuleModal()" class="btn-brand">
                     <Icon icon="mdi:plus" class="w-4 h-4" />
                     Yangi modul
                 </button>
@@ -96,24 +96,20 @@
                     <div class="flex items-center gap-2">
                         <Icon icon="mdi:folder-outline" class="w-4 h-4 text-gray-400" />
                         <p class="text-sm font-bold text-gray-800">{{ module.title_uz }}</p>
-                        <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
-                              :class="module.is_published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'">
+                        <span class="badge-pill" :class="module.is_published ? 'badge-success' : 'badge-neutral'">
                             {{ module.is_published ? 'Nashr qilingan' : 'Qoralama' }}
                         </span>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1">
                         <Link :href="route('admin.courses.lessons.create', [course.id, module.id])"
-                              class="text-xs font-medium text-[#0f3460] hover:underline flex items-center gap-1">
-                            <Icon icon="mdi:plus" class="w-3.5 h-3.5" />
-                            Dars qo'shish
+                              title="Dars qo'shish" class="btn-ghost-icon">
+                            <Icon icon="mdi:plus" class="w-4 h-4" />
                         </Link>
-                        <button @click="openModuleModal(module)" class="text-xs font-medium text-amber-600 hover:text-amber-800 flex items-center gap-1">
-                            <Icon icon="mdi:pencil-outline" class="w-3.5 h-3.5" />
-                            Tahrir
+                        <button @click="openModuleModal(module)" title="Tahrirlash" class="btn-ghost-icon">
+                            <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                         </button>
-                        <button @click="confirmDeleteModule(module)" class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1">
-                            <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
-                            O'chirish
+                        <button @click="confirmDeleteModule(module)" title="O'chirish" class="btn-ghost-icon danger">
+                            <Icon icon="mdi:delete-outline" class="w-4 h-4" />
                         </button>
                     </div>
                 </div>
@@ -140,15 +136,12 @@
                                 </p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <Link :href="route('admin.courses.lessons.edit', [course.id, lesson.id])"
-                                  class="text-xs font-medium text-amber-600 hover:text-amber-800 flex items-center gap-1">
-                                <Icon icon="mdi:pencil-outline" class="w-3.5 h-3.5" />
-                                Tahrir
+                        <div class="flex items-center gap-1">
+                            <Link :href="route('admin.courses.lessons.edit', [course.id, lesson.id])" title="Tahrirlash" class="btn-ghost-icon">
+                                <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                             </Link>
-                            <button @click="confirmDeleteLesson(lesson)" class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1">
-                                <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
-                                O'chirish
+                            <button @click="confirmDeleteLesson(lesson)" title="O'chirish" class="btn-ghost-icon danger">
+                                <Icon icon="mdi:delete-outline" class="w-4 h-4" />
                             </button>
                         </div>
                     </div>
@@ -164,7 +157,7 @@
                 <h3 class="text-base font-bold text-gray-900 mb-4">{{ editingModule ? 'Modulni tahrirlash' : 'Yangi modul' }}</h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="field-label">Modul nomi <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Modul nomi</label>
                         <input v-model="moduleForm.title_uz" type="text" placeholder="Masalan: 1-modul: Kirish"
                                class="field-input" :class="moduleForm.errors.title_uz ? 'field-error' : ''">
                         <p v-if="moduleForm.errors.title_uz" class="err">{{ moduleForm.errors.title_uz }}</p>
@@ -180,15 +173,15 @@
                         </div>
                         <div class="flex items-end pb-1.5">
                             <label class="flex items-center gap-2 text-sm text-gray-700">
-                                <input type="checkbox" v-model="moduleForm.is_published" class="rounded">
+                                <input type="checkbox" v-model="moduleForm.is_published" class="rounded accent-brand-600">
                                 Nashr qilingan
                             </label>
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
-                    <button @click="moduleModalOpen = false" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitModule" :disabled="moduleForm.processing" class="btn-primary flex-1">
+                    <button @click="moduleModalOpen = false" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitModule" :disabled="moduleForm.processing" class="btn-brand flex-1 justify-center">
                         {{ moduleForm.processing ? 'Saqlanmoqda...' : 'Saqlash' }}
                     </button>
                 </div>
@@ -209,8 +202,8 @@
                     <strong>{{ deleteTarget.title_uz }}</strong> {{ deleteTarget.kind === 'module' ? 'modulini' : 'darsini' }} o'chirasizmi?
                 </p>
                 <div class="flex gap-3">
-                    <button @click="deleteTarget = null" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitDelete" class="btn-danger flex-1">O'chirish</button>
+                    <button @click="deleteTarget = null" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitDelete" class="btn-danger-pill flex-1">O'chirish</button>
                 </div>
             </div>
         </div>
@@ -230,16 +223,16 @@ const props = defineProps({
 
 const statusLabel = (v) => ({ draft: 'Qoralama', published: 'Nashr qilingan', archived: 'Arxivlangan' }[v] || v)
 const statusClass = (v) => ({
-    draft:     'bg-gray-100 text-gray-500',
-    published: 'bg-green-50 text-green-700',
-    archived:  'bg-amber-50 text-amber-700',
-}[v] || 'bg-gray-100 text-gray-500')
+    draft:     'badge-neutral',
+    published: 'badge-success',
+    archived:  'badge-warning',
+}[v] || 'badge-neutral')
 const levelLabel = (v) => ({ beginner: "Boshlang'ich", intermediate: "O'rta", advanced: 'Yuqori', expert: 'Ekspert' }[v] || v)
 const formatPrice = (v) => Number(v) > 0 ? new Intl.NumberFormat('uz-UZ').format(v) + " so'm" : 'Bepul'
 
 const lessonTypeLabel = (v) => ({ video: 'Video', pdf: 'Fayl/PDF', text: 'Matn', quiz: 'Test', assignment: 'Topshiriq', scorm: 'SCORM' }[v] || v)
 const lessonTypeIcon  = (v) => ({ video: 'mdi:play-circle-outline', pdf: 'mdi:file-pdf-box', text: 'mdi:text-box-outline', quiz: 'mdi:help-circle-outline', assignment: 'mdi:clipboard-text-outline', scorm: 'mdi:package-variant-closed' }[v] || 'mdi:file-outline')
-const lessonTypeColor = (v) => ({ video: '#0f3460', pdf: '#dc2626', text: '#16a34a', quiz: '#7c3aed', assignment: '#d97706', scorm: '#6b7280' }[v] || '#6b7280')
+const lessonTypeColor = (v) => ({ video: '#6366f1', pdf: '#dc2626', text: '#16a34a', quiz: '#7c3aed', assignment: '#d97706', scorm: '#6b7280' }[v] || '#6b7280')
 
 // --- Modul modal ---
 const moduleModalOpen = ref(false)
@@ -294,7 +287,7 @@ const submitDelete = () => {
     color: #374151;
     margin-bottom: 0.375rem;
 }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .field-input {
     width: 100%;
     padding: 0.6rem 0.875rem;
@@ -307,57 +300,7 @@ const submitDelete = () => {
     transition: border-color 0.2s;
     font-family: inherit;
 }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-}
-.btn-secondary:hover { background: #f9fafb; }
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: #ef4444;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-}
-.btn-danger:hover { background: #dc2626; }
 </style>

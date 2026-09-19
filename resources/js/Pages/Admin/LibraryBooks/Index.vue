@@ -9,11 +9,11 @@
                     <p class="text-sm text-gray-500 mt-0.5">Jami: {{ books.total }} ta kitob</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <Link :href="route('admin.library-categories.index')" class="btn-secondary">
+                    <Link :href="route('admin.library-categories.index')" class="btn-neutral">
                         <Icon icon="mdi:bookshelf" class="w-4 h-4" />
                         Kategoriyalar
                     </Link>
-                    <Link :href="route('admin.library.create')" class="btn-primary">
+                    <Link :href="route('admin.library.create')" class="btn-brand">
                         <Icon icon="mdi:plus" class="w-4 h-4" />
                         Yangi kitob
                     </Link>
@@ -30,117 +30,110 @@
                         v-model="filters.search"
                         type="text"
                         placeholder="Nomi, muallif yoki ISBN..."
-                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
+                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-brand-600 bg-gray-50"
                         @input="debouncedSearch"
                     >
                 </div>
 
-                <select v-model="filters.category_id" @change="applyFilters"
-                        class="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50">
+                <select v-model="filters.category_id" @change="applyFilters" class="select-filter">
                     <option value="">Barcha kategoriyalar</option>
                     <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name_uz }}</option>
                 </select>
 
-                <button v-if="hasFilters" @click="resetFilters"
-                        class="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-1.5">
+                <button v-if="hasFilters" @click="resetFilters" class="btn-neutral">
                     <Icon icon="mdi:close" class="w-4 h-4" />
                     Tozalash
                 </button>
             </div>
 
             <!-- Table -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                        <tr class="border-b border-gray-100">
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Kitob</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Kategoriya</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Joylashuvi</th>
-                            <th class="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nusxalar</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Elektron</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3"></th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                        <tr v-if="!books.data?.length">
-                            <td colspan="7" class="text-center py-16 text-gray-400">
-                                <Icon icon="mdi:book-outline" class="w-12 h-12 mx-auto mb-3 opacity-40" />
-                                <p class="text-sm">Kitob topilmadi</p>
-                            </td>
-                        </tr>
-                        <tr v-for="b in books.data ?? []" :key="b.id"
-                            class="hover:bg-gray-50 transition-colors cursor-pointer"
-                            @click="router.visit(route('admin.library.show', b.id))">
+            <div class="table-grid-wrap">
+                <table class="table-grid">
+                    <thead>
+                    <tr>
+                        <th>Kitob</th>
+                        <th>Kategoriya</th>
+                        <th>Joylashuvi</th>
+                        <th class="text-center">Nusxalar</th>
+                        <th>Elektron</th>
+                        <th>Status</th>
+                        <th class="text-right">Amallar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-if="!books.data?.length">
+                        <td colspan="7" class="text-center py-16 text-gray-400">
+                            <Icon icon="mdi:book-outline" class="w-12 h-12 mx-auto mb-3 opacity-40" />
+                            <p class="text-sm">Kitob topilmadi</p>
+                        </td>
+                    </tr>
+                    <tr v-for="b in books.data ?? []" :key="b.id"
+                        class="cursor-pointer"
+                        @click="router.visit(route('admin.library.show', b.id))">
 
-                            <td class="px-4 py-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-12 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center flex-shrink-0">
-                                        <img v-if="b.cover_image_url" :src="b.cover_image_url" class="w-full h-full object-cover" alt="">
-                                        <Icon v-else icon="mdi:book-outline" class="w-5 h-5 text-gray-400" />
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-gray-900">{{ b.title }}</p>
-                                        <p class="text-xs text-gray-400">{{ b.author }}</p>
-                                    </div>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-12 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center flex-shrink-0">
+                                    <img v-if="b.cover_image_url" :src="b.cover_image_url" class="w-full h-full object-cover" alt="">
+                                    <Icon v-else icon="mdi:book-outline" class="w-5 h-5 text-gray-400" />
                                 </div>
-                            </td>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">{{ b.title }}</p>
+                                    <p class="text-xs text-gray-400">{{ b.author }}</p>
+                                </div>
+                            </div>
+                        </td>
 
-                            <td class="px-4 py-3 text-sm text-gray-600">{{ b.category?.name_uz || '—' }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-600">{{ b.shelf_location || '—' }}</td>
-                            <td class="px-4 py-3 text-center">
-                                <span class="inline-flex items-center justify-center px-2.5 h-8 rounded-xl text-sm font-bold whitespace-nowrap"
-                                      :class="b.available_copies_count > 0 ? '' : 'bg-red-50 text-red-600'"
-                                      :style="b.available_copies_count > 0 ? 'background: linear-gradient(135deg, #eff6ff, #f5f3ff); color: #0f3460' : ''">
-                                    {{ b.available_copies_count }} / {{ b.copies_count }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-3">
-                                <span v-if="!b.has_digital_file" class="text-xs text-gray-400">—</span>
-                                <span v-else-if="b.access_type === 'paid'" class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">
-                                    {{ formatPrice(b.price) }}
-                                </span>
-                                <span v-else class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">Bepul</span>
-                            </td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                      :class="b.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'">
-                                    {{ b.is_active ? 'Faol' : 'Nofaol' }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-3" @click.stop>
-                                <div class="flex items-center gap-3">
-                                    <Link :href="route('admin.library.edit', b.id)"
-                                          class="text-xs font-medium text-amber-600 hover:text-amber-800 flex items-center gap-1">
-                                        <Icon icon="mdi:pencil-outline" class="w-3.5 h-3.5" />
-                                        Tahrir
-                                    </Link>
-                                    <button @click="confirmDelete(b)"
-                                            class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1">
-                                        <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
-                                        O'chirish
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+                        <td class="text-sm text-gray-600">{{ b.category?.name_uz || '—' }}</td>
+                        <td class="text-sm text-gray-600">{{ b.shelf_location || '—' }}</td>
+                        <td class="text-center">
+                            <span class="inline-flex items-center justify-center px-2.5 h-8 rounded-xl text-sm font-bold whitespace-nowrap"
+                                  :class="b.available_copies_count > 0 ? 'bg-brand-50 text-brand-600' : 'bg-red-50 text-red-600'">
+                                {{ b.available_copies_count }} / {{ b.copies_count }}
+                            </span>
+                        </td>
+                        <td>
+                            <span v-if="!b.has_digital_file" class="text-xs text-gray-400">—</span>
+                            <span v-else-if="b.access_type === 'paid'" class="badge-pill badge-warning">
+                                {{ formatPrice(b.price) }}
+                            </span>
+                            <span v-else class="badge-pill badge-brand">Bepul</span>
+                        </td>
+                        <td>
+                            <span class="badge-pill" :class="b.is_active ? 'badge-success' : 'badge-neutral'">
+                                {{ b.is_active ? 'Faol' : 'Nofaol' }}
+                            </span>
+                        </td>
+                        <td @click.stop>
+                            <div class="flex items-center justify-end gap-1">
+                                <Link :href="route('admin.library.edit', b.id)" title="Tahrirlash" class="btn-ghost-icon">
+                                    <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
+                                </Link>
+                                <button @click="confirmDelete(b)" title="O'chirish" class="btn-ghost-icon danger">
+                                    <Icon icon="mdi:delete-outline" class="w-4 h-4" />
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
 
                 <!-- Pagination -->
                 <div v-if="(books.last_page ?? 1) > 1"
-                     class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+                     class="px-4 py-3 border-t border-gray-200 flex items-center justify-between flex-wrap gap-3">
                     <p class="text-xs text-gray-500">{{ books.from }}–{{ books.to }} / {{ books.total }}</p>
-                    <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-1.5">
                         <template v-for="link in (books.links ?? [])" :key="link.label">
-                            <Link v-if="link.url" :href="link.url"
-                                  class="px-3 py-1.5 text-xs rounded-lg transition"
-                                  :class="link.active ? 'text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'"
-                                  :style="link.active ? 'background:linear-gradient(135deg,#0f3460,#533483)' : ''"
-                                  v-html="link.label" />
-                            <span v-else class="px-3 py-1.5 text-xs text-gray-300" v-html="link.label" />
+                            <component
+                                :is="link.url ? Link : 'span'"
+                                :href="link.url ?? undefined"
+                                class="pagination-btn"
+                                :class="[link.active ? 'active' : '', !link.url ? 'disabled' : '']"
+                            >
+                                <ChevronLeftIcon v-if="isPrevLabel(link.label)" class="w-4 h-4" />
+                                <ChevronRightIcon v-else-if="isNextLabel(link.label)" class="w-4 h-4" />
+                                <span v-else v-html="link.label" />
+                            </component>
                         </template>
                     </div>
                 </div>
@@ -159,8 +152,8 @@
                     <strong>{{ deleteTarget?.title }}</strong> kitobini o'chirasizmi?
                 </p>
                 <div class="flex gap-3">
-                    <button @click="deleteTarget = null" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitDelete" class="btn-danger flex-1">O'chirish</button>
+                    <button @click="deleteTarget = null" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitDelete" class="btn-danger-pill flex-1">O'chirish</button>
                 </div>
             </div>
         </div>
@@ -172,6 +165,7 @@
 import { ref, computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
@@ -214,53 +208,9 @@ const submitDelete = () => {
         onSuccess: () => { deleteTarget.value = null },
     })
 }
-</script>
 
-<style scoped>
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    text-decoration: none;
-}
-.btn-secondary:hover { background: #f9fafb; }
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: #ef4444;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-}
-.btn-danger:hover { background: #dc2626; }
-</style>
+// Laravel'ning standart pagination yorliqlari o'rniga sof strelka
+// ikonkalarini ko'rsatish uchun (boshqa sahifalardagi bilan bir xil naqsh).
+const isPrevLabel = (label) => /Previous|&laquo;|«/i.test(label)
+const isNextLabel = (label) => /Next|&raquo;|»/i.test(label)
+</script>

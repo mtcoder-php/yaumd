@@ -17,9 +17,8 @@
                         @click="setStatus(tab.value)"
                         class="px-4 py-2 text-sm rounded-xl border transition flex items-center gap-2"
                         :class="filters.status === tab.value
-                            ? 'text-white border-transparent'
-                            : 'text-gray-600 border-gray-200 hover:bg-gray-50'"
-                        :style="filters.status === tab.value ? 'background:linear-gradient(135deg,#0f3460,#533483)' : ''">
+                            ? 'bg-brand-600 text-white border-transparent'
+                            : 'text-gray-600 border-gray-200 hover:bg-gray-50'">
                     {{ tab.label }}
                     <span class="text-xs px-1.5 py-0.5 rounded-full"
                           :class="filters.status === tab.value ? 'bg-white/20' : 'bg-gray-100 text-gray-500'">
@@ -37,12 +36,11 @@
                         v-model="filters.search"
                         type="text"
                         placeholder="employeeNo yoki ism bo'yicha qidirish..."
-                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#0f3460] bg-gray-50"
+                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-brand-600 bg-gray-50"
                         @input="debouncedSearch"
                     >
                 </div>
-                <button v-if="filters.search" @click="filters.search = ''; applyFilters()"
-                        class="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-1.5">
+                <button v-if="filters.search" @click="filters.search = ''; applyFilters()" class="btn-neutral">
                     <Icon icon="mdi:close" class="w-4 h-4" />
                     Tozalash
                 </button>
@@ -63,8 +61,8 @@
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="font-mono text-sm font-bold text-[#0f3460]">{{ m.employee_no }}</span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full" :class="statusClass(m.status)">
+                                <span class="font-mono text-sm font-bold text-brand-600">{{ m.employee_no }}</span>
+                                <span class="badge-pill" :class="statusClass(m.status)">
                                     {{ statusLabel(m.status) }}
                                 </span>
                             </div>
@@ -95,7 +93,7 @@
                         <div v-if="m.candidates?.length" class="flex flex-wrap gap-2">
                             <button v-for="c in m.candidates" :key="`${c.type}-${c.id}`"
                                     @click="assign(m, c.type, c.id, c.name)"
-                                    class="px-3 py-1.5 text-xs rounded-lg border border-gray-200 hover:border-[#0f3460] hover:bg-blue-50 flex items-center gap-1.5">
+                                    class="px-3 py-1.5 text-xs rounded-lg border border-gray-200 hover:border-brand-600 hover:bg-brand-50 flex items-center gap-1.5">
                                 <Icon icon="mdi:check-circle-outline" class="w-3.5 h-3.5 text-green-600" />
                                 {{ c.name }}
                                 <span class="text-gray-400">({{ Math.round(c.score * 100) }}%)</span>
@@ -125,7 +123,7 @@
                                 </select>
                                 <input v-model="searchQuery" @input="debouncedSearchCandidates"
                                        type="text" placeholder="Ism yoki ID bo'yicha qidirish..."
-                                       class="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-[#0f3460]">
+                                       class="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-brand-600">
                             </div>
                             <div v-if="searchResults.length" class="space-y-1 max-h-48 overflow-y-auto">
                                 <button v-for="r in searchResults" :key="`${r.type}-${r.id}`"
@@ -143,17 +141,21 @@
 
             <!-- Pagination -->
             <div v-if="(matches.last_page ?? 1) > 1"
-                 class="bg-white rounded-2xl border border-gray-100 px-4 py-3 flex items-center justify-between"
+                 class="bg-white rounded-2xl border border-gray-100 px-4 py-3 flex items-center justify-between flex-wrap gap-3"
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                 <p class="text-xs text-gray-500">{{ matches.from }}–{{ matches.to }} / {{ matches.total }}</p>
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-1.5">
                     <template v-for="link in (matches.links ?? [])" :key="link.label">
-                        <Link v-if="link.url" :href="link.url"
-                              class="px-3 py-1.5 text-xs rounded-lg transition"
-                              :class="link.active ? 'text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'"
-                              :style="link.active ? 'background:linear-gradient(135deg,#0f3460,#533483)' : ''"
-                              v-html="link.label" />
-                        <span v-else class="px-3 py-1.5 text-xs text-gray-300" v-html="link.label" />
+                        <component
+                            :is="link.url ? Link : 'span'"
+                            :href="link.url ?? undefined"
+                            class="pagination-btn"
+                            :class="[link.active ? 'active' : '', !link.url ? 'disabled' : '']"
+                        >
+                            <ChevronLeftIcon v-if="isPrevLabel(link.label)" class="w-4 h-4" />
+                            <ChevronRightIcon v-else-if="isNextLabel(link.label)" class="w-4 h-4" />
+                            <span v-else v-html="link.label" />
+                        </component>
                     </template>
                 </div>
             </div>
@@ -165,21 +167,22 @@
 import { ref } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { useToast } from 'vue-toastification'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const toast = useToast()
 
 const STATUS_STYLES = {
-    needs_review: { label: "Ko'rib chiqish", class: 'bg-amber-100 text-amber-700' },
-    unmatched: { label: 'Topilmadi', class: 'bg-gray-100 text-gray-500' },
-    auto_matched: { label: 'Avtomatik', class: 'bg-blue-100 text-blue-700' },
-    matched: { label: 'Tasdiqlangan', class: 'bg-green-100 text-green-700' },
-    rejected: { label: 'Rad etilgan', class: 'bg-red-100 text-red-600' },
+    needs_review: { label: "Ko'rib chiqish", class: 'badge-warning' },
+    unmatched: { label: 'Topilmadi', class: 'badge-neutral' },
+    auto_matched: { label: 'Avtomatik', class: 'badge-brand' },
+    matched: { label: 'Tasdiqlangan', class: 'badge-success' },
+    rejected: { label: 'Rad etilgan', class: 'badge-danger' },
 }
 
 const statusLabel = (status) => STATUS_STYLES[status]?.label || status
-const statusClass = (status) => STATUS_STYLES[status]?.class || 'bg-gray-100 text-gray-500'
+const statusClass = (status) => STATUS_STYLES[status]?.class || 'badge-neutral'
 
 const props = defineProps({
     matches: { type: Object, default: () => ({ data: [], links: [], total: 0 }) },
@@ -271,4 +274,9 @@ const reject = (match) => {
         onSuccess: () => toast.success('Rad etildi'),
     })
 }
+
+// Laravel'ning standart pagination yorliqlari o'rniga sof strelka
+// ikonkalarini ko'rsatish uchun (boshqa sahifalardagi bilan bir xil naqsh).
+const isPrevLabel = (label) => /Previous|&laquo;|«/i.test(label)
+const isNextLabel = (label) => /Next|&raquo;|»/i.test(label)
 </script>

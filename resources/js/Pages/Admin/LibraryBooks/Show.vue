@@ -12,15 +12,14 @@
                     <div>
                         <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
                             {{ book.title }}
-                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                  :class="book.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'">
+                            <span class="badge-pill" :class="book.is_active ? 'badge-success' : 'badge-neutral'">
                                 {{ book.is_active ? 'Faol' : 'Nofaol' }}
                             </span>
                         </h1>
                         <p class="text-sm text-gray-500 mt-0.5">{{ book.author }} — {{ book.category?.name_uz || 'Kategoriyasiz' }}</p>
                     </div>
                 </div>
-                <Link :href="route('admin.library.edit', book.id)" class="btn-secondary">
+                <Link :href="route('admin.library.edit', book.id)" class="btn-brand">
                     <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                     Tahrirlash
                 </Link>
@@ -75,48 +74,43 @@
                     <p class="text-base font-bold text-gray-900">Fizik nusxalar (inventar)</p>
                     <p class="text-xs text-gray-400 mt-0.5">Jami {{ book.copies?.length || 0 }} ta nusxa, shundan {{ availableCount }} tasi bo'sh</p>
                 </div>
-                <button @click="openCopyModal()" class="btn-primary">
+                <button @click="openCopyModal()" class="btn-brand">
                     <Icon icon="mdi:plus" class="w-4 h-4" />
                     Nusxa qo'shish
                 </button>
             </div>
 
             <!-- Nusxalar jadvali -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
+            <div class="table-grid-wrap">
                 <div v-if="!book.copies?.length" class="p-12 text-center text-gray-400">
                     <Icon icon="mdi:barcode-off" class="w-10 h-10 mx-auto mb-2 opacity-40" />
                     <p class="text-sm">Hali fizik nusxa qo'shilmagan</p>
                 </div>
-                <table v-else class="w-full">
+                <table v-else class="table-grid">
                     <thead>
-                    <tr class="border-b border-gray-100">
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Inventar raqami</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Holati</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Izoh</th>
-                        <th class="px-4 py-3"></th>
+                    <tr>
+                        <th>Inventar raqami</th>
+                        <th>Holati</th>
+                        <th>Izoh</th>
+                        <th class="text-right">Amallar</th>
                     </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-50">
-                    <tr v-for="c in book.copies" :key="c.id" class="hover:bg-gray-50 transition-colors">
-                        <td class="px-4 py-3 text-sm font-semibold text-gray-900">{{ c.inventory_code }}</td>
-                        <td class="px-4 py-3">
-                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold" :class="statusClass(c.status)">
+                    <tbody>
+                    <tr v-for="c in book.copies" :key="c.id">
+                        <td class="text-sm font-semibold text-gray-900">{{ c.inventory_code }}</td>
+                        <td>
+                            <span class="badge-pill" :class="statusClass(c.status)">
                                 {{ statusLabel(c.status) }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-500">{{ c.condition_notes || '—' }}</td>
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-3">
-                                <button @click="openCopyModal(c)"
-                                        class="text-xs font-medium text-amber-600 hover:text-amber-800 flex items-center gap-1">
-                                    <Icon icon="mdi:pencil-outline" class="w-3.5 h-3.5" />
-                                    Tahrir
+                        <td class="text-sm text-gray-500">{{ c.condition_notes || '—' }}</td>
+                        <td>
+                            <div class="flex items-center justify-end gap-1">
+                                <button @click="openCopyModal(c)" title="Tahrirlash" class="btn-ghost-icon">
+                                    <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                                 </button>
-                                <button @click="confirmDeleteCopy(c)"
-                                        class="text-xs font-medium text-red-500 hover:text-red-700 flex items-center gap-1">
-                                    <Icon icon="mdi:delete-outline" class="w-3.5 h-3.5" />
-                                    O'chirish
+                                <button @click="confirmDeleteCopy(c)" title="O'chirish" class="btn-ghost-icon danger">
+                                    <Icon icon="mdi:delete-outline" class="w-4 h-4" />
                                 </button>
                             </div>
                         </td>
@@ -135,13 +129,13 @@
                 </h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="field-label">Inventar raqami <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Inventar raqami</label>
                         <input v-model="copyForm.inventory_code" type="text" placeholder="Masalan: KUT-000123"
                                class="field-input" :class="copyForm.errors.inventory_code ? 'field-error' : ''">
                         <p v-if="copyForm.errors.inventory_code" class="err">{{ copyForm.errors.inventory_code }}</p>
                     </div>
                     <div>
-                        <label class="field-label">Holati <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Holati</label>
                         <select v-model="copyForm.status" class="field-input">
                             <option value="available">Mavjud (bo'sh)</option>
                             <option value="damaged">Shikastlangan</option>
@@ -156,8 +150,8 @@
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
-                    <button @click="closeCopyModal" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitCopy" :disabled="copyForm.processing" class="btn-primary flex-1">
+                    <button @click="closeCopyModal" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitCopy" :disabled="copyForm.processing" class="btn-brand flex-1 justify-center">
                         {{ copyForm.processing ? 'Saqlanmoqda...' : 'Saqlash' }}
                     </button>
                 </div>
@@ -176,8 +170,8 @@
                     <strong>{{ deleteCopyTarget?.inventory_code }}</strong> nusxasini o'chirasizmi?
                 </p>
                 <div class="flex gap-3">
-                    <button @click="deleteCopyTarget = null" class="btn-secondary flex-1">Bekor qilish</button>
-                    <button @click="submitDeleteCopy" class="btn-danger flex-1">O'chirish</button>
+                    <button @click="deleteCopyTarget = null" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitDeleteCopy" class="btn-danger-pill flex-1">O'chirish</button>
                 </div>
             </div>
         </div>
@@ -207,11 +201,11 @@ const statusLabel = (v) => ({
 }[v] || v)
 
 const statusClass = (v) => ({
-    available: 'bg-green-50 text-green-700',
-    loaned:    'bg-amber-50 text-amber-700',
-    damaged:   'bg-orange-50 text-orange-700',
-    lost:      'bg-red-50 text-red-600',
-}[v] || 'bg-gray-100 text-gray-500')
+    available: 'badge-success',
+    loaned:    'badge-brand',
+    damaged:   'badge-warning',
+    lost:      'badge-danger',
+}[v] || 'badge-neutral')
 
 // Nusxa qo'shish/tahrirlash
 const copyModalOpen = ref(false)
@@ -265,7 +259,7 @@ const submitDeleteCopy = () => {
     color: #374151;
     margin-bottom: 0.375rem;
 }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .field-input {
     width: 100%;
     padding: 0.6rem 0.875rem;
@@ -278,57 +272,7 @@ const submitDeleteCopy = () => {
     transition: border-color 0.2s;
     font-family: inherit;
 }
-.field-input:focus { border-color: #0f3460; background: white; }
+.field-input:focus { border-color: var(--color-brand-600); background: white; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-}
-.btn-secondary:hover { background: #f9fafb; }
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: #ef4444;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-}
-.btn-danger:hover { background: #dc2626; }
 </style>
