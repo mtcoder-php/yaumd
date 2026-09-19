@@ -164,7 +164,7 @@
                     </div>
                     <div>
                         <label class="field-label">Tavsif</label>
-                        <textarea v-model="moduleForm.description" rows="3" class="field-input"></textarea>
+                        <RichTextEditor v-model="moduleForm.description" :height="180" />
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -216,6 +216,7 @@ import { ref } from 'vue'
 import { Link, useForm, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     course: { type: Object, required: true },

@@ -211,7 +211,7 @@
 
                                 <div class="sm:col-span-2">
                                     <label class="field-label">To'liq manzil</label>
-                                    <textarea v-model="form.address" rows="2" class="field-input" style="resize:none"></textarea>
+                                    <RichTextEditor v-model="form.address" :height="160" />
                                 </div>
 
                             </div>
@@ -273,6 +273,7 @@ import { ref, computed } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     applicant: { type: Object, required: true },

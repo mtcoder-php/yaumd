@@ -205,7 +205,7 @@
                             </div>
                             <div class="sm:col-span-2">
                                 <label class="field-label">Manzil</label>
-                                <textarea v-model="form.address" rows="2" class="field-input" style="resize:none"></textarea>
+                                <RichTextEditor v-model="form.address" :height="160" />
                             </div>
                         </div>
                     </div>
@@ -236,6 +236,7 @@ import { Link, useForm } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import IMask from 'imask'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     student:       { type: Object, default: null },

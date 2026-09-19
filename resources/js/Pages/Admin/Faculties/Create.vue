@@ -76,13 +76,11 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="field-label">Tavsif (O'zbek)</label>
-                            <textarea v-model="form.description_uz" rows="3" class="field-input"
-                                      placeholder="Fakultet haqida..." style="resize:none"></textarea>
+                            <RichTextEditor v-model="form.description_uz" placeholder="Fakultet haqida..." :height="200" />
                         </div>
                         <div>
                             <label class="field-label">Tavsif (Rus)</label>
-                            <textarea v-model="form.description_ru" rows="3" class="field-input"
-                                      placeholder="О факультете..." style="resize:none"></textarea>
+                            <RichTextEditor v-model="form.description_ru" placeholder="О факультете..." :height="200" />
                         </div>
                     </div>
 
@@ -126,6 +124,7 @@ import { computed } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     faculty: { type: Object, default: null },

@@ -215,9 +215,7 @@
                     <!-- Izoh -->
                     <div>
                         <label class="field-label">Izoh (ixtiyoriy)</label>
-                        <textarea v-model="form.notes" rows="3" class="field-input"
-                                  placeholder="Suhbat haqida qisqacha izoh..."
-                                  style="resize:none"></textarea>
+                        <RichTextEditor v-model="form.notes" placeholder="Suhbat haqida qisqacha izoh..." :height="160" />
                     </div>
 
                 </div>
@@ -242,6 +240,7 @@ import { Link, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     applicants: { type: Object, default: () => ({ data: [], links: [], total: 0 }) },

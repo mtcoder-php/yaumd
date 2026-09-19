@@ -21,7 +21,8 @@ class UpdateProfileRequest extends FormRequest
             // shu formatga qat'iy mos kelishi talab qilinadi, aks holda
             // yarim to'ldirilgan raqam bazaga yozilib qolishi mumkin edi.
             'phone'      => 'nullable|string|regex:/^998\d{9}$/|unique:users,phone,' . $this->user()->id,
-            'address'    => 'nullable|string|max:1000',
+            // RichTextEditor (WYSIWYG) orqali HTML sifatida kiritiladi.
+            'address'    => 'nullable|string|max:3000',
             'birth_date' => 'nullable|date|before:today',
             'gender'     => 'nullable|in:male,female',
         ];

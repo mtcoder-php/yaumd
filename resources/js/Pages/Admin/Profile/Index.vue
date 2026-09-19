@@ -25,8 +25,7 @@
                              :style="`background-image:url('${photoPreview || user.photo_url}')`">
                         </div>
                         <div v-else
-                             class="w-20 h-20 rounded-full flex items-center justify-center text-white text-xl font-semibold"
-                             style="background:linear-gradient(135deg,#0f3460,#533483)">
+                             class="w-20 h-20 rounded-full flex items-center justify-center text-white text-xl font-semibold bg-brand-600">
                             {{ initials }}
                         </div>
                         <button
@@ -53,8 +52,7 @@
                                 type="button"
                                 @click="$refs.photoInput.click()"
                                 :disabled="photoForm.processing"
-                                class="text-xs font-medium hover:underline"
-                                style="color:#0f3460"
+                                class="text-xs font-medium text-brand-600 hover:underline"
                             >
                                 Rasm yuklash
                             </button>
@@ -75,7 +73,7 @@
 
                     <!-- To'liq ism -->
                     <div>
-                        <label class="field-label">To'liq ism <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> To'liq ism</label>
                         <div class="relative">
                             <Icon icon="mdi:account-outline"
                                   class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -106,9 +104,9 @@
                                 <input
                                     :value="phoneLocalDisplay"
                                     @input="onPhoneInput"
-                                    type="text"
+                                    type="tel"
                                     name="phone"
-                                    autocomplete="tel-national"
+                                    autocomplete="off"
                                     inputmode="numeric"
                                     placeholder="(90) 123-45-67"
                                     class="phone-inner flex-1 min-w-0"
@@ -145,15 +143,12 @@
                     <!-- Manzil -->
                     <div>
                         <label class="field-label">Manzil</label>
-                        <textarea
+                        <RichTextEditor
                             v-model="infoForm.address"
-                            rows="2"
-                            name="address"
-                            autocomplete="street-address"
+                            :error="!!infoForm.errors.address"
+                            :height="160"
                             placeholder="Yashash manzili"
-                            class="field-input"
-                            :class="infoForm.errors.address ? 'field-error' : ''"
-                        ></textarea>
+                        />
                         <p v-if="infoForm.errors.address" class="err">{{ infoForm.errors.address }}</p>
                     </div>
 
@@ -164,7 +159,7 @@
                         type="button"
                         @click="submitInfo"
                         :disabled="infoForm.processing"
-                        class="btn-primary"
+                        class="btn-brand"
                     >
                         <Icon v-if="infoForm.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                         <Icon v-else icon="mdi:content-save-outline" class="w-4 h-4" />
@@ -177,7 +172,7 @@
             <div class="bg-white rounded-2xl border border-gray-100 p-6"
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                 <h2 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <Icon icon="mdi:email-outline" class="w-4 h-4" style="color:#0f3460" />
+                    <Icon icon="mdi:email-outline" class="w-4 h-4 text-brand-600" />
                     Email manzil
                 </h2>
 
@@ -186,7 +181,7 @@
                     <div class="flex items-center justify-between">
                         <p class="text-sm text-gray-700">{{ user.email }}</p>
                         <button type="button" @click="showEmailForm = true"
-                                class="text-xs font-medium hover:underline" style="color:#0f3460">
+                                class="text-xs font-medium text-brand-600 hover:underline">
                             O'zgartirish
                         </button>
                     </div>
@@ -196,7 +191,7 @@
                 <template v-else-if="!pending && showEmailForm">
                     <div class="space-y-4">
                         <div>
-                            <label class="field-label">Yangi email <span class="req">*</span></label>
+                            <label class="field-label"><span class="req">*</span> Yangi email</label>
                             <input
                                 v-model="emailRequestForm.new_email"
                                 type="email"
@@ -209,7 +204,7 @@
                             <p v-if="emailRequestForm.errors.new_email" class="err">{{ emailRequestForm.errors.new_email }}</p>
                         </div>
                         <div>
-                            <label class="field-label">Joriy parol <span class="req">*</span></label>
+                            <label class="field-label"><span class="req">*</span> Joriy parol</label>
                             <input
                                 v-model="emailRequestForm.current_password"
                                 type="password"
@@ -222,10 +217,10 @@
                             <p v-if="emailRequestForm.errors.current_password" class="err">{{ emailRequestForm.errors.current_password }}</p>
                         </div>
                         <div class="flex gap-3">
-                            <button type="button" @click="showEmailForm = false" class="btn-secondary flex-1">
+                            <button type="button" @click="showEmailForm = false" class="btn-neutral flex-1 justify-center">
                                 Bekor qilish
                             </button>
-                            <button type="button" @click="submitEmailRequest" :disabled="emailRequestForm.processing" class="btn-primary flex-1">
+                            <button type="button" @click="submitEmailRequest" :disabled="emailRequestForm.processing" class="btn-brand flex-1 justify-center">
                                 <Icon v-if="emailRequestForm.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                                 {{ emailRequestForm.processing ? 'Yuborilmoqda...' : 'Tasdiqlash kodini yuborish' }}
                             </button>
@@ -241,7 +236,7 @@
                             Kod 10 daqiqa amal qiladi.
                         </p>
                         <div>
-                            <label class="field-label">Tasdiqlash kodi <span class="req">*</span></label>
+                            <label class="field-label"><span class="req">*</span> Tasdiqlash kodi</label>
                             <input
                                 v-model="emailVerifyForm.code"
                                 type="text"
@@ -256,10 +251,10 @@
                             <p v-if="emailVerifyForm.errors.code" class="err">{{ emailVerifyForm.errors.code }}</p>
                         </div>
                         <div class="flex gap-3">
-                            <button type="button" @click="cancelEmailChange" class="btn-secondary flex-1">
+                            <button type="button" @click="cancelEmailChange" class="btn-neutral flex-1 justify-center">
                                 Bekor qilish
                             </button>
-                            <button type="button" @click="submitEmailVerify" :disabled="emailVerifyForm.processing" class="btn-primary flex-1">
+                            <button type="button" @click="submitEmailVerify" :disabled="emailVerifyForm.processing" class="btn-brand flex-1 justify-center">
                                 <Icon v-if="emailVerifyForm.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                                 {{ emailVerifyForm.processing ? 'Tekshirilmoqda...' : 'Tasdiqlash' }}
                             </button>
@@ -272,13 +267,13 @@
             <div class="bg-white rounded-2xl border border-gray-100 p-6"
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
                 <h2 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <Icon icon="mdi:lock-outline" class="w-4 h-4" style="color:#0f3460" />
+                    <Icon icon="mdi:lock-outline" class="w-4 h-4 text-brand-600" />
                     Parolni o'zgartirish
                 </h2>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="field-label">Joriy parol <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Joriy parol</label>
                         <input
                             v-model="passwordForm.current_password"
                             type="password"
@@ -291,7 +286,7 @@
                         <p v-if="passwordForm.errors.current_password" class="err">{{ passwordForm.errors.current_password }}</p>
                     </div>
                     <div>
-                        <label class="field-label">Yangi parol <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Yangi parol</label>
                         <input
                             v-model="passwordForm.password"
                             type="password"
@@ -304,7 +299,7 @@
                         <p v-if="passwordForm.errors.password" class="err">{{ passwordForm.errors.password }}</p>
                     </div>
                     <div>
-                        <label class="field-label">Yangi parolni tasdiqlang <span class="req">*</span></label>
+                        <label class="field-label"><span class="req">*</span> Yangi parolni tasdiqlang</label>
                         <input
                             v-model="passwordForm.password_confirmation"
                             type="password"
@@ -323,7 +318,7 @@
                         type="button"
                         @click="submitPassword"
                         :disabled="passwordForm.processing"
-                        class="btn-primary"
+                        class="btn-brand"
                     >
                         <Icon v-if="passwordForm.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                         <Icon v-else icon="mdi:key-change" class="w-4 h-4" />
@@ -341,6 +336,7 @@ import { ref, computed } from 'vue'
 import { Link, router, useForm } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     user:                { type: Object, required: true },
@@ -474,7 +470,7 @@ const cancelEmailChange = () => {
     color: #374151;
     margin-bottom: 0.375rem;
 }
-.req { color: #ef4444; }
+.req { color: #ef4444; margin-right: 0.15rem; }
 .field-input {
     width: 100%;
     padding: 0.6rem 0.875rem;
@@ -488,7 +484,7 @@ const cancelEmailChange = () => {
 }
 .field-input.pl-10 { padding-left: 2.5rem; }
 .field-input:focus,
-.field-input:focus-within { border-color: #0f3460; background: white; }
+.field-input:focus-within { border-color: var(--color-brand-600); background: white; }
 .field-error { border-color: #f87171 !important; background: #fef2f2 !important; }
 
 .phone-inner {
@@ -500,40 +496,4 @@ const cancelEmailChange = () => {
     color: #111827;
 }
 .err { color: #ef4444; font-size: 0.7rem; margin-top: 0.25rem; display: block; }
-
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.5rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #0f3460, #533483);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    background: white;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-}
-.btn-secondary:hover { background: #f9fafb; }
 </style>

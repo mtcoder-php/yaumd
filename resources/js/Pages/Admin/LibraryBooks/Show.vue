@@ -63,7 +63,7 @@
                     </div>
                     <div v-if="book.description" class="col-span-2 sm:col-span-3">
                         <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Tavsif</p>
-                        <p class="text-sm text-gray-700 whitespace-pre-line">{{ book.description }}</p>
+                        <div class="text-sm text-gray-700 prose prose-sm max-w-none" v-html="book.description"></div>
                     </div>
                 </div>
             </div>
@@ -146,7 +146,7 @@
                     </div>
                     <div>
                         <label class="field-label">Izoh</label>
-                        <textarea v-model="copyForm.condition_notes" rows="2" placeholder="Ixtiyoriy" class="field-input"></textarea>
+                        <RichTextEditor v-model="copyForm.condition_notes" placeholder="Ixtiyoriy" :height="160" />
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
@@ -184,6 +184,7 @@ import { ref, computed } from 'vue'
 import { Link, useForm, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     book: { type: Object, required: true },

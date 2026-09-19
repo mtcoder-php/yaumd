@@ -66,11 +66,14 @@
                 <!-- Tavsif -->
                 <div>
                     <label class="field-label">Tavsif (O'zbek)</label>
-                    <textarea v-model="form.description_uz" rows="4" placeholder="Kurs haqida to'liq ma'lumot"
-                              class="field-input"></textarea>
+                    <RichTextEditor v-model="form.description_uz" placeholder="Kurs haqida to'liq ma'lumot" :height="260" />
                 </div>
 
                 <!-- Nimalarni o'rganasiz / Talablar -->
+                <!-- MUHIM: bu ikkitasi ataylab oddiy textarea holida qoldirildi — backend
+                     (CourseController::linesToArray) har bir qatorni alohida ro'yxat bandiga
+                     ajratadi (masalan sahifada nuqtali ro'yxat sifatida chiqadi). Rich-text
+                     muharrir esa HTML qaytaradi va bu qator-band mantiqini buzadi. -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="field-label">Nimalarni o'rganasiz</label>
@@ -247,6 +250,7 @@ import { computed, ref } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     course:     { type: Object, default: null },

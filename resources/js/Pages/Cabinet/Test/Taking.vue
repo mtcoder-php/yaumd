@@ -111,9 +111,8 @@
                     </div>
 
                     <!-- Savol matni -->
-                    <p class="text-base font-medium text-gray-900 mb-6 leading-relaxed">
-                        {{ currentQuestion.question }}
-                    </p>
+                    <div class="text-base font-medium text-gray-900 mb-6 leading-relaxed prose prose-sm max-w-none"
+                         v-html="currentQuestion.question"></div>
 
                     <!-- Variantlar -->
                     <div class="space-y-3">

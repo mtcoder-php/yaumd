@@ -52,9 +52,9 @@
 
                 <div>
                     <label class="field-label">Mazmuni</label>
-                    <textarea v-model="form.summary" rows="3"
-                              placeholder="Masalan: ota-onasi bilan gaplashdim, oy oxirigacha to'lashga va'da berishdi"
-                              class="field-input" style="resize:none"></textarea>
+                    <RichTextEditor v-model="form.summary" :error="!!form.errors.summary"
+                                    placeholder="Masalan: ota-onasi bilan gaplashdim, oy oxirigacha to'lashga va'da berishdi"
+                                    :height="180" />
                     <p v-if="form.errors.summary" class="err">{{ form.errors.summary }}</p>
                 </div>
 
@@ -90,7 +90,7 @@
                                 </span>
                                 <span class="text-xs text-gray-400">· {{ formatDateTime(log.occurred_at) }}</span>
                             </div>
-                            <p class="text-sm text-gray-600 mt-1 whitespace-pre-line">{{ log.summary }}</p>
+                            <div class="text-sm text-gray-600 mt-1 prose prose-sm max-w-none" v-html="log.summary"></div>
                             <p class="text-xs text-gray-400 mt-1">{{ log.creator?.full_name || '—' }}</p>
                         </div>
                     </div>
@@ -105,6 +105,7 @@
 import { useForm, Link } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     subjectType: { type: String, required: true },

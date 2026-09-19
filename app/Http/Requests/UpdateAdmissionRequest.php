@@ -57,7 +57,8 @@ class UpdateAdmissionRequest extends FormRequest
             'extra_phone'     => 'nullable|string|max:15',
             'region_id'       => 'required|exists:regions,id',
             'district_id'     => 'required|exists:districts,id',
-            'address'         => 'nullable|string|max:500',
+            // RichTextEditor (WYSIWYG) orqali HTML sifatida kiritiladi.
+            'address'         => 'nullable|string|max:3000',
         ];
     }
 

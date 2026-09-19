@@ -99,8 +99,7 @@
                 <!-- Tavsif -->
                 <div>
                     <label class="field-label">Tavsif</label>
-                    <textarea v-model="form.description" rows="4" placeholder="Kitob haqida qisqacha ma'lumot"
-                              class="field-input"></textarea>
+                    <RichTextEditor v-model="form.description" placeholder="Kitob haqida qisqacha ma'lumot" :height="240" />
                 </div>
 
                 <!-- Status -->
@@ -184,6 +183,7 @@ import { ref } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 defineProps({
     categories: { type: Array, default: () => [] },

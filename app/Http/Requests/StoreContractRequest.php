@@ -30,8 +30,11 @@ class StoreContractRequest extends FormRequest
                 Rule::in(array_keys(Contract::DISCOUNT_REASONS)),
                 'required_if:discount_percent,10,20,25,50,75,100',
             ],
+            // Endi izoh RichTextEditor (WYSIWYG) orqali HTML sifatida
+            // kiritiladi — belgi chegarasi shu formatning teg-overhead'ini
+            // hisobga olib kattaroq qilib qo'yildi.
             'discount_note'    => [
-                'nullable', 'string', 'max:500',
+                'nullable', 'string', 'max:3000',
                 'required_if:discount_reason,other',
             ],
         ];

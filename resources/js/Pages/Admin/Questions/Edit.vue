@@ -62,14 +62,12 @@
                     <!-- Savol matni -->
                     <div>
                         <label class="field-label"><span class="req">*</span> Savol matni</label>
-                        <textarea
+                        <RichTextEditor
                             v-model="form.question"
-                            rows="3"
+                            :error="!!form.errors.question"
                             placeholder="Savol matnini kiriting..."
-                            class="field-input"
-                            :class="form.errors.question ? 'field-error' : ''"
-                            style="resize: none"
-                        ></textarea>
+                            :height="200"
+                        />
                         <p v-if="form.errors.question" class="err">{{ form.errors.question }}</p>
                     </div>
 
@@ -164,6 +162,7 @@ import { computed } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     subject:  { type: Object, required: true },

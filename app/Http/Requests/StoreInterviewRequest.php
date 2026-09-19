@@ -13,7 +13,8 @@ class StoreInterviewRequest extends FormRequest
         return [
             'applicant_id' => 'required|exists:applicants,id',
             'result'       => 'required|in:passed,failed',
-            'notes'        => 'nullable|string|max:1000',
+            // RichTextEditor (WYSIWYG) orqali HTML sifatida kiritiladi.
+            'notes'        => 'nullable|string|max:5000',
         ];
     }
 

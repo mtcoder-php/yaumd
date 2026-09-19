@@ -34,7 +34,7 @@
 
                 <div>
                     <label class="field-label">Tavsif</label>
-                    <textarea v-model="form.description" rows="3" class="field-input"></textarea>
+                    <RichTextEditor v-model="form.description" :height="200" />
                 </div>
 
                 <!-- Turi -->
@@ -104,8 +104,8 @@
                 <!-- Matn -->
                 <div v-if="form.type === 'text'">
                     <label class="field-label">Dars matni</label>
-                    <textarea v-model="form.content" rows="10" placeholder="Dars matnini shu yerga yozing"
-                              class="field-input" :class="form.errors.content ? 'field-error' : ''"></textarea>
+                    <RichTextEditor v-model="form.content" :error="!!form.errors.content"
+                                    placeholder="Dars matnini shu yerga yozing" :height="420" />
                     <p v-if="form.errors.content" class="err">{{ form.errors.content }}</p>
                 </div>
 
@@ -183,6 +183,7 @@ import { computed } from 'vue'
 import { Link, useForm, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     course: { type: Object, required: true },

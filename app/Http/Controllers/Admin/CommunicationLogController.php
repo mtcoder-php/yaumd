@@ -53,7 +53,8 @@ class CommunicationLogController extends Controller
         $validated = $request->validate([
             'type'        => 'required|in:call,email,meeting,note',
             'direction'   => 'nullable|in:incoming,outgoing',
-            'summary'     => 'required|string|max:2000',
+            // RichTextEditor (WYSIWYG) orqali HTML sifatida kiritiladi.
+            'summary'     => 'required|string|max:5000',
             'occurred_at' => 'nullable|date',
         ], [
             'summary.required' => "Mazmunini yozing",

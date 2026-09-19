@@ -4,9 +4,11 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "postinstall": "node scripts/copy-tinymce.js"
     },
     "devDependencies": {
+        "@tailwindcss/typography": "^0.5.20",
         "@tailwindcss/vite": "^4.2.2",
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",
@@ -18,11 +20,13 @@
         "@heroicons/vue": "^2.2.0",
         "@iconify/vue": "^5.0.0",
         "@inertiajs/vue3": "^3.0.3",
+        "@tinymce/tinymce-vue": "^6.3.0",
         "@vitejs/plugin-vue": "^6.0.6",
         "apexcharts": "^7.1.0",
         "imask": "^7.6.1",
         "qrcode": "^1.5.4",
         "swiper": "^12.2.0",
+        "tinymce": "^8.9.1",
         "vue": "^3.5.32",
         "vue-toastification": "^2.0.0-rc.5",
         "vue3-apexcharts": "^1.11.1",

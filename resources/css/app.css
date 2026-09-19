@@ -1,4 +1,8 @@
 @import 'tailwindcss';
+/* RichTextEditor (TinyMCE) orqali kiritilgan HTML matnni (dars matni, kurs/
+   kitob tavsifi va h.k.) v-html bilan chiroyli formatlashtirib chiqarish
+   uchun — .prose klassi shu plagin orqali ishlaydi. */
+@plugin '@tailwindcss/typography';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

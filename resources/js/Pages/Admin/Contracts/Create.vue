@@ -128,9 +128,8 @@
                             </div>
                             <div v-if="form.discount_reason === 'other'">
                                 <label class="field-label"><span class="req">*</span> Izoh</label>
-                                <textarea v-model="form.discount_note" rows="2" class="field-input"
-                                          :class="form.errors.discount_note ? 'field-error' : ''"
-                                          placeholder="Sababni qisqacha yozing" />
+                                <RichTextEditor v-model="form.discount_note" :error="!!form.errors.discount_note"
+                                                placeholder="Sababni qisqacha yozing" :height="160" />
                                 <p v-if="form.errors.discount_note" class="err">{{ form.errors.discount_note }}</p>
                             </div>
 
@@ -166,6 +165,7 @@ import { computed } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     applicants: { type: Array, default: () => [] },
