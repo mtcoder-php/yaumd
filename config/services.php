@@ -83,4 +83,19 @@ return [
         'password' => env('HIKVISION_PASSWORD'),
     ],
 
+    // Bank cheki suratidan summani OCR orqali o'qish (ReceiptOcrService).
+    // Standart holatda oddiy "tesseract" buyrug'i ishlatiladi — bu
+    // dasturning PATH muhit o'zgaruvchisida ekanini talab qiladi. Agar
+    // PATH orqali topilmasa (masalan Windows'da xizmat/service sifatida
+    // ishlaydigan serverlar ko'pincha foydalanuvchi darajasidagi PATH
+    // o'zgarishlarini KO'RMAYDI, hatto terminalda "tesseract --version"
+    // ishlagan bo'lsa ham) — TESSERACT_BINARY orqali to'liq (absolyut)
+    // yo'lni ko'rsating, masalan Windows'da:
+    //   TESSERACT_BINARY="C:\Program Files\Tesseract-OCR\tesseract.exe"
+    // yoki Linux'da:
+    //   TESSERACT_BINARY=/usr/bin/tesseract
+    'tesseract' => [
+        'binary' => env('TESSERACT_BINARY', 'tesseract'),
+    ],
+
 ];

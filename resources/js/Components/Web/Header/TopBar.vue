@@ -1,78 +1,76 @@
 <template>
-    <div class="bg-white border-b border-gray-100">
+    <div class="bg-navy-900 border-b border-white/10">
         <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between h-11">
+            <div class="flex items-center justify-between h-10 text-xs sm:text-sm">
 
-                <!-- Chap: Reklama (faqat desktop) -->
-                <div class="hidden lg:flex items-center gap-3">
-                    <span class="flex items-center gap-2 text-[#0f3460] font-semibold text-sm">
-                        <Icon icon="mdi:bell-ring" class="w-4 h-4 text-red-500" />
-                        2026-yil qabul boshlandi!
-                    </span>
-                    <span class="text-gray-300">|</span>
-                    <span class="text-gray-500 text-sm">
-                        Talaba bo'ling va 50% gacha chegirma qo'lga kiriting
-                    </span>
+                <!-- Chap: kontakt (desktop) -->
+                <div class="hidden md:flex items-center gap-5">
+                    <a
+                        :href="`mailto:${settings.email || 'info@yangiasr.uz'}`"
+                        class="flex items-center gap-2 text-white/70 hover:text-white transition font-medium"
+                    >
+                        <Icon icon="mdi:email-outline" class="w-4 h-4" />
+                        {{ settings.email || 'info@yangiasr.uz' }}
+                    </a>
+                    <a
+                        :href="`tel:${settings.phone || '+998712345678'}`"
+                        class="flex items-center gap-2 text-white/70 hover:text-white transition font-medium"
+                    >
+                        <Icon icon="mdi:phone-outline" class="w-4 h-4" />
+                        {{ settings.phone || '+998 71 234 56 78' }}
+                    </a>
                 </div>
 
-                <!-- O'ng -->
-                <div class="flex items-center gap-4 ml-auto">
+                <!-- Mobil: soat o'rniga qisqa manzil -->
+                <div class="flex md:hidden items-center gap-2 text-white/70 font-medium">
+                    <Icon icon="mdi:email-outline" class="w-4 h-4" />
+                    {{ settings.email || 'info@yangiasr.uz' }}
+                </div>
 
-                    <!-- Kontakt (faqat desktop) -->
+                <!-- O'ng: utility havolalar + til -->
+                <div class="flex items-center gap-4 sm:gap-5">
                     <div class="hidden lg:flex items-center gap-5">
-                        <a
-                            :href="`tel:${settings.phone || '+998712077755'}`"
-                            class="flex items-center gap-2 text-gray-600 hover:text-[#0f3460] transition text-sm font-medium"
-                        >
-                            <Icon icon="fa6-solid:phone-volume" class="w-3.5 h-3.5" />
-                            {{ settings.phone || '+998 (71) 207-77-55' }}
-                        </a>
-                        <a
-                            :href="`mailto:${settings.email || 'info@yaumd.uz'}`"
-                            class="flex items-center gap-2 text-gray-600 hover:text-[#0f3460] transition text-sm font-medium"
-                        >
-                            <Icon icon="mdi:email-outline" class="w-4 h-4" />
-                            {{ settings.email || 'info@yangiasr.uz' }}
-                        </a>
-                        <span class="w-px h-5 bg-gray-200"></span>
+                        <template v-for="(link, index) in utilityLinks" :key="link.title">
+                            <span v-if="index > 0" class="hidden lg:block w-px h-4 bg-white/15"></span>
+                            <a
+                                :href="link.url"
+                                class="text-white/70 hover:text-white transition font-medium"
+                            >
+                                {{ link.title }}
+                            </a>
+                        </template>
                     </div>
 
-                    <!-- Ijtimoiy (faqat desktop) -->
-                    <div class="hidden lg:flex items-center gap-2">
-                        <a
-                            v-for="s in socials"
-                            :key="s.name"
-                            :href="s.url"
-                            target="_blank"
-                            :title="s.name"
-                            class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#0f3460] hover:bg-gray-100 transition"
-                        >
-                            <Icon :icon="s.icon" class="w-4 h-4" />
-                        </a>
-                        <span class="w-px h-5 bg-gray-200 ml-1"></span>
-                    </div>
+                    <span class="hidden lg:block w-px h-4 bg-white/15"></span>
 
-                    <!-- Soat — desktop va mobile -->
-                    <div class="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                        <Icon icon="mdi:clock-outline" class="w-4 h-4" />
-                        <span class="font-mono tracking-wider">{{ currentTime }}</span>
-                    </div>
-
-                    <span class="w-px h-5 bg-gray-200"></span>
-
-                    <!-- Til tanlash — desktop va mobile -->
-                    <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
+                    <!-- Til tanlash -->
+                    <div class="relative" ref="langMenuRef">
                         <button
-                            v-for="l in langs"
-                            :key="l.code"
-                            @click="$emit('changeLang', l.code)"
-                            class="px-3 py-1 rounded-md text-xs font-semibold transition"
-                            :class="currentLang === l.code
-                                ? 'bg-white text-[#0f3460] shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'"
+                            type="button"
+                            @click="langMenuOpen = !langMenuOpen"
+                            class="flex items-center gap-1.5 text-white/80 hover:text-white transition font-semibold"
                         >
-                            {{ l.label }}
+                            <Icon icon="mdi:web" class="w-4 h-4" />
+                            {{ currentLangLabel }}
+                            <Icon icon="mdi:chevron-down" class="w-3.5 h-3.5 transition-transform" :class="{ 'rotate-180': langMenuOpen }" />
                         </button>
+
+                        <div
+                            v-if="langMenuOpen"
+                            class="absolute right-0 top-full mt-2 py-1 w-24 bg-white rounded-lg shadow-lg border border-gray-100 z-50"
+                        >
+                            <button
+                                v-for="l in langs"
+                                :key="l.code"
+                                @click="selectLang(l.code)"
+                                class="w-full text-left px-3 py-1.5 text-sm font-medium transition"
+                                :class="currentLang === l.code
+                                    ? 'text-navy-700 bg-navy-50 font-semibold'
+                                    : 'text-gray-600 hover:bg-gray-50'"
+                            >
+                                {{ l.full }}
+                            </button>
+                        </div>
                     </div>
 
                 </div>
@@ -82,45 +80,54 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Icon } from '@iconify/vue'
 
-defineProps({
+const props = defineProps({
     settings:    { type: Object, default: () => ({}) },
     currentLang: { type: String, default: 'uz' },
 })
 
-defineEmits(['changeLang'])
+const emit = defineEmits(['changeLang'])
 
-const langs = [
-    { code: 'uz', label: "O'z" },
-    { code: 'ru', label: 'Ру' },
-    { code: 'en', label: 'En' },
-]
+const langMenuOpen = ref(false)
+const langMenuRef  = ref(null)
 
-const socials = [
-    { name: 'Telegram',  icon: 'mdi:telegram',  url: '#' },
-    { name: 'Instagram', icon: 'mdi:instagram',  url: '#' },
-    { name: 'Facebook',  icon: 'mdi:facebook',   url: '#' },
-    { name: 'YouTube',   icon: 'mdi:youtube',    url: '#' },
-]
-
-const currentTime = ref('')
-let timer = null
-
-const updateTime = () => {
-    const now = new Date()
-    currentTime.value = now.toLocaleTimeString('uz-UZ', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-    })
+// MUHIM: dropdown ochiq holatda sahifaning istalgan boshqa joyiga bosilsa
+// yopilib ketishi kerak — shu uchun butun document'ga "click" tinglovchisi
+// qo'yiladi va bosilgan joy dropdown konteyneri (tugma + ro'yxat) ICHIDA
+// bo'lmasa, menyu yopiladi. Tugmaning o'zini bosish shu konteyner ICHIDA
+// hisoblanadi, shuning uchun ochish/yopish albatta to'g'ri ishlayveradi.
+const handleClickOutside = (event) => {
+    if (langMenuOpen.value && langMenuRef.value && !langMenuRef.value.contains(event.target)) {
+        langMenuOpen.value = false
+    }
 }
 
 onMounted(() => {
-    updateTime()
-    timer = setInterval(updateTime, 1000)
+    document.addEventListener('click', handleClickOutside)
+})
+onBeforeUnmount(() => {
+    document.removeEventListener('click', handleClickOutside)
 })
 
-onUnmounted(() => clearInterval(timer))
+const langs = [
+    { code: 'uz', label: 'UZ', full: "O'zbekcha" },
+    { code: 'ru', label: 'РУ', full: 'Русский' },
+    { code: 'en', label: 'EN', full: 'English' },
+]
+
+const utilityLinks = [
+    { title: 'Talabalar uchun',    url: '#' },
+    { title: "O'qituvchilar uchun", url: '#' },
+    { title: 'Karyera',            url: '#' },
+    { title: 'Sayt xaritasi',      url: '#' },
+]
+
+const currentLangLabel = computed(() => langs.find(l => l.code === props.currentLang)?.label || 'UZ')
+
+const selectLang = (code) => {
+    langMenuOpen.value = false
+    emit('changeLang', code)
+}
 </script>

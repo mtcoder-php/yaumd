@@ -93,7 +93,7 @@
 
                             <!-- Kontent -->
                             <div class="p-4">
-                                <h3 class="font-semibold text-gray-900 text-sm leading-snug mb-3 line-clamp-2 group-hover:text-[#0f3460] transition-colors duration-300" style="min-height: 40px">
+                                <h3 class="font-semibold text-gray-900 text-sm leading-snug mb-3 line-clamp-2 group-hover:text-[var(--color-navy-700)] transition-colors duration-300" style="min-height: 40px">
                                     {{ direction.name }}
                                 </h3>
                                 <div class="flex items-center gap-4 text-xs text-gray-500 mb-3">
@@ -123,7 +123,7 @@
                                         </div>
                                         <span class="text-xs text-gray-500 truncate max-w-[100px]">{{ direction.faculty }}</span>
                                     </div>
-                                    <span class="flex items-center gap-1 text-xs font-semibold group-hover:gap-2 transition-all duration-300" style="color: #0f3460">
+                                    <span class="flex items-center gap-1 text-xs font-semibold group-hover:gap-2 transition-all duration-300" style="color: var(--color-navy-700)">
                                         Batafsil
                                         <Icon icon="mdi:arrow-right" class="w-3.5 h-3.5" />
                                     </span>
@@ -136,7 +136,7 @@
 
             <!-- Barchasi (mobile) -->
             <div class="text-center mt-6 sm:hidden">
-                <a href="/qabul/yonalishlar" class="inline-flex items-center gap-2 px-6 py-2.5 border-2 text-sm font-semibold rounded-xl transition-all hover:text-white" style="border-color: #0f3460; color: #0f3460; background: transparent" onmouseover="this.style.background='#0f3460'" onmouseout="this.style.background='transparent'">
+                <a href="/qabul/yonalishlar" class="inline-flex items-center gap-2 px-6 py-2.5 border-2 text-sm font-semibold rounded-xl transition-all hover:text-white" style="border-color: var(--color-navy-700); color: var(--color-navy-700); background: transparent" onmouseover="this.style.background='var(--color-navy-700)'" onmouseout="this.style.background='transparent'">
                     Barchasi <Icon icon="mdi:arrow-right" class="w-4 h-4" />
                 </a>
             </div>
@@ -199,16 +199,16 @@ const demoFaculties = [
 ]
 
 const demoDirections = [
-    { id: 1,  faculty_id: 1, faculty: 'Sharq filologiyasi', name: 'Arab tili filologiyasi',           degree: 'bachelor', duration: 4, quota: 25, price: "18 mln so'm", rating: '4.9', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #0f3460, #533483)', icon: 'mdi:book-alphabet'    },
-    { id: 2,  faculty_id: 1, faculty: 'Sharq filologiyasi', name: 'Sharq mumtoz tili',                degree: 'bachelor', duration: 4, quota: 20, price: "18 mln so'm", rating: '4.8', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #533483, #0f3460)', icon: 'mdi:translate'        },
-    { id: 3,  faculty_id: 2, faculty: 'Tillar',             name: 'Ingliz tili',                      degree: 'bachelor', duration: 4, quota: 50, price: "20 mln so'm", rating: '4.9', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #0f3460, #1e6091)', icon: 'mdi:earth'            },
-    { id: 4,  faculty_id: 2, faculty: 'Tillar',             name: 'Xitoy tili',                       degree: 'bachelor', duration: 4, quota: 30, price: "22 mln so'm", rating: '4.7', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #533483, #7c3aed)', icon: 'mdi:ideogram-cjk'    },
-    { id: 5,  faculty_id: 2, faculty: 'Tillar',             name: 'Koreys tili',                      degree: 'bachelor', duration: 4, quota: 25, price: "22 mln so'm", rating: '4.8', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #1e3a8a, #533483)', icon: 'mdi:alphabetical'    },
-    { id: 6,  faculty_id: 3, faculty: 'Maxsus pedagogika',  name: 'Logopediya',                       degree: 'bachelor', duration: 4, quota: 20, price: "16 mln so'm", rating: '4.6', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #0f3460, #533483)', icon: 'mdi:account-voice'   },
-    { id: 7,  faculty_id: 3, faculty: 'Maxsus pedagogika',  name: 'Psixologiya',                      degree: 'bachelor', duration: 4, quota: 30, price: "16 mln so'm", rating: '4.7', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #533483, #1e3a8a)', icon: 'mdi:head-cog-outline'},
-    { id: 8,  faculty_id: 4, faculty: "Umumta'lim",         name: 'Dasturiy injiniring',              degree: 'bachelor', duration: 4, quota: 40, price: "24 mln so'm", rating: '5.0', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #1e3a8a, #0f3460)', icon: 'mdi:code-braces'     },
-    { id: 9,  faculty_id: 4, faculty: "Umumta'lim",         name: 'Iqtisodiyot',                      degree: 'bachelor', duration: 4, quota: 35, price: "18 mln so'm", rating: '4.8', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #0f3460, #7c3aed)', icon: 'mdi:chart-line'      },
-    { id: 10, faculty_id: 2, faculty: 'Tillar',             name: 'Lingvistika: Ingliz tili (Magistr)',degree: 'master',   duration: 2, quota: 15, price: "22 mln so'm", rating: '4.9', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #533483, #0f3460)', icon: 'mdi:school-outline'  },
+    { id: 1,  faculty_id: 1, faculty: 'Sharq filologiyasi', name: 'Arab tili filologiyasi',           degree: 'bachelor', duration: 4, quota: 25, price: "18 mln so'm", rating: '4.9', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, var(--color-navy-700), var(--color-brand-700))', icon: 'mdi:book-alphabet'    },
+    { id: 2,  faculty_id: 1, faculty: 'Sharq filologiyasi', name: 'Sharq mumtoz tili',                degree: 'bachelor', duration: 4, quota: 20, price: "18 mln so'm", rating: '4.8', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, var(--color-brand-700), var(--color-navy-700))', icon: 'mdi:translate'        },
+    { id: 3,  faculty_id: 2, faculty: 'Tillar',             name: 'Ingliz tili',                      degree: 'bachelor', duration: 4, quota: 50, price: "20 mln so'm", rating: '4.9', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, var(--color-navy-700), #1e6091)', icon: 'mdi:earth'            },
+    { id: 4,  faculty_id: 2, faculty: 'Tillar',             name: 'Xitoy tili',                       degree: 'bachelor', duration: 4, quota: 30, price: "22 mln so'm", rating: '4.7', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, var(--color-brand-700), #7c3aed)', icon: 'mdi:ideogram-cjk'    },
+    { id: 5,  faculty_id: 2, faculty: 'Tillar',             name: 'Koreys tili',                      degree: 'bachelor', duration: 4, quota: 25, price: "22 mln so'm", rating: '4.8', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #1e3a8a, var(--color-brand-700))', icon: 'mdi:alphabetical'    },
+    { id: 6,  faculty_id: 3, faculty: 'Maxsus pedagogika',  name: 'Logopediya',                       degree: 'bachelor', duration: 4, quota: 20, price: "16 mln so'm", rating: '4.6', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, var(--color-navy-700), var(--color-brand-700))', icon: 'mdi:account-voice'   },
+    { id: 7,  faculty_id: 3, faculty: 'Maxsus pedagogika',  name: 'Psixologiya',                      degree: 'bachelor', duration: 4, quota: 30, price: "16 mln so'm", rating: '4.7', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, var(--color-brand-700), #1e3a8a)', icon: 'mdi:head-cog-outline'},
+    { id: 8,  faculty_id: 4, faculty: "Umumta'lim",         name: 'Dasturiy injiniring',              degree: 'bachelor', duration: 4, quota: 40, price: "24 mln so'm", rating: '5.0', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, #1e3a8a, var(--color-navy-700))', icon: 'mdi:code-braces'     },
+    { id: 9,  faculty_id: 4, faculty: "Umumta'lim",         name: 'Iqtisodiyot',                      degree: 'bachelor', duration: 4, quota: 35, price: "18 mln so'm", rating: '4.8', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, var(--color-navy-700), #7c3aed)', icon: 'mdi:chart-line'      },
+    { id: 10, faculty_id: 2, faculty: 'Tillar',             name: 'Lingvistika: Ingliz tili (Magistr)',degree: 'master',   duration: 2, quota: 15, price: "22 mln so'm", rating: '4.9', image: '/directions/image-1.jpg', gradient: 'linear-gradient(135deg, var(--color-brand-700), var(--color-navy-700))', icon: 'mdi:school-outline'  },
 ]
 
 const filteredDirections = computed(() => {
@@ -218,7 +218,7 @@ const filteredDirections = computed(() => {
 </script>
 
 <style scoped>
-.tab-active { color: #0f3460; }
+.tab-active { color: var(--color-navy-700); }
 
 .direction-card {
     width: v-bind('cardWidth + "px"');
@@ -241,8 +241,8 @@ const filteredDirections = computed(() => {
 .slide-btn:hover {
     transform: scale(1.15);
     box-shadow: 0 8px 24px rgba(15,52,96,0.35);
-    background: #0f3460;
-    border-color: #0f3460;
+    background: var(--color-navy-700);
+    border-color: var(--color-navy-700);
 }
 .slide-btn:hover .iconify { color: white !important; }
 .slide-btn:active { transform: scale(0.95); }

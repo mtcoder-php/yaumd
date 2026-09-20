@@ -233,7 +233,7 @@
                                     <div class="flex items-center gap-2">
                                         <span class="text-xs text-gray-400">{{ formatDate(pay.paid_at) }}</span>
                                         <span class="badge-pill badge-success">
-                                            {{ {cash:'Naqd', click:'Click', payme:'Payme'}[pay.provider] }}
+                                            {{ {cash:'Naqd (eski)', bank_receipt:'Bank cheki', click:'Click', payme:'Payme'}[pay.provider] }}
                                         </span>
                                     </div>
                                     <span class="text-sm font-bold text-gray-800">{{ formatAmount(pay.amount) }}</span>

@@ -18,7 +18,7 @@ class PaymentFactory extends Factory
             'contract_id'        => Contract::factory(),
             'user_id'            => null,
             'amount'             => fake()->randomElement([1000000, 1500000, 2000000, 3000000, 4000000, 5000000]),
-            'provider'           => fake()->randomElement(['cash', 'cash', 'click', 'payme']),
+            'provider'           => fake()->randomElement(['bank_receipt', 'bank_receipt', 'click', 'payme']),
             'transaction_id'     => null,
             'status'             => 'paid',
             'provider_data'      => null,
@@ -41,8 +41,15 @@ class PaymentFactory extends Factory
         return $this->state(fn () => ['status' => 'pending', 'paid_at' => null]);
     }
 
+    // ESKI holatni (naqd) simulyatsiya qilish uchun saqlab qolingan —
+    // yangi to'lovlar endi 'cash' bilan yaratilmaydi.
     public function cash(): static
     {
         return $this->state(fn () => ['provider' => 'cash']);
+    }
+
+    public function bankReceipt(): static
+    {
+        return $this->state(fn () => ['provider' => 'bank_receipt']);
     }
 }

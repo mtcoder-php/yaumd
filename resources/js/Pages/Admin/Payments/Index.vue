@@ -75,9 +75,12 @@
 
                 <select v-model="filters.provider" class="select-filter" @change="applyFilters">
                     <option value="">Barcha turlar</option>
-                    <option value="cash">Naqd</option>
+                    <option value="bank_receipt">Bank cheki</option>
                     <option value="click">Click</option>
                     <option value="payme">Payme</option>
+                    <!-- 'cash' endi yangi to'lovlarda tanlanmaydi, lekin eski
+                         yozuvlarni filtrlash uchun ro'yxatda qoldirilgan. -->
+                    <option value="cash">Naqd (eski)</option>
                 </select>
 
                 <button v-if="hasFilters" @click="resetFilters" class="btn-neutral">
@@ -145,7 +148,11 @@
                         </td>
 
                         <td>
-                            <div class="flex justify-end">
+                            <div class="flex justify-end gap-1.5">
+                                <a v-if="p.receipt_url" :href="p.receipt_url" target="_blank" rel="noopener"
+                                   title="Chekni ko'rish" class="btn-ghost-icon">
+                                    <Icon icon="mdi:receipt-text-outline" class="w-4 h-4" />
+                                </a>
                                 <button @click="confirmDelete(p)" title="O'chirish" class="btn-ghost-icon danger">
                                     <Icon icon="mdi:delete-outline" class="w-4 h-4" />
                                 </button>
@@ -281,18 +288,79 @@
                                     </span>
                                 </button>
                             </div>
-                            <p v-if="payForm.provider !== 'cash'" class="text-xs text-gray-400 mt-1.5">
+                            <p v-if="payForm.provider === 'click' || payForm.provider === 'payme'" class="text-xs text-gray-400 mt-1.5">
                                 Havola/QR generatsiya qilinadi — to'lovchi o'zi to'laydi, tizim avtomatik tasdiqlaydi.
                             </p>
                             <p v-if="payErrors.provider" class="err">{{ payErrors.provider }}</p>
                             <p v-if="onlineError" class="err">{{ onlineError }}</p>
                         </div>
 
+                        <!-- Bank cheki: surat yuklash + OCR orqali summani
+                             avtomatik topish. Kontrakt naqd pulda qabul
+                             qilinmaydi — talaba naqd pulni ham bankka borib
+                             Universitet hisob raqamiga o'tkazadi, shu
+                             chekning suratini shu yerga yuklaymiz. -->
+                        <div v-if="payForm.provider === 'bank_receipt'">
+                            <label class="field-label"><span class="req">*</span> Bank cheki (surat)</label>
+
+                            <input ref="receiptInputRef" type="file" accept="image/*" class="hidden"
+                                   @change="onReceiptSelected">
+
+                            <div v-if="!receiptPreview" @click="receiptInputRef?.click()"
+                                 class="flex flex-col items-center justify-center gap-1.5 py-6 rounded-xl border-2 border-dashed border-gray-200 cursor-pointer hover:border-brand-300 hover:bg-brand-50/40 transition-all">
+                                <Icon icon="mdi:camera-plus-outline" class="w-6 h-6 text-gray-400" />
+                                <span class="text-xs font-medium text-gray-500">Chekning suratini tanlang</span>
+                            </div>
+
+                            <div v-else class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50">
+                                <img :src="receiptPreview" alt="Chek" class="w-14 h-14 rounded-lg object-cover border border-gray-200 flex-shrink-0">
+                                <div class="min-w-0 flex-1">
+                                    <p v-if="scanningReceipt" class="text-xs font-medium text-amber-600 flex items-center gap-1.5">
+                                        <Icon icon="mdi:loading" class="w-3.5 h-3.5 animate-spin" />
+                                        Chek o'qilmoqda...
+                                    </p>
+                                    <template v-else>
+                                        <p v-if="payForm.receipt_path" class="text-xs font-medium text-green-600 flex items-center gap-1.5">
+                                            <Icon icon="mdi:check-circle" class="w-3.5 h-3.5" />
+                                            Chek yuklandi
+                                        </p>
+                                        <p v-if="ocrDetectedAmount" class="text-xs text-gray-500 mt-0.5">
+                                            Aniqlangan summa: <span class="font-semibold text-gray-700">{{ formatAmount(ocrDetectedAmount) }}</span> — quyidagi maydonda tekshiring
+                                        </p>
+                                        <p v-else-if="payForm.receipt_path" class="text-xs text-gray-400 mt-0.5">
+                                            Summa avtomatik topilmadi — quyiga qo'lda kiriting
+                                        </p>
+                                    </template>
+                                </div>
+                                <button type="button" @click="receiptInputRef?.click()" class="btn-neutral flex-shrink-0 !py-1.5 !px-2.5 text-xs">
+                                    Almashtirish
+                                </button>
+                            </div>
+
+                            <p v-if="receiptError" class="err">{{ receiptError }}</p>
+                            <p v-if="payErrors.receipt_path" class="err">{{ payErrors.receipt_path }}</p>
+
+                            <!-- OCR nima o'qiganini ko'rish — summa
+                                 avtomatik topilmasa yoki noto'g'ri topilsa,
+                                 sababini shu yerdan tezda bilib olish uchun
+                                 (skrinshot yuborib o'tirish shart emas). -->
+                            <details v-if="payForm.receipt_ocr_text" class="mt-2">
+                                <summary class="text-xs font-medium text-gray-400 cursor-pointer hover:text-gray-600 select-none">
+                                    OCR o'qigan matnni ko'rish (tekshirish uchun)
+                                </summary>
+                                <pre class="mt-1.5 p-2.5 rounded-lg bg-gray-900 text-gray-100 text-[0.68rem] leading-relaxed whitespace-pre-wrap break-words max-h-40 overflow-y-auto">{{ payForm.receipt_ocr_text }}</pre>
+                            </details>
+                            <p v-else-if="payForm.receipt_path && !scanningReceipt" class="text-xs text-gray-400 mt-2">
+                                OCR chekdan hech qanday matn o'qiy olmadi (rasm sifati past yoki tesseract serverda topilmadi bo'lishi mumkin).
+                            </p>
+                        </div>
+
                     </div>
 
                     <div class="flex gap-3 mt-6">
                         <button @click="closeAddModal" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
-                        <button v-if="payForm.provider === 'cash'" @click="submitPayment" :disabled="paying" class="btn-brand flex-1 justify-center">
+                        <button v-if="payForm.provider === 'bank_receipt'" @click="submitPayment"
+                                :disabled="paying || scanningReceipt" class="btn-brand flex-1 justify-center">
                             <Icon v-if="paying" icon="mdi:loading" class="w-4 h-4 animate-spin" />
                             <Icon v-else icon="mdi:check" class="w-4 h-4" />
                             {{ paying ? 'Saqlanmoqda...' : 'Qabul qilish' }}
@@ -356,6 +424,15 @@ const payErrors    = ref({})
 const amountRef    = ref(null)
 let   amountMask   = null
 
+// Bank cheki: surat tanlanishi bilan darhol serverga yuklanadi va OCR
+// qilinadi (ReceiptOcrService) — natijada topilgan summa "Summa"
+// maydoniga avtomatik qo'yiladi, kassir tekshirib tasdiqlaydi.
+const receiptInputRef    = ref(null)
+const receiptPreview     = ref(null) // tanlangan faylning lokal (brauzerdagi) ko'rinishi
+const scanningReceipt    = ref(false)
+const receiptError       = ref('')
+const ocrDetectedAmount  = ref(null)
+
 // Click/Payme uchun HAQIQIY onlayn to'lov havolasi (QR) oqimi — kassir
 // kontrakt/summani tanlagach havola generatsiya qiladi, to'lovchi o'z
 // qurilmasida to'laydi, tizim server-serverga keladigan callback orqali
@@ -367,9 +444,13 @@ const linkCopied     = ref(false)
 let   pollTimer      = null
 
 const payForm = ref({
-    contract_id: '',
-    amount:      '',
-    provider:    'cash',
+    contract_id:      '',
+    amount:           '',
+    // Kontrakt naqd pulda qabul qilinmagani uchun endilikda standart
+    // (birinchi taklif etiladigan) variant — bank cheki.
+    provider:         'bank_receipt',
+    receipt_path:     '',
+    receipt_ocr_text: '',
 })
 
 const filters = ref({
@@ -382,11 +463,20 @@ const hasFilters = computed(() =>
     filters.value.search || filters.value.status || filters.value.provider
 )
 
+const resetReceiptState = () => {
+    receiptPreview.value    = null
+    scanningReceipt.value   = false
+    receiptError.value      = ''
+    ocrDetectedAmount.value = null
+    if (receiptInputRef.value) receiptInputRef.value.value = ''
+}
+
 const openAddModal = () => {
-    payForm.value   = { contract_id: '', amount: '', provider: 'cash' }
+    payForm.value   = { contract_id: '', amount: '', provider: 'bank_receipt', receipt_path: '', receipt_ocr_text: '' }
     payErrors.value = {}
     onlineCheckout.value = null
     onlineError.value    = ''
+    resetReceiptState()
     stopPolling()
     addModal.value  = true
 
@@ -410,8 +500,47 @@ const closeAddModal = () => {
     addModal.value = false
     onlineCheckout.value = null
     onlineError.value    = ''
+    resetReceiptState()
     stopPolling()
     if (amountMask) { amountMask.destroy(); amountMask = null }
+}
+
+// Chek surati tanlanishi bilan: (1) darhol kichik oldindan ko'rinish
+// (preview) ko'rsatiladi, (2) fayl serverga yuklanadi va OCR qilinadi,
+// (3) topilgan summa bo'lsa — "Summa" maydoniga (IMask orqali, aks holda
+// ekranda yangilanmay qolardi) avtomatik qo'yiladi.
+const onReceiptSelected = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    receiptError.value      = ''
+    ocrDetectedAmount.value = null
+    payForm.value.receipt_path     = ''
+    payForm.value.receipt_ocr_text = ''
+    receiptPreview.value    = URL.createObjectURL(file)
+    scanningReceipt.value   = true
+
+    const formData = new FormData()
+    formData.append('receipt', file)
+
+    try {
+        const { data } = await window.axios.post(route('admin.payments.scanReceipt'), formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        })
+
+        payForm.value.receipt_path     = data.receipt_path
+        payForm.value.receipt_ocr_text = data.raw_text || ''
+
+        if (data.amount) {
+            ocrDetectedAmount.value = data.amount
+            payForm.value.amount    = String(data.amount)
+            if (amountMask) amountMask.unmaskedValue = String(data.amount)
+        }
+    } catch (e) {
+        receiptError.value = e.response?.data?.message || 'Chekni yuklashda xatolik yuz berdi — qayta urinib ko\'ring'
+    } finally {
+        scanningReceipt.value = false
+    }
 }
 
 const stopPolling = () => {
@@ -441,6 +570,10 @@ const submitPayment = () => {
     if (!payForm.value.contract_id) { payErrors.value.contract_id = 'Kontraktni tanlang'; return }
     if (!payForm.value.amount)      { payErrors.value.amount = 'Summani kiriting'; return }
     if (!payForm.value.provider)    { payErrors.value.provider = "To'lov turini tanlang"; return }
+    if (payForm.value.provider === 'bank_receipt' && !payForm.value.receipt_path) {
+        receiptError.value = 'Avval bank chekining suratini yuklang'
+        return
+    }
 
     paying.value = true
     router.post(route('admin.payments.store'), payForm.value, {
@@ -533,18 +666,27 @@ const submitDelete = () => {
     })
 }
 
+// 'cash' (naqd) endi YANGI to'lov qabul qilishda tanlanmaydi (shu sabab
+// tugma ro'yxatida yo'q) — kontrakt naqd pulda qabul qilinmaydi, faqat
+// onlayn (Click/Payme) yoki bank cheki orqali. 'cash' faqat eski
+// yozuvlarni to'g'ri ko'rsatish uchun quyidagi label/icon/badge
+// funksiyalarida alohida hisobga olingan.
 const providers = [
-    { value: 'cash',  label: 'Naqd',  icon: 'mdi:cash' },
-    { value: 'click', label: 'Click', icon: 'mdi:cellphone' },
-    { value: 'payme', label: 'Payme', icon: 'mdi:credit-card-outline' },
+    { value: 'bank_receipt', label: 'Bank cheki', icon: 'mdi:receipt-text-outline' },
+    { value: 'click',        label: 'Click',       icon: 'mdi:cellphone' },
+    { value: 'payme',        label: 'Payme',       icon: 'mdi:credit-card-outline' },
 ]
 
-const providerLabel = (p) => providers.find(x => x.value === p)?.label || p
-const providerIcon  = (p) => providers.find(x => x.value === p)?.icon  || 'mdi:cash'
+const LEGACY_PROVIDER_LABELS = { cash: 'Naqd (eski)' }
+const LEGACY_PROVIDER_ICONS  = { cash: 'mdi:cash' }
+
+const providerLabel = (p) => providers.find(x => x.value === p)?.label || LEGACY_PROVIDER_LABELS[p] || p
+const providerIcon  = (p) => providers.find(x => x.value === p)?.icon  || LEGACY_PROVIDER_ICONS[p]  || 'mdi:receipt-text-outline'
 const providerBadge = (p) => ({
-    cash:  'badge-success',
-    click: 'badge-brand',
-    payme: 'badge-warning',
+    bank_receipt: 'badge-success',
+    cash:         'badge-neutral',
+    click:        'badge-brand',
+    payme:        'badge-warning',
 }[p] || 'badge-neutral')
 
 const statuses = [

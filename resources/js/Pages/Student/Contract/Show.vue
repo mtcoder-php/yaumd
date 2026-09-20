@@ -260,7 +260,7 @@ const statusClass = (v) => ({
 }[v] || 'bg-gray-100 text-gray-500')
 
 const paymentTypeLabel = (v) => ({ grant: 'Grant', contract: 'Kontrakt' }[v] || v)
-const providerLabel = (v) => ({ click: 'Click', payme: 'Payme', cash: 'Naqd' }[v] || v)
+const providerLabel = (v) => ({ click: 'Click', payme: 'Payme', cash: 'Naqd (eski)', bank_receipt: 'Bank cheki' }[v] || v)
 
 const paymentStatusLabel = (v) => ({ pending: 'Kutilmoqda', paid: "To'landi", failed: 'Muvaffaqiyatsiz', refunded: 'Qaytarildi' }[v] || v)
 const paymentStatusClass = (v) => ({

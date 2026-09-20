@@ -8,8 +8,10 @@ use App\Models\Contract;
 use App\Models\Payment;
 use App\Services\ClickPaymentService;
 use App\Services\PaymePaymentService;
+use App\Services\ReceiptOcrService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -102,8 +104,49 @@ class PaymentController extends Controller
 
     public function destroy(int $id)
     {
-        Payment::findOrFail($id)->delete();
+        $payment = Payment::findOrFail($id);
+
+        // Chek surati ham diskdan o'chiriladi — aks holda ishlatilmay
+        // qolgan fayllar "public/storage/payments/receipts" papkasida
+        // abadiy to'planib qolaverardi.
+        if ($payment->receipt_path) {
+            Storage::disk('public')->delete($payment->receipt_path);
+        }
+
+        $payment->delete();
+
         return back()->with('success', "To'lov o'chirildi!");
+    }
+
+    /**
+     * Kassir "Bank cheki" turini tanlab, chekning suratini yuklaganda
+     * chaqiriladi (to'lov hali SAQLANMAYDI) — fayl 'payments/receipts'
+     * papkasiga joylanadi, so'ng ReceiptOcrService orqali OCR qilinib,
+     * undan topilgan summa frontendga qaytariladi. Kassir shu summani
+     * ko'rib, kerak bo'lsa tuzatib, "Qabul qilish" bosgandagina haqiqiy
+     * Payment yozuvi (store()) yaratiladi — receipt_path o'sha so'rovda
+     * yashirin maydon sifatida qayta yuboriladi.
+     */
+    public function scanReceipt(Request $request, ReceiptOcrService $ocr)
+    {
+        $request->validate([
+            'receipt' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
+        ], [
+            'receipt.required' => 'Chek suratini tanlang',
+            'receipt.image'    => 'Fayl rasm formatida bo\'lishi kerak',
+            'receipt.max'      => 'Rasm hajmi 10 MB dan katta bo\'lmasligi kerak',
+        ]);
+
+        $path = $request->file('receipt')->store('payments/receipts', 'public');
+
+        $result = $ocr->scan(Storage::disk('public')->path($path));
+
+        return response()->json([
+            'receipt_path' => $path,
+            'receipt_url'  => Storage::disk('public')->url($path),
+            'amount'       => $result['amount'],
+            'raw_text'     => $result['raw_text'],
+        ]);
     }
 
     /**

@@ -419,7 +419,7 @@ const regionalSeries = computed(() => barSeries(regionalRows.value, 'Abituriyent
 const regionalChartOptions = computed(() => columnChartOptions(regionalRows.value, { rotateLabels: true }))
 
 // --- To'lov kanali ---
-const PROVIDER_LABELS = { cash: 'Xazna', click: 'Click', payme: 'Payme' }
+const PROVIDER_LABELS = { cash: 'Xazna (eski)', bank_receipt: 'Bank cheki', click: 'Click', payme: 'Payme' }
 const providerLabel = (p) => PROVIDER_LABELS[p] || p
 const channelPct = (ch) => pct(ch.total, financial.value.paid_amount)
 

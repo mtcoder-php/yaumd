@@ -32,10 +32,108 @@
     --color-brand-700: #4f46e5;
     --color-brand-800: #4338ca;
     --color-brand-900: #3730a3;
+
+    /* Veb-sayt (ochiq/public) qismi uchun — 2026-09 dizayn yangilanishi.
+       Admin panel --color-brand-* (indigo/siyohko'k)ni tugmalar va urg'u
+       ranglari uchun davom ettiradi, lekin veb-saytning sarlavha/footer/
+       hero fonlari uchun alohida, chuqurroq "navy" shkala kerak — bular
+       faqat resources/js/Components/Web va resources/js/Pages/Web ichida
+       ishlatiladi. --color-gold-* esa universitet logotipidagi ochiq
+       kitob belgisi uchun (oltin/kahrabo rang urg'usi). */
+    --color-navy-50:  #eef1f8;
+    --color-navy-100: #dbe2f2;
+    --color-navy-400: #35509a;
+    --color-navy-500: #253d80;
+    --color-navy-600: #1c2f68;
+    --color-navy-700: #16255a;
+    --color-navy-800: #101c46;
+    --color-navy-900: #0b1330;
+    --color-navy-950: #070c22;
+
+    --color-gold-400: #f6c667;
+    --color-gold-500: #eda93a;
+    --color-gold-600: #d68a1f;
 }
+/* MUHIM: overflow-x uchun "hidden" emas, "clip" ishlatiladi — "hidden" (yoki
+   "auto"/"scroll") html/body'ni o'ziga xos scroll konteynerga aylantirib,
+   sahifadagi sticky (masalan MainHeader) elementlarni ba'zi brauzerlarda
+   (ayniqsa Safari/iOS) "sticky" bo'lishdan to'xtatib qo'yishi mumkin. "clip"
+   esa gorizontal ortiqcha kontentni xuddi shunday yashiradi, lekin alohida
+   scroll konteyner yaratmaydi — shu sabab sticky menyu doim to'g'ri ishlaydi. */
 html, body {
-    overflow-x: hidden;
+    overflow-x: clip;
     max-width: 100%;
+}
+
+/* =========================================================================
+   Scrollbar — brend rangiga moslashtirilgan (billing.e-edu.uz namunasidagi
+   kabi). Sahifaning o'zi scroll qilinganda (asosiy oyna) HAM, sidebar
+   (AppLayout.vue'dagi <nav class="overflow-y-auto">) o'zining ICHIDA scroll
+   qilinganda HAM — ikkalasi ham shu bitta qoida bilan qamrab olinadi, chunki
+   ular oddiy HTML scrollbar (brauzerning o'zi chizadigan), alohida
+   komponent emas. Shuning uchun global (html/body + har qanday
+   overflow-y-auto konteyner) darajada belgilanadi, joyma-joy emas.
+   Firefox uchun `scrollbar-color`, Chrome/Edge/Safari (WebKit) uchun
+   `::-webkit-scrollbar-*` psevdo-elementlari ishlatiladi — ikkalasi ham
+   kerak, chunki ular bir-birining o'rnini bosolmaydi. */
+/* IKKINCHI TUZATISH: avvalgi versiyada thumb atrofida track rangi bilan bir
+   xil 2px "border + background-clip: padding-box" hiylasi bor edi — bu
+   thumb'ning HAQIQIY bo'yalgan yuzasini torroq qilib, ba'zi brauzer/OS
+   birikmalarida (ayniqsa Windows'dagi Chrome/Edge) hover paytida chekka
+   piksellar orasidan asl (track) rang "yorilib" ko'rinib, xuddi butun stil
+   brauzer andozasiga qaytib ketgandek taassurot uyg'otgan. Endi bu hiyla
+   OLIB TASHLANDI — thumb endi ORTIQCHA chegarasiz, to'g'ridan-to'g'ri bitta
+   tekis rangda chiziladi. Shuningdek endi FAQAT thumb emas, balki butun
+   scrollbar konteyneri (::-webkit-scrollbar:hover) va track
+   (::-webkit-scrollbar-track:hover) uchun ham aniq qoidalar qo'shildi —
+   ba'zi brauzerlar hover holatini thumb'dan tashqari shu qismlarga ham
+   tarqatishi mumkin edi. Kenglik 10px'dan 14px'ga oshirildi.
+
+   UCHINCHI TUZATISH: brand-900 dizaynni "og'irlashtirib" juda to'q ko'rindi
+   — foydalanuvchi so'rovi bilan asosiy rang qaytadan brand-600'ga
+   qaytarildi (hoverda brand-800 — bir oz to'qroq, lekin brand-900'chalik
+   qora emas).
+
+   ESLATMA: agar shundan keyin ham ayrim Windows + Chrome/Edge
+   birikmalarida hoverda qisqa muddat brauzerning o'zi (OS "Fluent design")
+   chizadigan tizim skrollbar animatsiyasi ko'rinib ketsa — bu endi CSS
+   xatosi emas, balki brauzerning yangi versiyalarida joriy qilingan
+   "tizim uslubidagi" (native) scrollbar animatsiyasi bo'lib, sahifa
+   CSS'i orqali to'liq boshqarilmaydigan brauzer darajasidagi xususiyat
+   hisoblanadi. */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-600) #eef0f4;
+}
+::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+    background: #eef0f4;
+}
+::-webkit-scrollbar:hover {
+    background: #eef0f4;
+}
+::-webkit-scrollbar-track {
+    background: #eef0f4;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-track:hover {
+    background: #eef0f4;
+}
+::-webkit-scrollbar-thumb {
+    background-color: var(--color-brand-600);
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-brand-800);
+}
+::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+::-webkit-scrollbar-corner {
+    background: #eef0f4;
 }
 
 .container{

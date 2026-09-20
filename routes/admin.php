@@ -139,6 +139,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         // generatsiya qiladi (JSON javob) va uning holatini so'raydi
         // (pollingda) — PaymentController::checkoutOnline()/status()ga qarang.
         Route::post('/online/{provider}', [PaymentController::class, 'checkoutOnline'])->name('online')->middleware('permission:payment.create');
+        // Kassir bank chekining suratini yuklaganda — OCR orqali summani
+        // avtomatik o'qib beradi (PaymentController::scanReceipt()ga qarang).
+        Route::post('/scan-receipt', [PaymentController::class, 'scanReceipt'])->name('scanReceipt')->middleware('permission:payment.create');
         Route::get('/{payment}/status', [PaymentController::class, 'status'])->name('status')->middleware('permission:payment.view');
         Route::delete('/{id}', [PaymentController::class, 'destroy'])->name('destroy')->middleware('permission:payment.delete');
     });

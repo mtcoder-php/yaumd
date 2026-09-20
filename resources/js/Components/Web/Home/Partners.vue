@@ -1,162 +1,120 @@
 <template>
-    <section class="partners-section py-12">
-
-        <!-- Sarlavha — container ichida -->
+    <section class="py-10 bg-white">
         <div class="container mx-auto px-4">
-            <div class="text-center mb-10">
-                <h2 class="text-2xl font-bold text-white mb-2">Hamkorlar</h2>
-                <p class="text-white/60 text-sm">Bizning ishonchli hamkorlarimiz</p>
-            </div>
-        </div>
+            <div class=" bg-white overflow-hidden">
 
-        <!-- Slider — to'liq kenglikda, container tashqarisida -->
-        <div class="slider-outer">
-            <!-- Fade — to'liq kenglikda -->
-            <div class="fade-left"></div>
-            <div class="fade-right"></div>
-
-            <div class="slider-wrapper py-6">
-                <div class="partners-track flex gap-5">
-                    <template v-for="n in 3" :key="n">
-                        <a
-                            v-for="partner in displayPartners"
-                            :key="`${n}-${partner.id}`"
-                            :href="partner.url || '#'"
-                            target="_blank"
-                            class="partner-card flex-shrink-0 flex flex-col items-center justify-center gap-4 rounded-2xl bg-white"
-                        >
-                            <div class="flex items-center justify-center" style="height: 64px">
-                                <img
-                                    :src="partner.logo"
-                                    :alt="partner.name"
-                                    class="partner-logo max-h-16 max-w-full object-contain transition-transform duration-300"
-                                >
-                            </div>
-                            <span class="text-xs font-medium text-gray-700 text-center leading-tight px-2">
-                                {{ partner.name }}
-                            </span>
-                        </a>
-                    </template>
+                <!-- Sarlavha -->
+                <div class="px-5 pt-5 pb-4">
+                    <h3 class="flex items-center gap-2 text-2xl font-bold text-navy-900">
+                        <Icon icon="mdi:handshake-outline" class="w-6 h-6 text-brand-600" />
+                        Hamkorlarimiz
+                    </h3>
                 </div>
+
+                <!-- Uzluksiz oqib turuvchi qator (marquee) — itemlar birma-bir
+                     kirib, birma-bir chiqib turadi, sahifama-sahifa sakramaydi.
+                     Ro'yxat 2 marta ketma-ket chiqariladi va -50% gacha silliq
+                     siljitiladi — shu tufayli oxiri boshiga uzilishsiz ulanadi. -->
+                <div class="relative py-6 overflow-hidden marquee-fade">
+                    <div
+                        class="marquee-track flex flex-nowrap items-center w-max"
+                        :style="{ '--marquee-duration': marqueeDuration + 's' }"
+                    >
+                        <div class="flex flex-nowrap items-center divide-x divide-gray-100">
+                            <a
+                                v-for="partner in displayPartners"
+                                :key="'a-' + partner.name"
+                                :href="partner.url || '#'"
+                                target="_blank"
+                                class="flex items-center gap-2 px-4 sm:px-6 py-2 hover:opacity-70 transition"
+                            >
+                                <img v-if="partner.logo" :src="partner.logo" :alt="partner.name" class="h-7 w-auto max-w-[36px] object-contain flex-shrink-0">
+                                <Icon v-else :icon="partner.icon || 'mdi:domain'" class="w-7 h-7 text-brand-600 flex-shrink-0" />
+                                <span class="text-xs md:text-sm font-semibold text-navy-800 leading-snug whitespace-nowrap">{{ partner.name }}</span>
+                            </a>
+                        </div>
+                        <!-- Xuddi shu ro'yxatning nusxasi — uzluksiz aylanish uchun -->
+                        <div class="flex flex-nowrap items-center divide-x divide-gray-100" aria-hidden="true">
+                            <a
+                                v-for="partner in displayPartners"
+                                :key="'b-' + partner.name"
+                                :href="partner.url || '#'"
+                                target="_blank"
+                                tabindex="-1"
+                                class="flex items-center gap-2 px-4 sm:px-6 py-2 hover:opacity-70 transition"
+                            >
+                                <img v-if="partner.logo" :src="partner.logo" :alt="partner.name" class="h-7 w-auto max-w-[36px] object-contain flex-shrink-0">
+                                <Icon v-else :icon="partner.icon || 'mdi:domain'" class="w-7 h-7 text-brand-600 flex-shrink-0" />
+                                <span class="text-xs md:text-sm font-semibold text-navy-800 leading-snug whitespace-nowrap">{{ partner.name }}</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
-
     </section>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { Icon } from '@iconify/vue'
 
 const props = defineProps({
     partners: { type: Array, default: () => [] },
 })
 
+// MUHIM: haqiqiy hamkorlar DB'ga (admin panel > Hamkorlar) kiritilmaguncha,
+// quyidagi NAMUNA (demo) ro'yxat ko'rsatiladi — logotip o'rniga vaqtinchalik
+// ikonka ishlatilgan. Har bir hamkorning haqiqiy logotipi tayyor bo'lgach,
+// backend'dan kelgan `partners` propi (rasm bilan) ustunlik qiladi.
 const demoPartners = [
-    { id: 1, name: "Oliy ta'lim vazirligi",                      logo: "/partners/edu-gov.png",        url: "#" },
-    { id: 2, name: "Xalqaro islomshunoslik akademiyasi",          logo: "/partners/islamic-academy.png", url: "#" },
-    { id: 3, name: "Grand ta'lim maktabi",                       logo: "/partners/grand-school.png",   url: "#" },
-    { id: 4, name: "Grand ta'lim markazi",                       logo: "/partners/grand-edu.png",      url: "#" },
-    { id: 5, name: "Nankin universiteti",                        logo: "/partners/nanjing.png",        url: "#" },
-    { id: 6, name: "O'zbekiston milliy pedagogika universiteti", logo: "/partners/tdpu.avif",          url: "#" },
+    { name: 'UNESCO', icon: 'mdi:bank-outline' },
+    { name: 'THE WORLD BANK', icon: 'mdi:earth' },
+    { name: 'Erasmus+', icon: 'mdi:flag-variant-outline' },
+    { name: "O'zbekiston Respublikasi Innovatsiyalar vazirligi", icon: 'mdi:seal-variant' },
+    { name: 'Mahalliy hamkorlar', icon: 'mdi:flower-tulip-outline' },
+    { name: 'Xalqaro universitetlar', icon: 'mdi:account-school-outline' },
+    { name: "Davlat ta'lim boshqarmalari", icon: 'mdi:office-building-outline' },
+    { name: 'Ilmiy-tadqiqot markazlari', icon: 'mdi:flask-outline' },
+    { name: 'Nodavlat notijorat tashkilotlar', icon: 'mdi:hand-heart-outline' },
+    { name: 'Xorijiy elchixonalar', icon: 'mdi:passport' },
 ]
 
-const displayPartners = computed(() =>
-    props.partners?.length ? props.partners : demoPartners
-)
+const displayPartners = computed(() => {
+    if (props.partners?.length) {
+        return props.partners.map(p => ({ name: p.name, logo: p.logo, url: p.url }))
+    }
+    return demoPartners
+})
+
+// MUHIM: tezlik hamkorlar soniga qarab moslashadi — item qancha ko'p bo'lsa,
+// aylanish shuncha uzoqroq davom etadi, natijada oqim tezligi (piksel/soniya)
+// doim bir xil bo'lib qoladi (ko'p bo'lsa ham, kam bo'lsa ham "shoshilib"
+// yoki "sudralib" ketmaydi).
+const marqueeDuration = computed(() => Math.max(displayPartners.value.length * 3, 12))
 </script>
 
 <style scoped>
-.partners-section {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
-    position: relative;
+.marquee-track {
+    animation: partners-marquee var(--marquee-duration, 20s) linear infinite;
 }
-
-.partners-section::before {
-    content: '';
-    position: absolute;
-    top: -60px; right: -60px;
-    width: 280px; height: 280px;
-    background: radial-gradient(circle, rgba(102,126,234,0.3) 0%, transparent 70%);
-    border-radius: 50%;
-}
-
-.partners-section::after {
-    content: '';
-    position: absolute;
-    bottom: -60px; left: -60px;
-    width: 240px; height: 240px;
-    background: radial-gradient(circle, rgba(240,147,251,0.25) 0%, transparent 70%);
-    border-radius: 50%;
-}
-
-/* Slider tashqi wrapper */
-.slider-outer {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-}
-
-/* Fade — to'liq kenglik bo'ylab */
-.fade-left,
-.fade-right {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 120px;
-    z-index: 10;
-    pointer-events: none;
-}
-
-.fade-left {
-    left: 0;
-    background: linear-gradient(to right, #1a1a2e 0%, transparent 100%);
-}
-
-.fade-right {
-    right: 0;
-    background: linear-gradient(to left, #533483 0%, transparent 100%);
-}
-
-/* Slider wrapper — vertikal overflow uchun */
-.slider-wrapper {
-    overflow: visible;
-}
-
-/* Track — auto scroll */
-.partners-track {
-    display: flex;
-    width: max-content;
-    animation: scroll 30s linear infinite;
-}
-
-.partners-track:hover {
+/* Sichqoncha ustiga kelganda oqim to'xtaydi — nom yoki logotipni o'qish qulay bo'lishi uchun */
+.marquee-track:hover {
     animation-play-state: paused;
 }
-
-@keyframes scroll {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-33.333%); }
+@keyframes partners-marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
 }
-
-/* Card */
-.partner-card {
-    width: 180px;
-    min-height: 150px;
-    padding: 24px 16px;
-    position: relative;
-    z-index: 1;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+/* Chap va o'ng chetlarda yumshoq yo'qolish effekti */
+.marquee-fade {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
 }
-
-.partner-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 48px rgba(0,0,0,0.35);
-    z-index: 20;
-}
-
-.partner-card:hover .partner-logo {
-    transform: scale(1.08);
+@media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+        animation: none;
+    }
 }
 </style>

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Department;
 use App\Models\Direction;
-use App\Models\Faculty;
 use App\Models\NewsArticle;
 use App\Models\Partner;
 use App\Models\QuickLink;
@@ -36,8 +36,12 @@ class HomeController extends Controller
             'quickLinks' => QuickLink::where('is_active', true)
                 ->orderBy('order')
                 ->get(),
-            'faculties'  => Faculty::where('is_active', true)
-                ->get(['id', 'name_uz', 'name_ru', 'name_en']),
+            // MUHIM: bizda hozircha bittagina Fakultet bor, shuning uchun bosh
+            // sahifada "Fakultetlar" emas, to'g'ridan-to'g'ri Kafedralar
+            // ko'rsatiladi.
+            'departments' => Department::where('is_active', true)
+                ->withCount('directions')
+                ->get(['id', 'faculty_id', 'name_uz', 'name_ru', 'name_en', 'short_name']),
             'settings'   => [
                 'phone'       => Setting::get('phone'),
                 'email'       => Setting::get('email'),
