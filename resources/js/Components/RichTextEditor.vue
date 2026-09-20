@@ -4,6 +4,7 @@
             v-model="localValue"
             :disabled="disabled"
             :tinymce-script-src="tinymceScriptSrc"
+            license-key="gpl"
             :init="editorInit"
         />
         <div class="rte-status">
@@ -60,12 +61,24 @@ const wordCount = computed(() => {
 
 const charCount = computed(() => stripHtml(props.modelValue).replace(/\s+/g, '').length)
 
+// MUHIM: litsenziya kaliti shu yerda (init ichida) emas, balki <Editor>
+// komponentiga to'g'ridan-to'g'ri "license-key" prop sifatida beriladi
+// (yuqoridagi shablonga qarang) — @tinymce/tinymce-vue paketi finalInit'ni
+// yasaganda init ichidagi `license_key`ni har doim shu prop bilan qayta
+// yozib qo'yadi, shuning uchun uni faqat shu yerga (init'ga) qo'yish
+// "TinyMCE litsenziya kaliti berilmagani uchun muharrir o'chirilgan" degan
+// xatoga olib kelgan edi.
 const editorInit = {
-    // TinyMCE 6+ o'z serveringizda (self-hosted) ochiq manba (GPL) sifatida
-    // ishlatilganda shu qiymat talab qilinadi — pullik bulut xizmatiga
-    // ulanmaydi, faqat litsenziya turini bildiradi.
-    license_key: 'gpl',
-    height: props.height,
+    // MUHIM: "height" (umumiy balandlik) o'rniga "min_height" + "autoresize"
+    // plagini ishlatiladi. To'liq toolbar 4 qatordan iborat (~150-200px) —
+    // agar "height" umumiy (toolbar + tahrirlash maydoni) sifatida
+    // ishlatilganda, kichik qiymatlarda (masalan 160) tahrirlash maydoniga
+    // deyarli joy qolmay, u ko'rinmas bo'lib qolgan edi. "min_height" esa
+    // FAQAT tahrirlanadigan maydonning eng kichik balandligi — toolbar necha
+    // qatorli bo'lishidan qat'iy nazar, matn yozish uchun joy har doim
+    // kafolatlanadi (kontent ko'payib ketsa, avtomatik pastga o'sadi).
+    min_height: Number(props.height) || 200,
+    autoresize_bottom_margin: 16,
     menubar: false,
     statusbar: false,
     branding: false,
@@ -74,7 +87,7 @@ const editorInit = {
     skin: 'oxide',
     content_css: 'default',
     content_style: "body { font-family: inherit; font-size: 14px; color: #111827; }",
-    plugins: 'advlist autolink lists link image charmap preview anchor searchreplace ' +
+    plugins: 'advlist autolink autoresize lists link image charmap preview anchor searchreplace ' +
         'visualblocks code fullscreen insertdatetime media table help wordcount ' +
         'emoticons directionality pagebreak nonbreaking codesample accordion',
     toolbar: [
