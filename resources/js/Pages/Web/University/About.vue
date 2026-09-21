@@ -17,9 +17,8 @@
                 <div class="flex flex-col lg:flex-row gap-8 items-start">
                     <AboutSidebar active-href="/university/about/general" />
 
-                    <div class="flex-1 min-w-0">
-                        <!-- MUHIM: asosiy kontent (statistika, video, yo'nalishlar,
-                             CTA) keyingi bosqichda shu yerga qo'shiladi. -->
+                    <div class="flex-1 min-w-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8">
+                        <AboutOverview />
                     </div>
                 </div>
             </div>
@@ -31,6 +30,7 @@
 import WebLayout from '@/Layouts/WebLayout.vue'
 import PageHero from '@/Components/Web/PageHero.vue'
 import AboutSidebar from '@/Components/Web/University/AboutSidebar.vue'
+import AboutOverview from '@/Components/Web/University/AboutOverview.vue'
 
 defineProps({
     settings: { type: Object, default: () => ({}) },

@@ -34,27 +34,31 @@
                 </div>
             </div>
 
-            <!-- Video karta — MUHIM: haqiqiy "Universitet hayoti" video/surati
-                 hali yo'q. Namunadagi surat (talabalar hovlida yurgan surat)
-                 loyihada mavjud emas, sinov uchun mavjud bo'lgan
-                 /sliders/*.jpg fayllarining barchasi reklama namunalari
-                 (kiyim-kechak, oziq-ovqat) bo'lib, mavzuga aloqasi yo'q —
-                 shuning uchun ularni ko'rsatish o'rniga vaqtincha oddiy
-                 gradient fon + video belgisi qo'yildi. Haqiqiy surat/video
-                 tayyor bo'lgach, shu joyga <img> qo'shiladi. -->
+            <!-- Video karta — Bosh sahifadagi (Mission.vue) video kartochkasi
+                 bilan bir xil uslubda: fon surat + pastdan to'q ko'k gradient
+                 + play tugma, endi "qisilib" qolmasligi uchun kengroq va
+                 balandroq. MUHIM: haqiqiy "Universitet hayoti" video/surati
+                 tayyor bo'lgach, quyidagi vaqtinchalik /sliders/slide2.jpg
+                 manzili shu bilan almashtiriladi. -->
             <button
                 type="button"
                 @click="videoOpen = true"
-                class="relative block w-full lg:w-[300px] flex-shrink-0 rounded-2xl overflow-hidden group"
-                style="background: linear-gradient(135deg, var(--color-navy-800), var(--color-brand-700)); min-height: 220px"
+                class="relative block w-full lg:w-[360px] flex-shrink-0 rounded-2xl overflow-hidden group"
+                style="height: 320px"
             >
-                <div class="absolute inset-0 flex items-center justify-center opacity-10" aria-hidden="true">
-                    <Icon icon="mdi:play-circle" class="w-32 h-32 text-white" />
-                </div>
+                <img
+                    src="/sliders/slide2.png"
+                    alt="Universitet hayoti"
+                    class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                >
+                <div
+                    class="absolute inset-0"
+                    style="background: linear-gradient(0deg, rgba(11,19,48,0.78) 0%, rgba(11,19,48,0.2) 45%, rgba(11,19,48,0.05) 100%);"
+                ></div>
 
                 <span class="absolute left-4 bottom-4 flex items-center gap-3">
-                    <span class="flex-shrink-0 w-11 h-11 rounded-full bg-white group-hover:bg-gray-100 flex items-center justify-center shadow-lg transition">
-                        <Icon icon="mdi:play" class="w-5 h-5 text-brand-700 ml-0.5" />
+                    <span class="flex-shrink-0 w-11 h-11 rounded-full bg-brand-600 group-hover:bg-brand-500 flex items-center justify-center shadow-lg transition">
+                        <Icon icon="mdi:play" class="w-5 h-5 text-white ml-0.5" />
                     </span>
                     <span class="text-left">
                         <span class="block text-white text-sm font-semibold leading-tight">Universitet hayoti</span>
@@ -103,8 +107,13 @@
                      bo'lgan yagona qabul manziliga (/qabul/ariza)
                      yo'naltirilgan. -->
                 <div class="col-span-2 relative overflow-hidden rounded-2xl p-5 flex flex-col justify-between" style="background: linear-gradient(135deg, var(--color-navy-700), var(--color-brand-700))">
+                    <!-- Burchakdagi yagona icon o'rniga naqsh: aylana halqa +
+                         yumshoq shar + qiya kvadrat, PageHero'dagi dekorativ
+                         uslubga mos. -->
                     <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-                        <Icon icon="mdi:school-outline" class="absolute -right-4 -bottom-4 w-28 h-28 text-white/10" />
+                        <span class="absolute -right-5 -top-7 w-24 h-24 rounded-full border-2 border-white/20"></span>
+                        <span class="absolute right-3 bottom-3 w-14 h-14 rounded-full bg-white/10"></span>
+                        <span class="absolute right-14 top-3 w-7 h-7 rounded-lg bg-white/15 rotate-45"></span>
                     </div>
                     <div class="relative">
                         <h3 class="text-white text-base font-bold leading-snug mb-2">Kechagi bilim — bugungi muvaffaqiyat!</h3>
@@ -152,8 +161,8 @@ import { Icon } from '@iconify/vue'
 const videoOpen = ref(false)
 
 const stats = [
-    { label: 'Fakultet',                icon: 'mdi:bank-outline',          value: '5' },
-    { label: 'Kafedralar',              icon: 'mdi:map-marker-outline',    value: '20+' },
+    { label: 'Kafedralar',              icon: 'mdi:bank-outline',          value: '20+' },
+    { label: "Yo'nalishlar",            icon: 'mdi:map-marker-outline',    value: '30+' },
     { label: 'Talabalar',               icon: 'mdi:account-group-outline', value: '3000+' },
     { label: "Professor-o'qituvchilar", icon: 'mdi:account-outline',       value: '200+' },
 ]
