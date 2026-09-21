@@ -11,7 +11,7 @@
                          joylar bir-birining ustiga chiqib ketmaydi -->
                     <div class="lg:basis-[27%] lg:shrink-0">
                         <div class="mb-5">
-                            <img src="/assets/logo-white.png" alt="Yangi Asr Universiteti" class="h-16 md:h-[70px] w-auto mb-2">
+                            <img src="/assets/logo-white.png" alt="Yangi Asr Universiteti" class="h-12 md:h-[70px] w-auto mb-2">
                             <p class="text-sm text-white/50 font-medium">Ilm, tafakkur va taraqqiyot yo'lida</p>
                         </div>
                         <p class="text-white/50 text-base leading-relaxed mb-5 max-w-sm">

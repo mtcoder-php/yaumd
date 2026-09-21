@@ -110,6 +110,7 @@
                     <!-- Search (mobile) -->
                     <button
                         @click="searchOpen = !searchOpen"
+                        ref="mobileSearchBtnRef"
                         class="lg:hidden flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 hover:bg-gray-50 transition text-gray-600"
                     >
                         <Icon icon="mdi:magnify" class="w-4 h-4" />
@@ -192,7 +193,7 @@
                         href="/qabul/ariza"
                         class="hidden md:flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-600 to-brand-700 text-white text-sm font-semibold rounded-full hover:shadow-lg hover:shadow-brand-600/30 transition-all"
                     >
-                        Qabul 2026
+                        Qabul 2025
                         <Icon icon="mdi:arrow-right" class="w-4 h-4" />
                     </Link>
 
@@ -209,7 +210,7 @@
             </div>
 
             <!-- Search (mobile) ochiladi -->
-            <div v-if="searchOpen" class="lg:hidden pb-3">
+            <div v-if="searchOpen" class="lg:hidden pb-3" ref="mobileSearchPanelRef">
                 <div class="relative">
                     <input
                         v-model="searchQuery"
@@ -253,6 +254,16 @@ const searchRef    = ref(null)
 const contactRef   = ref(null)
 const userRef      = ref(null)
 
+// MUHIM: mobil/tablet'da qidiruv oynasi sarlavha qatoridan pastda, alohida
+// (butun kenglikdagi) blok sifatida chiqadi — u "searchRef" o'ralgan
+// desktop qidiruv blokining ICHIDA emas, balki undan TASHQARIDA joylashgan.
+// Shu sabab avval "tashqariga bosish" tekshiruvi mobil inputning o'ziga
+// bosilganda ham uni "tashqari" deb hisoblab, panelni darhol yopib
+// qo'yayotgan edi. Endi mobil tugma va mobil panel uchun alohida ref
+// qo'shilib, ikkalasi ham "ichkari" hisoblanadi.
+const mobileSearchBtnRef    = ref(null)
+const mobileSearchPanelRef  = ref(null)
+
 const isActive = (href) => href && page.url === href
 
 const handleSearch = () => {
@@ -264,7 +275,12 @@ const handleSearch = () => {
 const handleScroll = () => { scrolled.value = window.scrollY > 10 }
 
 const handleOutsideClick = (e) => {
-    if (searchRef.value && !searchRef.value.contains(e.target)) searchOpen.value = false
+    const insideSearch =
+        (searchRef.value && searchRef.value.contains(e.target)) ||
+        (mobileSearchBtnRef.value && mobileSearchBtnRef.value.contains(e.target)) ||
+        (mobileSearchPanelRef.value && mobileSearchPanelRef.value.contains(e.target))
+    if (!insideSearch) searchOpen.value = false
+
     if (contactRef.value && !contactRef.value.contains(e.target)) contactOpen.value = false
     if (userRef.value && !userRef.value.contains(e.target)) userOpen.value = false
 }
