@@ -8,13 +8,13 @@ export const menuItems = [
                 title: "Universitet haqida",
                 path: "about-university",
                 innersubmenu: [
-                    { title: "Umumiy ma'lumot", path: "/universitet/haqida/umumiy" },
-                    { title: "Universitet tuzilmasi", path: "/universitet/haqida/tuzilma" },
-                    { title: "Professor & o'qituvchilar", path: "/universitet/haqida/professorlar" },
-                    { title: "Universitet nizomi", path: "/universitet/haqida/nizom" },
-                    { title: "Sertifikatlar", path: "/universitet/haqida/sertifikatlar" },
-                    { title: "O'quv binolari", path: "/universitet/haqida/binolar" },
-                    { title: "Talabalar turar joylari", path: "/universitet/haqida/yotoqxona" },
+                    { title: "Umumiy ma'lumot", path: "/university/about/general" },
+                    { title: "Universitet tuzilmasi", path: "/university/about/structure" },
+                    { title: "Professor & o'qituvchilar", path: "/university/about/staff" },
+                    { title: "Universitet nizomi", path: "/university/about/charter" },
+                    { title: "Sertifikatlar", path: "/university/about/certificates" },
+                    { title: "O'quv binolari", path: "/university/about/buildings" },
+                    { title: "Talabalar turar joylari", path: "/university/about/dormitories" },
                 ]
             },
             {
@@ -127,9 +127,9 @@ export const menuItems = [
                 title: "Kutubxona",
                 path: "library",
                 innersubmenu: [
-                    { title: "Badiiy adabiyotlar", path: "/markazlar/grand-maktab" },
-                    { title: "Darsliklar va o‘quv qo‘llanmalar", path: "/markazlar/grand-bogcha" },
-                    { title: "Elektron bazadagi resurslar", path: "/markazlar/grand-talim" },
+                    { title: "Badiiy adabiyotlar", path: "/kutubxona/badiiy" },
+                    { title: "Darsliklar va o‘quv qo‘llanmalar", path: "/kutubxona/darsliklar" },
+                    { title: "Elektron bazadagi resurslar", path: "/kutubxona/elektron" },
                 ]
             },
 

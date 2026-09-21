@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\HomeController;
+use App\Http\Controllers\Web\UniversityController;
 use App\Http\Controllers\Web\AdmissionController;
 use App\Http\Controllers\Web\CertificateVerifyController;
 use App\Http\Controllers\Web\ClickCallbackController;
@@ -13,6 +14,11 @@ use App\Http\Controllers\Auth\AuthController;
 
 // ─── OMMAVIY SAYT ────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// University > About
+Route::prefix('university/about')->name('university.about.')->group(function () {
+    Route::get('/general', [UniversityController::class, 'about'])->name('general');
+});
 
 // Qabul
 Route::prefix('qabul')->name('qabul.')->group(function () {
