@@ -169,9 +169,9 @@ watch(() => displaySlides.value.length, () => {
 })
 
 const heroStats = [
-    { icon: 'mdi:calendar-blank-outline',   value: '2025',  label: "O'quv yili" },
-    { icon: 'mdi:book-open-variant',        value: '100+',  label: "Ta'lim yo'nalishi" },
-    { icon: 'mdi:account-group-outline',    value: '3000+', label: 'Talabalar' },
+    { icon: 'mdi:calendar-blank-outline',   value: '2026',  label: "O'quv yili" },
+    { icon: 'mdi:book-open-variant',        value: '30+',  label: "Ta'lim yo'nalishi" },
+    { icon: 'mdi:account-group-outline',    value: '5000+', label: 'Talabalar' },
     { icon: 'mdi:account-tie-outline',      value: '200+',  label: "Professor-o'qituvchi" },
 ]
 </script>

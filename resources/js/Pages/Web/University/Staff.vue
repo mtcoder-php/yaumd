@@ -329,11 +329,11 @@ const crumbs = [
 // papkasidagi haqiqiy suratlar. F.I.Sh.lar hali berilmagan, shuning uchun
 // placeholder. Real ism va (xohlasa) bazaga o'tkazish keyingi qadam.
 const leadershipTeam = [
-    { photo: '/professors/rektor.jpg',     position: 'Rektor',                                     name: "F.I.Sh. kiritiladi" },
-    { photo: '/professors/prorector1.jpg', position: "O'quv ishlari bo'yicha prorektor",           name: "F.I.Sh. kiritiladi" },
-    { photo: '/professors/prorektor2.jpg', position: "Yoshlar masalalari bo'yicha prorektor",      name: "F.I.Sh. kiritiladi" },
-    { photo: '/professors/prorector3.jpg', position: "Ilmiy ishlar bo'yicha prorektor",            name: "F.I.Sh. kiritiladi" },
-    { photo: '/professors/prorector4.jpg', position: "Moliya-iqtisod ishlari bo'yicha prorektor",  name: "F.I.Sh. kiritiladi" },
+    { photo: '/professors/rector.jpeg',     position: 'Rektor',                                     name: "F.I.Sh. kiritiladi" },
+    { photo: '/professors/prorector1.jpeg', position: "O'quv ishlari bo'yicha prorektor",           name: "F.I.Sh. kiritiladi" },
+    { photo: '/professors/prorector2.jpeg', position: "Yoshlar masalalari bo'yicha prorektor",      name: "F.I.Sh. kiritiladi" },
+    { photo: '/professors/prorector3.jpeg', position: "Ilmiy ishlar bo'yicha prorektor",            name: "F.I.Sh. kiritiladi" },
+    { photo: '/professors/prorector4.jpeg', position: "Moliya-iqtisod ishlari bo'yicha prorektor",  name: "F.I.Sh. kiritiladi" },
 ]
 
 const degreeOptions = [

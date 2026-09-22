@@ -15,20 +15,20 @@
             :crumbs="crumbs"
             :title="staff.full_name_uz"
             :subtitle="heroSubtitle"
-            image="/sliders/slide2.jpg"
+            image="/sliders/slide2.png"
             with-photo
             :photo="staff.photo"
             :badge="degreeLabel ? { icon: 'mdi:certificate-outline', value: degreeLabel, label: 'Ilmiy daraja' } : null"
         />
 
-        <!-- TABLAR — MUHIM (TUZATILDI): ilgari bular oddiy "#anchor"
-             havolalari edi — bosilganda butun sahifa o'sha bo'limgacha
-             sakrab-skroll qilardi, foydalanuvchi buni "butun sahifa
-             o'zgargandek" his qilgani uchun rad etdi. Endi haqiqiy tab
-             almashtirish: bosilganda faqat pastdagi mos content
-             (activeTab orqali) ko'rsatiladi/yashiriladi, sahifa o'zi
-             joyidan qo'zg'almaydi. "Maqolalar", "Loyiha va dasturlar" va
-             "Aloqa" uchun hali mazmun yo'q, shuning uchun bosilmaydi. -->
+        <!-- TABLAR — MUHIM: "Umumiy ma'lumot" bosilganda namunadagidek
+             HAMMASI (Ta'lim va malaka, Ish tajribasi, Ilmiy faoliyati)
+             birga ko'rinadi. Lekin "Ta'lim va malaka"/"Ish tajribasi"/
+             "Ilmiy faoliyati"ning O'ZIGA bosilganda — content
+             ALMASHADI, faqat o'sha bittasiga doir ma'lumot ko'rinadi
+             (sahifa o'zi qo'zg'almaydi, faqat quyidagi blok almashadi).
+             "Maqolalar", "Loyiha va dasturlar" va "Aloqa" ham xuddi
+             shunday — o'z alohida contentini ko'rsatadi. -->
         <div class="bg-white border-b border-gray-100">
             <div class="container mx-auto px-4">
                 <nav class="flex items-center gap-6 overflow-x-auto text-sm font-semibold">
@@ -128,7 +128,7 @@
                         </div>
 
                         <div
-                            v-show="activeTab === 'education'"
+                            v-show="showEducation"
                             v-if="staff.educations?.length"
                             id="talim-va-malaka"
                             class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8"
@@ -148,7 +148,7 @@
                         </div>
 
                         <div
-                            v-show="activeTab === 'experience'"
+                            v-show="showExperience"
                             v-if="staff.experiences?.length"
                             id="ish-tajribasi"
                             class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8"
@@ -168,7 +168,7 @@
                         </div>
 
                         <div
-                            v-show="activeTab === 'research'"
+                            v-show="showResearch"
                             v-if="staff.research_summary_uz"
                             id="ilmiy-faoliyati"
                             class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8"
@@ -467,11 +467,7 @@ const heroSubtitle = computed(() => {
         .join(' — ')
 })
 
-// MUHIM: "Maqolalar", "Loyiha va dasturlar" va "Aloqa" uchun hali alohida
-// mazmun qurilmagan (foydalanuvchi bilan kelishilganidek, bu safar faqat
-// "Umumiy ma'lumot" to'liq qilinmoqda) — shuning uchun enabled=false va
-// bosilmaydigan holatda. Boshlang'ich faol tab — "Umumiy ma'lumot", chunki
-// hozircha faqat shu tab to'liq ishlab chiqilgan.
+// Boshlang'ich faol tab — "Umumiy ma'lumot".
 const activeTab = ref('overview')
 
 const tabs = [
@@ -483,6 +479,17 @@ const tabs = [
     { id: 'projects',   label: 'Loyiha va dasturlar', enabled: true },
     { id: 'contact',    label: 'Aloqa',               enabled: true },
 ]
+
+// MUHIM: "Umumiy ma'lumot" bosilganda — namunadagidek — Ta'lim va
+// malaka, Ish tajribasi va Ilmiy faoliyati HAMMASI birga ko'rinadi.
+// Lekin shu uchtasining O'ZIGA (masalan "Ta'lim va malaka"ga) bosilsa,
+// content ALMASHADI — faqat o'sha bittasi ko'rinadi, qolganlari
+// (umumiy karta ham) berkiladi. Shuning uchun har bir bo'lim
+// "umumiy'da ham, o'zining tabida ham ko'rinsin" mantig'ida alohida
+// hisoblanadi.
+const showEducation  = computed(() => activeTab.value === 'overview' || activeTab.value === 'education')
+const showExperience = computed(() => activeTab.value === 'overview' || activeTab.value === 'experience')
+const showResearch   = computed(() => activeTab.value === 'overview' || activeTab.value === 'research')
 
 const degreeOptions = [
     { value: 'professor', label: 'Professor' },
