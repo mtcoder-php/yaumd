@@ -57,11 +57,35 @@ class StaffFactory extends Factory
         ]);
     }
 
+    private const RESEARCH_TAGS = [
+        'Sun\'iy intellekt', 'Mashinali o\'rganish', 'Web texnologiyalar',
+        'Iqtisodiyot nazariyasi', 'Raqamli iqtisodiyot', 'Statistika',
+        'Adabiyotshunoslik', 'Til nazariyasi', 'Matn tahlili',
+        'Lingvistika', "Xorijiy til ta'limi", 'Kommunikativ yondashuv',
+        'Energiya samaradorligi', "Qayta tiklanuvchi energiya", 'Elektr texnikasi',
+        'Kardiologiya', 'Profilaktik tibbiyot', "Sog'lom turmush tarzi",
+        'Algebra', 'Matematik modellashtirish', 'Ehtimollar nazariyasi',
+        "Huquqiy islohotlar", "Fuqarolik huquqi", "Xalqaro huquq",
+    ];
+
+    private const DEGREES = ['professor', 'dotsent', 'phd', 'oqituvchi'];
+
     public function teacher(): static
     {
-        return $this->state(fn () => [
-            'type'     => 'teacher',
-            'position_uz' => fake()->randomElement(self::POSITIONS_TEACHER),
-        ]);
+        return $this->state(function () {
+            // MUHIM: kafedra/fakultet allaqachon seed qilingan bo'lishi kerak
+            // (AcademicStructureSeeder tartibiga qarang) — topilmasa null
+            // qoladi, filtrlarda shunchaki "Kafedrasiz" ko'rinadi.
+            $department = \App\Models\Department::inRandomOrder()->first();
+
+            return [
+                'type'          => 'teacher',
+                'position_uz'   => fake()->randomElement(self::POSITIONS_TEACHER),
+                'faculty_id'    => $department?->faculty_id,
+                'department_id' => $department?->id,
+                'degree'        => fake()->randomElement(self::DEGREES),
+                'research_tags' => fake()->randomElements(self::RESEARCH_TAGS, fake()->numberBetween(2, 3)),
+            ];
+        });
     }
 }

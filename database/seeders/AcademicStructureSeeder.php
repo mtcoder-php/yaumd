@@ -144,13 +144,50 @@ class AcademicStructureSeeder extends Seeder
 
     private function seedStaff(): void
     {
-        if (Staff::count() >= 10) {
+        $this->seedLeadership();
+
+        if (Staff::where('type', '!=', 'leadership')->count() >= 10) {
             return;
         }
 
-        Staff::factory()->leadership()->count(3)->create();
         Staff::factory()->teacher()->count(20)->create();
         Staff::factory()->count(7)->create(); // oddiy xodimlar
+    }
+
+    /**
+     * Rahbariyat — Mukhtor tomonidan berilgan haqiqiy suratlar
+     * (public/professors/) asosida, tasodifiy Factory EMAS, aniq
+     * yozuvlar. MUHIM: hozircha F.I.Sh. berilmagan (faqat fayl nomlari:
+     * rektor, prorector1/3/4, prorektor2) — shuning uchun ism o'rniga
+     * ochiq placeholder qo'yilgan, lavozimlar tartibi esa menuItems.js'dagi
+     * "Tuzilma > Rahbariyat" ro'yxati bilan bir xil ketma-ketlikda
+     * (Rektor, keyin 4 ta prorektor) taxmin qilindi — F.I.Sh. va lavozim
+     * mosligi noto'g'ri bo'lsa, shu yerdan tuzatiladi. updateOrCreate
+     * 'photo' bo'yicha — migrate:fresh --seed qayta ishga tushirilganda
+     * takrorlanmaydi.
+     */
+    private function seedLeadership(): void
+    {
+        $leadership = [
+            ['photo' => '/professors/rektor.jpg',     'position' => 'Rektor',                                        'order' => 1],
+            ['photo' => '/professors/prorector1.jpg', 'position' => "O'quv ishlari bo'yicha prorektor",              'order' => 2],
+            ['photo' => '/professors/prorektor2.jpg', 'position' => 'Yoshlar masalalari bo\'yicha prorektor',        'order' => 3],
+            ['photo' => '/professors/prorector3.jpg', 'position' => 'Ilmiy ishlar bo\'yicha prorektor',              'order' => 4],
+            ['photo' => '/professors/prorector4.jpg', 'position' => 'Moliya-iqtisod ishlari bo\'yicha prorektor',    'order' => 5],
+        ];
+
+        foreach ($leadership as $row) {
+            Staff::updateOrCreate(
+                ['photo' => $row['photo']],
+                [
+                    'full_name_uz' => "F.I.Sh. kiritiladi",
+                    'position_uz'  => $row['position'],
+                    'type'         => 'leadership',
+                    'order'        => $row['order'],
+                    'is_active'    => true,
+                ]
+            );
+        }
     }
 
     /**

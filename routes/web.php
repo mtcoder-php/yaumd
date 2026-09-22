@@ -18,6 +18,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // University > About
 Route::prefix('university/about')->name('university.about.')->group(function () {
     Route::get('/general', [UniversityController::class, 'about'])->name('general');
+    Route::get('/staff', [UniversityController::class, 'staff'])->name('staff');
 });
 
 // Qabul
