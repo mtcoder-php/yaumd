@@ -82,6 +82,42 @@ class UniversityController extends Controller
         ]);
     }
 
+    /**
+     * Bitta professor/o'qituvchining profil sahifasi —
+     * /university/about/staff/{staff}. Hozircha faqat "Umumiy ma'lumot"
+     * tabi to'liq: bio, statistika, Ta'lim va malaka + Ish tajribasi vaqt
+     * chiziqlari, ijtimoiy tarmoqlar va shu kafedradagi hamkasblar.
+     */
+    public function staffShow(Staff $staff): Response
+    {
+        abort_unless($staff->is_active, 404);
+
+        $staff->load([
+            'faculty:id,name_uz,short_name',
+            'department:id,name_uz',
+            'educations',
+            'experiences',
+            'socialLinks',
+            'articles',
+            'projects',
+        ]);
+
+        return Inertia::render('Web/University/StaffProfile', [
+            'staff'      => $staff,
+            // Hamkasblar — bitta hodisa: hozircha bo'lim (department) mos
+            // kelsa yetarli, chunki bizda ko'pchilik kafedralar bitta
+            // fakultetga tegishli.
+            'colleagues' => Staff::where('type', 'teacher')
+                ->where('is_active', true)
+                ->where('department_id', $staff->department_id)
+                ->where('id', '!=', $staff->id)
+                ->with('department:id,name_uz')
+                ->limit(4)
+                ->get(['id', 'full_name_uz', 'position_uz', 'photo', 'department_id']),
+            'settings'   => $this->settings(),
+        ]);
+    }
+
     private function settings(): array
     {
         return [

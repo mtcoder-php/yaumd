@@ -147,13 +147,13 @@
                                 </div>
                             </template>
 
-                            <!-- MUHIM: har bir professorning alohida profil sahifasi
-                                 hali qurilmagan, shuning uchun tugma hozircha "#"ga
-                                 ishora qiladi. -->
-                            <a href="#" class="inline-flex items-center gap-1.5 text-brand-600 text-xs font-semibold hover:gap-2.5 transition-all duration-300">
+                            <Link
+                                :href="route('university.about.staff.show', person.id)"
+                                class="inline-flex items-center gap-1.5 text-brand-600 text-xs font-semibold hover:gap-2.5 transition-all duration-300"
+                            >
                                 Profilni ko'rish
                                 <Icon icon="mdi:arrow-right" class="w-3.5 h-3.5" />
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -329,11 +329,11 @@ const crumbs = [
 // papkasidagi haqiqiy suratlar. F.I.Sh.lar hali berilmagan, shuning uchun
 // placeholder. Real ism va (xohlasa) bazaga o'tkazish keyingi qadam.
 const leadershipTeam = [
-    { photo: '/professors/rector.jpeg',     position: 'Rektor',                                     name: "F.I.Sh. kiritiladi" },
-    { photo: '/professors/prorector1.jpeg', position: "O'quv ishlari bo'yicha prorektor",           name: "F.I.Sh. kiritiladi" },
-    { photo: '/professors/prorector2.jpeg', position: "Yoshlar masalalari bo'yicha prorektor",      name: "F.I.Sh. kiritiladi" },
-    { photo: '/professors/prorector3.jpeg', position: "Ilmiy ishlar bo'yicha prorektor",            name: "F.I.Sh. kiritiladi" },
-    { photo: '/professors/prorector4.jpeg', position: "Moliya-iqtisod ishlari bo'yicha prorektor",  name: "F.I.Sh. kiritiladi" },
+    { photo: '/professors/rektor.jpg',     position: 'Rektor',                                     name: "F.I.Sh. kiritiladi" },
+    { photo: '/professors/prorector1.jpg', position: "O'quv ishlari bo'yicha prorektor",           name: "F.I.Sh. kiritiladi" },
+    { photo: '/professors/prorektor2.jpg', position: "Yoshlar masalalari bo'yicha prorektor",      name: "F.I.Sh. kiritiladi" },
+    { photo: '/professors/prorector3.jpg', position: "Ilmiy ishlar bo'yicha prorektor",            name: "F.I.Sh. kiritiladi" },
+    { photo: '/professors/prorector4.jpg', position: "Moliya-iqtisod ishlari bo'yicha prorektor",  name: "F.I.Sh. kiritiladi" },
 ]
 
 const degreeOptions = [

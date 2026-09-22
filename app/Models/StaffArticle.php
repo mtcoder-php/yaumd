@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class StaffArticle extends Model
+{
+    use HasFactory;
+
+    // MUHIM: StaffEducation'da duch kelingan noaniqlikni oldini olish
+    // uchun jadval nomi aniq ko'rsatildi (migratsiyaga qarang).
+    protected $table = 'staff_articles';
+
+    protected $fillable = ['staff_id', 'title', 'source_uz', 'year', 'url', 'sort_order'];
+
+    public function staff(): BelongsTo
+    {
+        return $this->belongsTo(Staff::class);
+    }
+}

@@ -15,7 +15,7 @@
                     Yangi Asr Universiteti — O'zbekistonda zamonaviy ta'lim, ilm-fan va innovatsiyalarni birlashtirgan nufuzli oliy ta'lim muassasasi. Bizning maqsadimiz — yuksak bilimli, raqobatbardosh va tashabbuskor yoshlarni tarbiyalash.
                 </p>
                 <div class="flex flex-wrap items-center gap-3">
-                    <Link href="/universitet/haqida/umumiy" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition">
+                    <Link href="/university/about/general" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition">
                         Batafsil ma'lumot
                         <Icon icon="mdi:arrow-right" class="w-4 h-4" />
                     </Link>

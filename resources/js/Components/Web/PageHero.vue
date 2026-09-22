@@ -46,13 +46,29 @@
                 </template>
             </nav>
 
-            <div class="max-w-xl">
-                <h1 class="text-3xl md:text-4xl lg:text-[42px] font-bold text-indigo-950 leading-tight mb-4">
-                    {{ title }}
-                </h1>
-                <p v-if="subtitle" class="text-indigo-900/75 text-base md:text-lg leading-relaxed font-normal">
-                    {{ subtitle }}
-                </p>
+            <!-- MUHIM: "withPhoto" faqat shaxs profili kabi sahifalarda
+                 (masalan StaffProfile.vue) beriladi — About/Staff kabi
+                 boshqa sahifalar bu propni bermaydi, shuning uchun ularda
+                 hech narsa o'zgarmaydi (orqaga mos, additive o'zgarish). -->
+            <div class="flex flex-col sm:flex-row gap-5 sm:items-center">
+                <div
+                    v-if="withPhoto"
+                    class="w-28 h-32 md:w-32 md:h-36 rounded-2xl overflow-hidden border-4 border-white shadow-lg flex-shrink-0 bg-indigo-100"
+                >
+                    <img v-if="photo" :src="photo" :alt="title" class="w-full h-full object-cover">
+                    <div v-else class="w-full h-full flex items-center justify-center">
+                        <Icon icon="mdi:account" class="w-12 h-12 text-indigo-300" />
+                    </div>
+                </div>
+
+                <div class="max-w-xl">
+                    <h1 class="text-3xl md:text-4xl lg:text-[42px] font-bold text-indigo-950 leading-tight mb-4">
+                        {{ title }}
+                    </h1>
+                    <p v-if="subtitle" class="text-indigo-900/75 text-base md:text-lg leading-relaxed font-normal">
+                        {{ subtitle }}
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -85,6 +101,11 @@ defineProps({
     image:    { type: String, default: '' },
     // { icon, value, label }
     badge:    { type: Object, default: null },
+    // Shaxs profili sahifalari uchun (masalan StaffProfile.vue) — sarlavha
+    // yonida kichik rasm kartasi. withPhoto=false bo'lsa (standart),
+    // boshqa barcha sahifalarda hech narsa o'zgarmaydi.
+    withPhoto: { type: Boolean, default: false },
+    photo:     { type: String, default: null },
 })
 </script>
 

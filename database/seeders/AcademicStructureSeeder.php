@@ -6,6 +6,11 @@ use App\Models\AcademicYear;
 use App\Models\Direction;
 use App\Models\DirectionSubject;
 use App\Models\Staff;
+use App\Models\StaffArticle;
+use App\Models\StaffEducation;
+use App\Models\StaffExperience;
+use App\Models\StaffProject;
+use App\Models\StaffSocialLink;
 use App\Models\Subject;
 use App\Models\Test;
 use App\Models\TestCategory;
@@ -150,8 +155,50 @@ class AcademicStructureSeeder extends Seeder
             return;
         }
 
-        Staff::factory()->teacher()->count(20)->create();
+        $teachers = Staff::factory()->teacher()->count(20)->create();
         Staff::factory()->count(7)->create(); // oddiy xodimlar
+
+        // Har bir o'qituvchi uchun profil sahifasidagi ("Umumiy ma'lumot"
+        // tabi) Ta'lim va malaka / Ish tajribasi vaqt chiziqlari va
+        // Ijtimoiy tarmoqlar — shu bo'limlar bo'sh ko'rinmasligi uchun.
+        $teachers->each(function (Staff $teacher) {
+            StaffEducation::factory()
+                ->count(fake()->numberBetween(2, 3))
+                ->sequence(fn ($seq) => ['sort_order' => $seq->index])
+                ->create(['staff_id' => $teacher->id]);
+
+            StaffExperience::factory()
+                ->count(fake()->numberBetween(2, 3))
+                ->sequence(fn ($seq) => ['sort_order' => $seq->index])
+                ->create(['staff_id' => $teacher->id]);
+            // Eng so'nggi ish tajribasi — "hozir" davom etayotgani ko'rinsin.
+            $teacher->experiences()->orderBy('sort_order')->first()?->update([
+                'period' => fake()->numberBetween(2020, 2023).' – hozir',
+            ]);
+
+            collect(['telegram', 'linkedin', 'google_scholar', 'researchgate'])
+                ->shuffle()
+                ->take(fake()->numberBetween(2, 4))
+                ->values()
+                ->each(function (string $platform, int $index) use ($teacher) {
+                    StaffSocialLink::factory()->platform($platform)->create([
+                        'staff_id'   => $teacher->id,
+                        'sort_order' => $index,
+                    ]);
+                });
+
+            // Profil sahifasidagi "Maqolalar" va "Loyiha va dasturlar"
+            // tablari uchun.
+            StaffArticle::factory()
+                ->count(fake()->numberBetween(2, 4))
+                ->sequence(fn ($seq) => ['sort_order' => $seq->index])
+                ->create(['staff_id' => $teacher->id]);
+
+            StaffProject::factory()
+                ->count(fake()->numberBetween(1, 3))
+                ->sequence(fn ($seq) => ['sort_order' => $seq->index])
+                ->create(['staff_id' => $teacher->id]);
+        });
     }
 
     /**

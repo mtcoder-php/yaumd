@@ -85,6 +85,14 @@ class StaffFactory extends Factory
                 'department_id' => $department?->id,
                 'degree'        => fake()->randomElement(self::DEGREES),
                 'research_tags' => fake()->randomElements(self::RESEARCH_TAGS, fake()->numberBetween(2, 3)),
+                // Profil sahifasidagi ("Umumiy ma'lumot" tabi) statistika
+                // kartalari va qisqa ma'lumotlar uchun.
+                'experience_years'     => fake()->numberBetween(2, 20),
+                'students_count'       => fake()->numberBetween(30, 400),
+                'articles_count'       => fake()->numberBetween(3, 60),
+                'projects_count'       => fake()->numberBetween(0, 15),
+                'location'             => 'Toshkent, O\'zbekiston',
+                'research_summary_uz'  => fake()->realText(220),
             ];
         });
     }
