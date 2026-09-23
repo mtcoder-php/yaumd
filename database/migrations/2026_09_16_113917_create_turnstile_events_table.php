@@ -47,6 +47,11 @@ return new class extends Migration
             $table->string('matched_type', 20)->nullable(); // 'student' | 'staff'
             $table->unsignedBigInteger('matched_id')->nullable();
 
+            // Talaba/xodimga ushbu voqea haqida Telegram xabari yuborilgan
+            // vaqt — bo'sh bo'lsa hali yuborilmagan (NotifyStudentTurnstileEvents
+            // shuni tekshiradi va ikki marta xabar yubormaslik uchun belgilaydi).
+            $table->timestamp('notified_at')->nullable();
+
             $table->timestamps();
 
             $table->unique(['turnstile_device_id', 'serial_no']);

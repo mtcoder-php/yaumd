@@ -22,6 +22,12 @@ return new class extends Migration
             $table->text('address')->nullable();
             $table->string('photo', 500)->nullable();
             $table->boolean('is_active')->default(true);
+            // Xodim uchun Telegram bot ulanishi — talabalar (students)
+            // jadvalidagi bilan bir xil ustun ta'rifi; bitta bot ikkalasiga
+            // ham xizmat qiladi (talabaga kontrakt to'lovi, xodimga esa
+            // kelish-ketish/davomat xabarnomalari uchun).
+            $table->string('telegram_chat_id', 32)->unique()->nullable();
+            $table->timestamp('telegram_linked_at')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('last_login_at')->nullable();
             $table->rememberToken();

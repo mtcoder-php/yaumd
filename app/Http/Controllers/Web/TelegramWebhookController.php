@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\AttendanceNotification;
 use App\Models\Contract;
 use App\Models\Student;
+use App\Models\User;
 use App\Services\ContractPaymentScheduleService;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
@@ -18,11 +20,18 @@ use Illuminate\Support\Facades\Cache;
  * Telegram bu yo'lni bilmagan hech kim bu yerga to'g'ri so'rov yubora
  * olmaydi.
  *
- * Talaba botni ikki xil usulda ulashi mumkin:
- *   1) "Telefon raqamni ulashish" tugmasi orqali — raqam talabalar
- *      bazasidagi telefon bilan solishtirilib avtomatik bog'lanadi;
- *   2) Shaxsiy kabinetda ("Mening shartnomam") olingan bir martalik kod
- *      orqali — "/start <kod>" chuqur havolasi yoki "/kod <kod>" matni.
+ * BITTA bot ham talabalarga (kontrakt to'lovi holati), ham xodimlarga
+ * (kelish-ketish/davomat xabarnomalari) xizmat qiladi — kim ekanligi
+ * ulanish jarayonida (Student yoki User modeliga) aniqlanadi, shundan
+ * keyin har bir buyruq (masalan /holat) shu turga qarab javob beradi.
+ *
+ * Ulanish ikki xil usulda:
+ *   1) "Telefon raqamni ulashish" tugmasi orqali — raqam avval talabalar,
+ *      keyin xodimlar (users, "student" rolisiz) bazasidagi telefon bilan
+ *      solishtirilib avtomatik bog'lanadi;
+ *   2) Shaxsiy kabinetda ("Mening shartnomam" — talaba) yoki "Mening
+ *      profilim" (xodim) sahifasida olingan bir martalik kod orqali —
+ *      "/start <kod>" chuqur havolasi yoki "/kod <kod>" matni.
  */
 class TelegramWebhookController extends Controller
 {
@@ -82,7 +91,7 @@ class TelegramWebhookController extends Controller
             return;
         }
 
-        if (Student::where('telegram_chat_id', $chatId)->exists()) {
+        if ($this->findLinked($chatId)) {
             $this->sendHelp($chatId);
 
             return;
@@ -91,10 +100,29 @@ class TelegramWebhookController extends Controller
         $this->telegram->sendMessage(
             $chatId,
             "Assalomu alaykum! 👋\n\n".
-            "Bu bot orqali <b>Yangi Asr Universiteti</b>dagi shartnoma to'lovingiz holatini kuzatib borishingiz mumkin.\n\n".
-            "Hisobingizni ulash uchun quyidagi tugma orqali telefon raqamingizni yuboring, YOKI shaxsiy kabinetingizdagi \"Mening shartnomam\" sahifasidan olingan kodni <code>/kod 123456</code> ko'rinishida yuboring.",
+            "Bu bot orqali <b>Yangi Asr Universiteti</b>da talaba bo'lsangiz — shartnoma to'lovingiz holatini, xodim bo'lsangiz — kelish-ketish (davomat) holatingizni kuzatib borishingiz mumkin.\n\n".
+            "Hisobingizni ulash uchun quyidagi tugma orqali telefon raqamingizni yuboring, YOKI shaxsiy kabinetingizdagi (\"Mening shartnomam\" yoki \"Mening profilim\") \"Telegram bot\" bo'limidan olingan kodni <code>/kod 123456</code> ko'rinishida yuboring.",
             [[['text' => '📱 Telefon raqamni ulashish', 'request_contact' => true]]]
         );
+    }
+
+    /**
+     * Shu chat_id allaqachon Student yoki User (xodim)ga ulanganmi —
+     * ulangan bo'lsa, aynan qaysi biriga ekanini birga qaytaradi.
+     *
+     * @return array{type: string, model: Student|User}|null
+     */
+    private function findLinked(string $chatId): ?array
+    {
+        if ($student = Student::where('telegram_chat_id', $chatId)->first()) {
+            return ['type' => 'student', 'model' => $student];
+        }
+
+        if ($user = User::where('telegram_chat_id', $chatId)->first()) {
+            return ['type' => 'staff', 'model' => $user];
+        }
+
+        return null;
     }
 
     private function linkByPhone(string $chatId, string $phone): void
@@ -104,61 +132,99 @@ class TelegramWebhookController extends Controller
         $students = Student::whereNotNull('phone')->get()
             ->filter(fn (Student $s) => $this->normalizePhone((string) $s->phone) === $normalized);
 
-        if ($students->count() !== 1) {
+        // Xodimlar — "student" rolidagi (faqat talaba portaliga kirish
+        // uchun yaratilgan) hisoblar bundan mustasno, PersonMatchingService'
+        // dagi buildStaffPool() bilan bir xil mantiq.
+        $staff = User::whereNotNull('phone')
+            ->whereDoesntHave('roles', fn ($q) => $q->where('name', 'student'))
+            ->get()
+            ->filter(fn (User $u) => $this->normalizePhone((string) $u->phone) === $normalized);
+
+        $totalMatches = $students->count() + $staff->count();
+
+        if ($totalMatches !== 1) {
             $this->telegram->sendMessage(
                 $chatId,
-                $students->isEmpty()
-                    ? "Kechirasiz, bu telefon raqami bo'yicha talaba topilmadi. Iltimos, shaxsiy kabinetingizdagi bir martalik kod orqali ulaning (\"Mening shartnomam\" sahifasi → \"Telegram bot\")."
-                    : "Bu telefon raqami bir nechta talaba yozuviga tegishli topildi — iltimos, shaxsiy kabinetingizdagi bir martalik kod orqali ulaning."
+                $totalMatches === 0
+                    ? "Kechirasiz, bu telefon raqami bo'yicha yozuv topilmadi. Iltimos, shaxsiy kabinetingizdagi bir martalik kod orqali ulaning (\"Telegram bot\" bo'limi)."
+                    : "Bu telefon raqami bir nechta yozuvga tegishli topildi — iltimos, shaxsiy kabinetingizdagi bir martalik kod orqali ulaning."
             );
 
             return;
         }
 
-        $this->completeLink($chatId, $students->first());
+        if ($students->isNotEmpty()) {
+            $this->completeLink($chatId, 'student', $students->first());
+        } else {
+            $this->completeLink($chatId, 'staff', $staff->first());
+        }
     }
 
     private function linkByCode(string $chatId, string $code): void
     {
         $code = preg_replace('/\D/', '', $code);
 
-        $studentId = $code !== '' ? Cache::get("telegram-link-code.{$code}") : null;
+        $cached = $code !== '' ? Cache::get("telegram-link-code.{$code}") : null;
 
-        if (! $studentId || ! ($student = Student::find($studentId))) {
+        $type = is_array($cached) ? ($cached['type'] ?? null) : null;
+        $id = is_array($cached) ? ($cached['id'] ?? null) : null;
+
+        $model = match ($type) {
+            'student' => $id ? Student::find($id) : null,
+            'staff' => $id ? User::find($id) : null,
+            default => null,
+        };
+
+        if (! $model) {
             $this->telegram->sendMessage($chatId, "Kod noto'g'ri yoki muddati o'tgan. Shaxsiy kabinetingizdan yangi kod oling.");
 
             return;
         }
 
         Cache::forget("telegram-link-code.{$code}");
-        $this->completeLink($chatId, $student);
+        $this->completeLink($chatId, $type, $model);
     }
 
-    private function completeLink(string $chatId, Student $student): void
+    private function completeLink(string $chatId, string $type, Student|User $person): void
     {
-        // Bitta Telegram hisobi faqat bitta talabaga bog'lansin — avval shu
-        // chat_id boshqa talabaga ulangan bo'lsa, eskisi bo'shatiladi.
+        // Bitta Telegram hisobi faqat bitta shaxsga bog'lansin — avval shu
+        // chat_id boshqa talaba/xodimga ulangan bo'lsa, eskisi bo'shatiladi.
         Student::where('telegram_chat_id', $chatId)->update(['telegram_chat_id' => null, 'telegram_linked_at' => null]);
+        User::where('telegram_chat_id', $chatId)->update(['telegram_chat_id' => null, 'telegram_linked_at' => null]);
 
-        $student->telegram_chat_id = $chatId;
-        $student->telegram_linked_at = now();
-        $student->save();
+        $person->telegram_chat_id = $chatId;
+        $person->telegram_linked_at = now();
+        $person->save();
+
+        $name = $type === 'student' ? $person->fullName() : $person->full_name;
+
+        $followUp = $type === 'student'
+            ? "Endi shartnoma to'lovingiz holatini istalgan payt /holat buyrug'i orqali bilib turishingiz, shuningdek to'lov muddati yaqinlashganda avtomatik eslatma olishingiz mumkin."
+            : "Endi turniketdan o'tganingizda kelish-ketish vaqtingiz, shuningdek ish kuni yakunida kech qolgan/erta ketgan bo'lsangiz shu haqda avtomatik xabar olasiz.";
 
         $this->telegram->sendMessage(
             $chatId,
-            "Xush kelibsiz, <b>{$student->fullName()}</b>! ✅\n\nHisobingiz muvaffaqiyatli ulandi. Endi shartnoma to'lovingiz holatini istalgan payt /holat buyrug'i orqali bilib turishingiz, shuningdek to'lov muddati yaqinlashganda avtomatik eslatma olishingiz mumkin."
+            "Xush kelibsiz, <b>{$name}</b>! ✅\n\nHisobingiz muvaffaqiyatli ulandi. {$followUp}"
         );
     }
 
     private function sendStatus(string $chatId): void
     {
-        $student = Student::where('telegram_chat_id', $chatId)->first();
+        $linked = $this->findLinked($chatId);
 
-        if (! $student) {
+        if (! $linked) {
             $this->telegram->sendMessage($chatId, "Hisobingiz hali ulanmagan. Boshlash uchun /start yozing.");
 
             return;
         }
+
+        if ($linked['type'] === 'staff') {
+            $this->sendStaffStatus($chatId, $linked['model']);
+
+            return;
+        }
+
+        $student = $linked['model'];
 
         if ($student->funding_type === 'grant') {
             $this->telegram->sendMessage($chatId, "🎓 Siz grant asosida o'qiysiz — kontrakt to'lovi talab qilinmaydi.");
@@ -176,6 +242,36 @@ class TelegramWebhookController extends Controller
 
         $status = $this->schedule->currentStatus($contract);
         $this->telegram->sendMessage($chatId, $this->formatStatusMessage($student, $contract, $status));
+    }
+
+    /**
+     * Xodim uchun /holat — bugungi kech qolish/erta ketish xabarnomasi
+     * allaqachon yuborilgan bo'lsa shuni eslatadi, aks holda hali hech
+     * narsa aniqlanmaganini aytadi (kunlik tekshiruv kechqurun ishlaydi,
+     * qarang: NotifyStaffAttendance).
+     */
+    private function sendStaffStatus(string $chatId, User $user): void
+    {
+        $today = AttendanceNotification::where('user_id', $user->id)
+            ->whereDate('date', now()->toDateString())
+            ->get();
+
+        if ($today->isEmpty()) {
+            $this->telegram->sendMessage(
+                $chatId,
+                "👤 Xodim sifatida ulangansiz.\n\nBugungi kelish-ketish holatingiz ish kuni yakunida (kechqurun) avtomatik tekshiriladi — muammo bo'lsa shu yerga xabar keladi."
+            );
+
+            return;
+        }
+
+        $lines = $today->map(function (AttendanceNotification $n) {
+            return $n->type === AttendanceNotification::TYPE_LATE
+                ? "⏰ Bugun {$n->minutes} daqiqa kech qoldingiz."
+                : "🚪 Bugun {$n->minutes} daqiqa erta ketdingiz.";
+        });
+
+        $this->telegram->sendMessage($chatId, $lines->implode("\n"));
     }
 
     public function formatStatusMessage(Student $student, Contract $contract, array $status): string

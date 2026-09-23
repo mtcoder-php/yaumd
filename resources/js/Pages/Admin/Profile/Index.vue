@@ -168,6 +168,51 @@
                 </div>
             </div>
 
+            <!-- Telegram bot -->
+            <div class="bg-white rounded-2xl border border-gray-100 p-6"
+                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
+                <h2 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <Icon icon="mdi:send-circle-outline" class="w-4 h-4 text-brand-600" />
+                    Telegram bot
+                </h2>
+
+                <template v-if="telegram.linked">
+                    <p class="text-xs text-gray-500 mb-3">
+                        ✅ Hisobingiz Telegram botga ulangan — turniketdan o'tganingizda kelish-ketish vaqtingiz, shuningdek ish kuni yakunida kech qolgan/erta ketgan bo'lsangiz shu haqda avtomatik xabar olasiz.
+                    </p>
+                    <button type="button" @click="unlinkTelegram" :disabled="unlinkingTelegram" class="btn-neutral">
+                        <Icon v-if="unlinkingTelegram" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                        <span v-else>Bog'lanishni uzish</span>
+                    </button>
+                </template>
+                <template v-else>
+                    <p class="text-xs text-gray-500 mb-3">
+                        Kelish-ketish (davomat) holatingizni Telegram orqali kuzatib borish uchun botga ulaning.
+                    </p>
+
+                    <div v-if="!telegramCode" class="flex flex-wrap gap-3">
+                        <button type="button" @click="requestTelegramCode" :disabled="requestingTelegramCode" class="btn-neutral">
+                            <Icon v-if="requestingTelegramCode" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                            <span v-else>Ulash kodini olish</span>
+                        </button>
+                    </div>
+
+                    <div v-else class="bg-gray-50 rounded-xl p-4 space-y-2">
+                        <p class="text-xs text-gray-500">
+                            Botga quyidagi tugma orqali o'ting (yoki kodni <code>/kod {{ telegramCode.code }}</code> ko'rinishida yuboring) — kod {{ telegramCode.expires_in }} daqiqa amal qiladi.
+                        </p>
+                        <p class="text-2xl font-bold tracking-widest text-center py-2 text-brand-700">{{ telegramCode.code }}</p>
+                        <a v-if="telegramCode.deep_link" :href="telegramCode.deep_link" target="_blank" class="btn-neutral w-full justify-center">
+                            <Icon icon="mdi:send" class="w-4 h-4" />
+                            Botni ochish
+                        </a>
+                        <button type="button" @click="router.reload({ only: ['telegram'] })" class="text-xs text-gray-400 hover:text-gray-600 underline w-full text-center">
+                            Ulangandan so'ng shu yerni yangilash
+                        </button>
+                    </div>
+                </template>
+            </div>
+
             <!-- Email -->
             <div class="bg-white rounded-2xl border border-gray-100 p-6"
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
@@ -333,7 +378,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Link, router, useForm } from '@inertiajs/vue3'
+import { Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import RichTextEditor from '@/Components/RichTextEditor.vue'
@@ -341,6 +386,7 @@ import RichTextEditor from '@/Components/RichTextEditor.vue'
 const props = defineProps({
     user:                { type: Object, required: true },
     pendingEmailChange:  { type: Object, default: null },
+    telegram:            { type: Object, default: () => ({ linked: false, bot_username: null }) },
 })
 
 const pending = computed(() => props.pendingEmailChange)
@@ -459,6 +505,33 @@ const submitEmailVerify = () => {
 
 const cancelEmailChange = () => {
     router.post(route('admin.profile.email.cancel'), {}, { preserveScroll: true })
+}
+
+// --- Telegram bot ---
+// Kod generateTelegramCode() javobidan flash orqali keladi (oddiy
+// 'success' xabaridan farqli — ekranda ko'rsatib turish kerak, darhol
+// g'oyib bo'ladigan toast emas), Student/Contract/Show.vue'dagi bilan
+// bir xil naqsh.
+const page = usePage()
+const telegramCode = ref(page.props.flash?.telegramCode || null)
+
+const requestingTelegramCode = ref(false)
+const requestTelegramCode = () => {
+    requestingTelegramCode.value = true
+    router.post(route('admin.profile.telegram.code'), {}, {
+        preserveScroll: true,
+        onSuccess: () => { telegramCode.value = page.props.flash?.telegramCode || null },
+        onFinish: () => { requestingTelegramCode.value = false },
+    })
+}
+
+const unlinkingTelegram = ref(false)
+const unlinkTelegram = () => {
+    unlinkingTelegram.value = true
+    router.post(route('admin.profile.telegram.unlink'), {}, {
+        preserveScroll: true,
+        onFinish: () => { unlinkingTelegram.value = false },
+    })
 }
 </script>
 

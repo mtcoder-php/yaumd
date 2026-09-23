@@ -40,6 +40,7 @@ class TurnstileEvent extends Model
         'raw_payload',
         'matched_type',
         'matched_id',
+        'notified_at',
     ];
 
     protected function casts(): array
@@ -47,6 +48,7 @@ class TurnstileEvent extends Model
         return [
             'event_time' => 'datetime',
             'raw_payload' => 'array',
+            'notified_at' => 'datetime',
         ];
     }
 

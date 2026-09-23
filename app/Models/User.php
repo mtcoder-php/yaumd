@@ -33,6 +33,8 @@ class User extends Authenticatable
         'address',
         'photo',
         'is_active',
+        'telegram_chat_id',
+        'telegram_linked_at',
     ];
 
     protected $hidden = [
@@ -43,11 +45,12 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'last_login_at'     => 'datetime',
-            'birth_date'        => 'date',
-            'is_active'         => 'boolean',
-            'password'          => 'hashed',
+            'email_verified_at'  => 'datetime',
+            'last_login_at'      => 'datetime',
+            'birth_date'         => 'date',
+            'is_active'          => 'boolean',
+            'password'           => 'hashed',
+            'telegram_linked_at' => 'datetime',
         ];
     }
 

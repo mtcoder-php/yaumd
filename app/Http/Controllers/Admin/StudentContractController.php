@@ -131,6 +131,12 @@ class StudentContractController extends Controller
      * faqat bu yerda teskari yo'nalishda ("kod -> talaba ID") saqlanadi,
      * chunki bot xabarni qabul qilganda hali qaysi foydalanuvchi ekanini
      * bilmaydi — faqat kodning o'zini biladi.
+     *
+     * MUHIM: qiymat {type, id} shaklida saqlanadi (oddiy int emas) —
+     * chunki endi xodimlar (Admin\ProfileController::generateTelegramCode())
+     * ham AYNAN SHU BOT orqali, AYNAN SHU cache naqshi bilan ulanadi;
+     * TelegramWebhookController::linkByCode() shu "type" maydoniga qarab
+     * Student yoki User (xodim) sifatida bog'laydi.
      */
     public function generateTelegramCode(Request $request)
     {
@@ -138,7 +144,7 @@ class StudentContractController extends Controller
 
         $code = (string) random_int(100000, 999999);
 
-        Cache::put("telegram-link-code.{$code}", $student->id, now()->addMinutes(15));
+        Cache::put("telegram-link-code.{$code}", ['type' => 'student', 'id' => $student->id], now()->addMinutes(15));
 
         $botUsername = config('services.telegram.bot_username');
 

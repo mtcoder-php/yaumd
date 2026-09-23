@@ -50,6 +50,11 @@ class ProfileController extends Controller
             'pendingEmailChange' => $pending
                 ? ['email' => $this->maskEmail($pending['email'])]
                 : null,
+            'telegram' => [
+                'linked'       => (bool) $user->telegram_chat_id,
+                'linked_at'    => $user->telegram_linked_at,
+                'bot_username' => config('services.telegram.bot_username'),
+            ],
         ]);
     }
 
@@ -182,6 +187,44 @@ class ProfileController extends Controller
         Cache::forget($this->emailChangeCacheKey($request->user()));
 
         return back()->with('success', 'Email o\'zgartirish bekor qilindi.');
+    }
+
+    /**
+     * Xodim uchun Telegram botga ulanish kodi — talabalarnikidagi
+     * (StudentContractController::generateTelegramCode()) bilan AYNAN bir
+     * xil bot va cache naqshi, faqat "type" => "staff" bilan. Xodim shu
+     * botga ulangach, kelish-ketish (davomat) kech qolish/erta ketish
+     * xabarnomalarini oladi (NotifyStaffAttendance buyrug'iga qarang).
+     */
+    public function generateTelegramCode(Request $request)
+    {
+        $user = $request->user();
+
+        $code = (string) random_int(100000, 999999);
+
+        Cache::put("telegram-link-code.{$code}", ['type' => 'staff', 'id' => $user->id], now()->addMinutes(15));
+
+        $botUsername = config('services.telegram.bot_username');
+
+        return back()->with('telegramCode', [
+            'code'       => $code,
+            'deep_link'  => $botUsername ? "https://t.me/{$botUsername}?start={$code}" : null,
+            'expires_in' => 15,
+        ]);
+    }
+
+    /**
+     * Xodim xato hisobga ulanib qolgan taqdirda o'zi uzib qo'yishi uchun.
+     */
+    public function unlinkTelegram(Request $request)
+    {
+        $user = $request->user();
+
+        $user->telegram_chat_id = null;
+        $user->telegram_linked_at = null;
+        $user->save();
+
+        return back()->with('success', "Telegram bot bilan bog'lanish uzildi.");
     }
 
     private function emailChangeCacheKey(User $user): string

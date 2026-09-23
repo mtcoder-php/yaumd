@@ -72,6 +72,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/email', [ProfileController::class, 'requestEmailChange'])->name('email.request');
         Route::post('/email/verify', [ProfileController::class, 'verifyEmailChange'])->name('email.verify');
         Route::post('/email/cancel', [ProfileController::class, 'cancelEmailChange'])->name('email.cancel');
+        Route::post('/telegram/code', [ProfileController::class, 'generateTelegramCode'])->name('telegram.code');
+        Route::post('/telegram/unlink', [ProfileController::class, 'unlinkTelegram'])->name('telegram.unlink');
     });
 
     // Abituriyentlar
