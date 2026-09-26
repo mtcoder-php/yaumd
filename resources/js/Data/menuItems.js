@@ -218,8 +218,8 @@ export const menuItems = [
             { title: "Ariza topshirish", path: "/qabul/ariza" },
         ]
     },
-    {
-        path: 'contact',
-        name: 'Aloqa'
-    }
+    // {
+    //     path: 'contact',
+    //     name: 'Aloqa'
+    // }
 ]
