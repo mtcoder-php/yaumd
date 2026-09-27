@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLibraryBookRequest;
 use App\Http\Requests\UpdateLibraryBookRequest;
+use App\Models\Direction;
 use App\Models\LibraryBook;
 use App\Models\LibraryCategory;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\Models\Role;
 
 class LibraryBookController extends Controller
 {
@@ -93,6 +96,15 @@ class LibraryBookController extends Controller
 
         return Inertia::render('Admin/LibraryBooks/Show', [
             'book' => $book,
+            // Kitob berish oynasidagi "kimga beriladi" qidiruvini filtrlash
+            // uchun kerak bo'lgan spravochnik ma'lumotlar — talaba uchun
+            // yo'nalishlar ro'yxati (guruh esa yo'nalish+kurs tanlangach
+            // alohida so'rov bilan, LibraryLoanController::borrowerGroups()
+            // orqali kelib), xodim uchun rollar ro'yxati ("student" rolisiz,
+            // chunki xodim qidiruvi allaqachon shu rolni chiqarib tashlaydi).
+            'directions' => Direction::where('is_active', true)->orderBy('name_uz')->get(['id', 'name_uz']),
+            'staffRoles' => Role::where('name', '!=', 'student')->orderBy('name')->get(['id', 'name']),
+            'maxActiveLoansPerBorrower' => (int) Setting::get('library.max_active_loans_per_borrower', 3),
         ]);
     }
 

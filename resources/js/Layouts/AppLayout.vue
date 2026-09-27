@@ -25,7 +25,7 @@
                  Yig'ilgan holatda to'liq matn o'rniga faqat universitet
                  belgisi (ikonka) ko'rsatiladi. -->
             <div class="h-16 flex items-center justify-center bg-brand-600 flex-shrink-0 px-2">
-                <img v-if="sidebarCollapsed" src="/assets/logo-icon.png" alt="Yangi Asr Universiteti" class="w-9 h-9 flex-shrink-0" />
+                <img v-if="sidebarCollapsed" src="/assets/favicon.png" alt="Yangi Asr Universiteti" class="w-9 h-9 flex-shrink-0" />
                 <div v-else class="text-center">
                     <p class="font-bold text-white text-2xl leading-none">edu.yangi-asr.uz</p>
 <!--                    <p class="text-sm font-semibold text-brand-100 mt-1">Universiteti</p>-->

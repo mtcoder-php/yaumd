@@ -350,6 +350,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         // (kitob berish huquqi bilan bir xil — turniket moslashtirish
         // ruxsatidan ('turnstile.match') ATAYLAB mustaqil).
         Route::get('/borrowers/search',        [LibraryLoanController::class, 'searchBorrowers'])->name('loans.search-borrowers')->middleware('permission:library.create');
+        Route::get('/borrowers/groups',        [LibraryLoanController::class, 'borrowerGroups'])->name('loans.borrower-groups')->middleware('permission:library.create');
+        Route::get('/borrowers/{type}/{id}/history', [LibraryLoanController::class, 'borrowerHistory'])->name('loans.borrower-history')->middleware('permission:library.create');
         Route::post('/{id}/loans',             [LibraryLoanController::class, 'store'])->name('loans.store')->middleware('permission:library.create');
         Route::post('/loans/{loanId}/return',  [LibraryLoanController::class, 'returnLoan'])->name('loans.return')->middleware('permission:library.edit');
     });

@@ -200,7 +200,7 @@
         <!-- Kitob berish modali -->
         <div v-if="loanModalOpen" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 py-8"
              style="background: rgba(0,0,0,0.5)" @click.self="closeLoanModal">
-            <div class="bg-white rounded-2xl w-full max-w-sm p-6 my-auto">
+            <div class="bg-white rounded-2xl w-full max-w-md p-6 my-auto">
                 <h3 class="text-base font-bold text-gray-900 mb-1">Kitob berish</h3>
                 <p class="text-xs text-gray-400 mb-4">Nusxa: <strong>{{ loanTargetCopy?.inventory_code }}</strong></p>
 
@@ -219,26 +219,98 @@
                                 Xodim
                             </button>
                         </div>
-                        <input v-model="loanSearchQuery" @input="debouncedSearchBorrowers" type="text"
+
+                        <!-- Filtrlar — ko'p sonli talaba/xodim orasidan tezroq topish uchun -->
+                        <div v-if="loanBorrowerType === 'student'" class="grid grid-cols-3 gap-2 mb-2">
+                            <select v-model="loanDirectionId" @change="onDirectionOrCourseChange" class="field-input !py-1.5 !text-xs">
+                                <option :value="null">Yo'nalish</option>
+                                <option v-for="d in directions" :key="d.id" :value="d.id">{{ d.name_uz }}</option>
+                            </select>
+                            <select v-model="loanCourseYear" @change="onDirectionOrCourseChange" class="field-input !py-1.5 !text-xs">
+                                <option :value="null">Kurs</option>
+                                <option v-for="c in 6" :key="c" :value="c">{{ c }}-kurs</option>
+                            </select>
+                            <select v-model="loanGroupId" @change="runBorrowerSearch" class="field-input !py-1.5 !text-xs"
+                                    :disabled="!loanGroups.length">
+                                <option :value="null">Guruh</option>
+                                <option v-for="g in loanGroups" :key="g.id" :value="g.id">{{ g.name }}</option>
+                            </select>
+                        </div>
+                        <div v-else class="mb-2">
+                            <select v-model="loanStaffRole" @change="runBorrowerSearch" class="field-input !py-1.5 !text-xs">
+                                <option :value="null">Barcha lavozimlar</option>
+                                <option v-for="r in staffRoles" :key="r.id" :value="r.name">{{ r.name }}</option>
+                            </select>
+                        </div>
+
+                        <input v-model="loanSearchQuery" @input="runBorrowerSearch" type="text"
                                placeholder="Ism bo'yicha qidiring..." class="field-input">
 
                         <div v-if="loanSelectedBorrower" class="mt-2 flex items-center justify-between bg-brand-50 border border-brand-200 rounded-lg px-3 py-2">
-                            <div>
-                                <p class="text-sm font-semibold text-gray-900">{{ loanSelectedBorrower.name }}</p>
-                                <p class="text-xs text-gray-400">{{ loanSelectedBorrower.extra || '—' }}</p>
+                            <div class="flex items-center gap-2 min-w-0">
+                                <img v-if="loanSelectedBorrower.photo_url" :src="loanSelectedBorrower.photo_url"
+                                     class="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="">
+                                <div v-else class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-brand-600">
+                                    {{ initials(loanSelectedBorrower.name) }}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-gray-900 truncate">
+                                        {{ loanSelectedBorrower.name }}
+                                        <span v-if="!loanSelectedBorrower.is_active" class="badge-pill badge-neutral !text-[10px] !py-0 ml-1">Nofaol</span>
+                                    </p>
+                                    <p class="text-xs text-gray-400 truncate">
+                                        {{ loanSelectedBorrower.extra || '—' }}<span v-if="loanSelectedBorrower.meta"> · {{ loanSelectedBorrower.meta }}</span>
+                                    </p>
+                                </div>
                             </div>
-                            <button @click="loanSelectedBorrower = null" class="text-gray-400 hover:text-gray-600">
+                            <button @click="clearSelectedBorrower" class="text-gray-400 hover:text-gray-600 flex-shrink-0">
                                 <Icon icon="mdi:close" class="w-4 h-4" />
                             </button>
                         </div>
-                        <div v-else-if="loanSearchResults.length" class="mt-2 border border-gray-100 rounded-lg max-h-40 overflow-y-auto">
+                        <div v-else-if="loanSearchResults.length" class="mt-2 border border-gray-100 rounded-lg max-h-48 overflow-y-auto">
                             <button v-for="r in loanSearchResults" :key="`${r.type}-${r.id}`" type="button"
                                     @click="selectBorrower(r)"
-                                    class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 border-b border-gray-50 last:border-0">
-                                <p class="font-semibold text-gray-900">{{ r.name }}</p>
-                                <p class="text-xs text-gray-400">{{ r.extra || '—' }}</p>
+                                    class="w-full flex items-center gap-2 text-left px-3 py-2 text-sm hover:bg-gray-50 border-b border-gray-50 last:border-0">
+                                <img v-if="r.photo_url" :src="r.photo_url" class="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="">
+                                <div v-else class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-gray-500">
+                                    {{ initials(r.name) }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-semibold text-gray-900 truncate">
+                                        {{ r.name }}
+                                        <span v-if="!r.is_active" class="badge-pill badge-neutral !text-[10px] !py-0 ml-1">Nofaol</span>
+                                    </p>
+                                    <p class="text-xs text-gray-400 truncate">
+                                        {{ r.extra || '—' }}<span v-if="r.meta"> · {{ r.meta }}</span>
+                                    </p>
+                                </div>
                             </button>
                         </div>
+
+                        <!-- Tanlangan shaxsning kutubxona tarixi — kutubxonachi yangi
+                             kitob berishdan oldin oldingi holatni ko'rib qaror qiladi -->
+                        <div v-if="loanSelectedBorrower" class="mt-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs">
+                            <p v-if="loanBorrowerHistoryLoading" class="text-gray-400">Kutubxona tarixi yuklanmoqda...</p>
+                            <template v-else-if="loanBorrowerHistory">
+                                <p class="text-gray-600">
+                                    Jami olingan: <strong>{{ loanBorrowerHistory.total_count }}</strong> ta ·
+                                    Hozir qo'lida:
+                                    <strong :class="loanBorrowerHistory.active_count >= maxActiveLoansPerBorrower ? 'text-red-600' : ''">
+                                        {{ loanBorrowerHistory.active_count }}/{{ maxActiveLoansPerBorrower }}
+                                    </strong>
+                                    <span v-if="loanBorrowerHistory.overdue_count > 0" class="text-red-600 font-semibold">
+                                        · {{ loanBorrowerHistory.overdue_count }} tasi muddati o'tgan!
+                                    </span>
+                                </p>
+                                <ul v-if="loanBorrowerHistory.active_loans.length" class="mt-1 space-y-0.5">
+                                    <li v-for="l in loanBorrowerHistory.active_loans" :key="l.id"
+                                        :class="l.is_overdue ? 'text-red-600 font-medium' : 'text-gray-500'">
+                                        📕 {{ l.title }} — {{ formatDate(l.due_date) }} gacha
+                                    </li>
+                                </ul>
+                            </template>
+                        </div>
+
                         <p v-if="loanForm.errors.borrower_id" class="err">{{ loanForm.errors.borrower_id }}</p>
                     </div>
                     <div>
@@ -292,6 +364,9 @@ import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     book: { type: Object, required: true },
+    directions: { type: Array, default: () => [] },
+    staffRoles: { type: Array, default: () => [] },
+    maxActiveLoansPerBorrower: { type: Number, default: 3 },
 })
 
 const languageLabel = (v) => ({ uz: "O'zbek", ru: 'Rus', en: 'Ingliz' }[v] || v || '—')
@@ -313,6 +388,11 @@ const isOverdue = (loan) => {
     today.setHours(0, 0, 0, 0)
     return due < today
 }
+
+// Rasmi bo'lmagan talaba/xodim uchun doira ichida ism bosh harflari
+// (masalan "Turdiyev Mukhtor" -> "TM") — qidiruv natijalarida vizual
+// identifikatsiya uchun.
+const initials = (name) => (name || '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()
 
 const availableCount = computed(() => (props.book.copies || []).filter(c => c.status === 'available').length)
 
@@ -385,6 +465,18 @@ const loanSearchQuery = ref('')
 const loanSearchResults = ref([])
 const loanSelectedBorrower = ref(null)
 
+// Talaba filtrlari (yo'nalish -> kurs -> guruh, kaskadli) va xodim filtri
+// (rol) — ko'p sonli talaba/xodim orasidan tezroq topish uchun.
+const loanDirectionId = ref(null)
+const loanCourseYear = ref(null)
+const loanGroupId = ref(null)
+const loanGroups = ref([])
+const loanStaffRole = ref(null)
+
+// Tanlangan shaxsning kutubxona tarixi (jami/faol/muddati o'tgan kitoblar).
+const loanBorrowerHistory = ref(null)
+const loanBorrowerHistoryLoading = ref(false)
+
 const loanForm = useForm({
     book_copy_id: null,
     borrower_type: 'student',
@@ -398,12 +490,22 @@ const defaultDueDate = () => {
     return d.toISOString().slice(0, 10)
 }
 
+const resetLoanFilters = () => {
+    loanDirectionId.value = null
+    loanCourseYear.value = null
+    loanGroupId.value = null
+    loanGroups.value = []
+    loanStaffRole.value = null
+}
+
 const openLoanModal = (copy) => {
     loanTargetCopy.value = copy
     loanBorrowerType.value = 'student'
     loanSearchQuery.value = ''
     loanSearchResults.value = []
     loanSelectedBorrower.value = null
+    loanBorrowerHistory.value = null
+    resetLoanFilters()
     loanForm.clearErrors()
     loanForm.book_copy_id = copy.id
     loanForm.borrower_type = 'student'
@@ -415,6 +517,7 @@ const openLoanModal = (copy) => {
 const closeLoanModal = () => {
     loanModalOpen.value = false
     loanTargetCopy.value = null
+    loanBorrowerHistory.value = null
 }
 
 const switchBorrowerType = (type) => {
@@ -423,23 +526,67 @@ const switchBorrowerType = (type) => {
     loanSelectedBorrower.value = null
     loanForm.borrower_id = null
     loanSearchResults.value = []
-    if (loanSearchQuery.value.trim()) {
-        debouncedSearchBorrowers()
+    loanBorrowerHistory.value = null
+    resetLoanFilters()
+    runBorrowerSearch()
+}
+
+// Yo'nalish yoki kurs o'zgarsa — avval tanlangan guruh endi mos
+// kelmasligi mumkin, shuning uchun guruh tanlovi bekor qilinadi va
+// guruhlar ro'yxati shu ikkoviga mos ravishda qayta so'raladi.
+const onDirectionOrCourseChange = () => {
+    loanGroupId.value = null
+    fetchLoanGroups()
+    runBorrowerSearch()
+}
+
+const fetchLoanGroups = async () => {
+    if (!loanDirectionId.value && !loanCourseYear.value) {
+        loanGroups.value = []
+        return
+    }
+    try {
+        const params = new URLSearchParams()
+        if (loanDirectionId.value) params.set('direction_id', loanDirectionId.value)
+        if (loanCourseYear.value) params.set('course_year', loanCourseYear.value)
+        const response = await fetch(
+            route('admin.library.loans.borrower-groups') + '?' + params.toString(),
+            { headers: { Accept: 'application/json' } }
+        )
+        loanGroups.value = await response.json()
+    } catch (e) {
+        loanGroups.value = []
     }
 }
 
 let borrowerSearchTimer = null
-const debouncedSearchBorrowers = () => {
+const runBorrowerSearch = () => {
     clearTimeout(borrowerSearchTimer)
     borrowerSearchTimer = setTimeout(async () => {
-        if (!loanSearchQuery.value.trim()) {
+        const hasQuery = loanSearchQuery.value.trim() !== ''
+        const hasFilters = loanBorrowerType.value === 'student'
+            ? !!(loanDirectionId.value || loanCourseYear.value || loanGroupId.value)
+            : !!loanStaffRole.value
+
+        if (!hasQuery && !hasFilters) {
             loanSearchResults.value = []
             return
         }
+
         try {
+            const params = new URLSearchParams({ type: loanBorrowerType.value })
+            if (hasQuery) params.set('q', loanSearchQuery.value.trim())
+
+            if (loanBorrowerType.value === 'student') {
+                if (loanDirectionId.value) params.set('direction_id', loanDirectionId.value)
+                if (loanCourseYear.value) params.set('course_year', loanCourseYear.value)
+                if (loanGroupId.value) params.set('group_id', loanGroupId.value)
+            } else if (loanStaffRole.value) {
+                params.set('role', loanStaffRole.value)
+            }
+
             const response = await fetch(
-                route('admin.library.loans.search-borrowers') +
-                `?type=${loanBorrowerType.value}&q=${encodeURIComponent(loanSearchQuery.value)}`,
+                route('admin.library.loans.search-borrowers') + '?' + params.toString(),
                 { headers: { Accept: 'application/json' } }
             )
             loanSearchResults.value = await response.json()
@@ -449,10 +596,30 @@ const debouncedSearchBorrowers = () => {
     }, 300)
 }
 
-const selectBorrower = (result) => {
+const selectBorrower = async (result) => {
     loanSelectedBorrower.value = result
     loanForm.borrower_id = result.id
     loanSearchResults.value = []
+    loanBorrowerHistory.value = null
+    loanBorrowerHistoryLoading.value = true
+
+    try {
+        const response = await fetch(
+            route('admin.library.loans.borrower-history', [result.type, result.id]),
+            { headers: { Accept: 'application/json' } }
+        )
+        loanBorrowerHistory.value = await response.json()
+    } catch (e) {
+        loanBorrowerHistory.value = null
+    } finally {
+        loanBorrowerHistoryLoading.value = false
+    }
+}
+
+const clearSelectedBorrower = () => {
+    loanSelectedBorrower.value = null
+    loanForm.borrower_id = null
+    loanBorrowerHistory.value = null
 }
 
 const submitLoan = () => {
