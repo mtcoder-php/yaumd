@@ -149,11 +149,24 @@
                     {{ editingCopy ? 'Nusxani tahrirlash' : "Yangi nusxa qo'shish" }}
                 </h3>
                 <div class="space-y-4">
-                    <div>
+                    <!-- Tahrirlashda — bitta nusxaning o'z inventar raqami ko'rsatiladi
+                         va qo'lda tuzatish mumkin. Yangi qo'shishda esa — kutubxonachi
+                         faqat NECHTA nusxa kerakligini kiritadi, inventar raqamlarini
+                         tizim o'zi ketma-ket avtomatik yaratadi (BookCopy::nextInventoryCodes()). -->
+                    <div v-if="editingCopy">
                         <label class="field-label"><span class="req">*</span> Inventar raqami</label>
                         <input v-model="copyForm.inventory_code" type="text" placeholder="Masalan: KUT-000123"
                                class="field-input" :class="copyForm.errors.inventory_code ? 'field-error' : ''">
                         <p v-if="copyForm.errors.inventory_code" class="err">{{ copyForm.errors.inventory_code }}</p>
+                    </div>
+                    <div v-else>
+                        <label class="field-label"><span class="req">*</span> Nechta nusxa qo'shiladi</label>
+                        <input v-model.number="copyForm.quantity" type="number" min="1" max="100"
+                               class="field-input" :class="copyForm.errors.quantity ? 'field-error' : ''">
+                        <p class="text-xs text-gray-400 mt-1">
+                            Inventar raqamlari avtomatik ketma-ket yaratiladi (masalan KUT-000123, KUT-000124, ...).
+                        </p>
+                        <p v-if="copyForm.errors.quantity" class="err">{{ copyForm.errors.quantity }}</p>
                     </div>
                     <div>
                         <label class="field-label"><span class="req">*</span> Holati</label>
@@ -420,6 +433,7 @@ const editingCopy = ref(null)
 
 const copyForm = useForm({
     inventory_code:  '',
+    quantity:        1,
     status:          'available',
     condition_notes: '',
 })
@@ -428,6 +442,7 @@ const openCopyModal = (copy = null) => {
     editingCopy.value = copy
     copyForm.clearErrors()
     copyForm.inventory_code  = copy?.inventory_code  || ''
+    copyForm.quantity        = 1
     copyForm.status          = copy?.status          || 'available'
     copyForm.condition_notes = copy?.condition_notes || ''
     copyModalOpen.value = true

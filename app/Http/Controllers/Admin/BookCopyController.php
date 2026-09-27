@@ -14,10 +14,31 @@ class BookCopyController extends Controller
     public function store(StoreBookCopyRequest $request, int $id)
     {
         $book = LibraryBook::findOrFail($id);
+        $data = $request->validated();
+        $quantity = (int) $data['quantity'];
 
-        $book->copies()->create($request->validated());
+        $codes = BookCopy::nextInventoryCodes($quantity);
+        $now = now();
 
-        return back()->with('success', "Nusxa qo'shildi!");
+        // Bulk 'insert()' ataylab ishlatiladi (bittalab 'create()' o'rniga)
+        // — bir martada 100 tagacha nusxa yaratilishi mumkin bo'lgani
+        // uchun, har biriga alohida so'rov yubormaslik uchun. BookCopy'da
+        // hech qanday model hodisasi (observer/event) yo'q, shuning uchun
+        // bulk insert'ning ularni chetlab o'tishi bu yerda muammo emas.
+        $rows = array_map(fn (string $code) => [
+            'book_id'         => $book->id,
+            'inventory_code'  => $code,
+            'status'          => $data['status'],
+            'condition_notes' => $data['condition_notes'] ?? null,
+            'created_at'      => $now,
+            'updated_at'      => $now,
+        ], $codes);
+
+        BookCopy::insert($rows);
+
+        $range = $quantity > 1 ? "{$codes[0]} – {$codes[array_key_last($codes)]}" : $codes[0];
+
+        return back()->with('success', "{$quantity} ta nusxa qo'shildi! Inventar raqamlari: {$range}.");
     }
 
     public function update(UpdateBookCopyRequest $request, int $id, int $copyId)

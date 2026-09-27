@@ -37,4 +37,34 @@ class BookCopy extends Model
     {
         return $this->hasOne(BookLoan::class)->where('status', BookLoan::STATUS_ACTIVE)->latestOfMany();
     }
+
+    /**
+     * Yangi nusxalar uchun ketma-ket inventar raqamlari — "KUT-000001"
+     * shaklida (Show.vue'dagi eski qo'lda kiritish namunasi bilan bir xil
+     * format). 'inventory_code' butun jadval bo'yicha GLOBAL unikal ustun
+     * (book_id'ga bog'liq emas) bo'lgani uchun, mavjud eng katta raqamdan
+     * davom etiladi — o'chirilgan (soft-delete) yozuvlar ham unique
+     * cheklovni band qilib turgani uchun withTrashed() bilan hisobga
+     * olinadi.
+     *
+     * @return list<string>
+     */
+    public static function nextInventoryCodes(int $count): array
+    {
+        $prefix = 'KUT-';
+
+        $maxNumber = static::withTrashed()
+            ->where('inventory_code', 'like', "{$prefix}%")
+            ->pluck('inventory_code')
+            ->map(fn (string $code) => (int) preg_replace('/\D/', '', substr($code, strlen($prefix))))
+            ->max() ?? 0;
+
+        $codes = [];
+
+        for ($i = 1; $i <= $count; $i++) {
+            $codes[] = $prefix . str_pad((string) ($maxNumber + $i), 6, '0', STR_PAD_LEFT);
+        }
+
+        return $codes;
+    }
 }
