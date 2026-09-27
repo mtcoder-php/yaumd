@@ -151,9 +151,9 @@
         </div>
 
         <!-- Modul modal (create/edit) -->
-        <div v-if="moduleModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        <div v-if="moduleModalOpen" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 py-8"
              style="background: rgba(0,0,0,0.5)" @click.self="moduleModalOpen = false">
-            <div class="bg-white rounded-2xl w-full max-w-md p-6">
+            <div class="bg-white rounded-2xl w-full max-w-xl p-6 my-auto">
                 <h3 class="text-base font-bold text-gray-900 mb-4">{{ editingModule ? 'Modulni tahrirlash' : 'Yangi modul' }}</h3>
                 <div class="space-y-4">
                     <div>

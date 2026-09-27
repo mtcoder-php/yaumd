@@ -48,6 +48,14 @@ class LibraryBookController extends Controller
     {
         $data = $request->validated();
         $data['added_by'] = auth()->id();
+        // 'price' faqat 'access_type'='paid' bo'lsa majburiy (so'rov
+        // qoidasiga qarang) — bepul/obuna kitob uchun forma bu maydonni
+        // umuman yubormasligi yoki bo'sh yuborishi mumkin, natijada
+        // 'validated()'da 'price' => null bo'lib qoladi. Ustun esa NOT
+        // NULL (standart 0), va Eloquent'ga ANIQ 'null' berilsa, u
+        // standart qiymatni EMAS, aynan null'ni yozishga urinadi — shu
+        // sabab bazaga yozishdan oldin bu yerda aniq 0'ga tenglashtiriladi.
+        $data['price'] = $data['price'] ?? 0;
         unset($data['digital_file']);
 
         if ($request->hasFile('cover_image')) {
@@ -102,6 +110,8 @@ class LibraryBookController extends Controller
     {
         $book = LibraryBook::findOrFail($id);
         $data = $request->validated();
+        // store()dagi bilan bir xil sabab — pastdagi izohga qarang.
+        $data['price'] = $data['price'] ?? 0;
         unset($data['digital_file']);
 
         if ($request->hasFile('cover_image')) {

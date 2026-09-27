@@ -142,9 +142,9 @@
         </div>
 
         <!-- Nusxa qo'shish/tahrirlash modali -->
-        <div v-if="copyModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        <div v-if="copyModalOpen" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 py-8"
              style="background: rgba(0,0,0,0.5)" @click.self="closeCopyModal">
-            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+            <div class="bg-white rounded-2xl w-full max-w-xl p-6 my-auto">
                 <h3 class="text-base font-bold text-gray-900 mb-4">
                     {{ editingCopy ? 'Nusxani tahrirlash' : "Yangi nusxa qo'shish" }}
                 </h3>
@@ -198,9 +198,9 @@
         </div>
 
         <!-- Kitob berish modali -->
-        <div v-if="loanModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        <div v-if="loanModalOpen" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 py-8"
              style="background: rgba(0,0,0,0.5)" @click.self="closeLoanModal">
-            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6 my-auto">
                 <h3 class="text-base font-bold text-gray-900 mb-1">Kitob berish</h3>
                 <p class="text-xs text-gray-400 mb-4">Nusxa: <strong>{{ loanTargetCopy?.inventory_code }}</strong></p>
 
@@ -253,6 +253,28 @@
                     <button @click="submitLoan" :disabled="loanForm.processing || !loanSelectedBorrower"
                             class="btn-brand flex-1 justify-center">
                         {{ loanForm.processing ? 'Berilmoqda...' : 'Berish' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kitob qaytarishni tasdiqlash modali -->
+        <div v-if="returnLoanTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+             style="background: rgba(0,0,0,0.5)" @click.self="returnLoanTarget = null">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center mx-auto mb-4">
+                    <Icon icon="mdi:book-arrow-left-outline" class="w-6 h-6 text-brand-600" />
+                </div>
+                <h3 class="text-base font-bold text-gray-900 text-center mb-2">Kitobni qaytarish</h3>
+                <p class="text-sm text-gray-500 text-center mb-6">
+                    <strong>{{ returnLoanTarget?.inventory_code }}</strong> nusxasi
+                    <strong>{{ returnLoanTarget?.active_loan?.borrower_name || '—' }}</strong>dan
+                    qaytarib olindimi?
+                </p>
+                <div class="flex gap-3">
+                    <button @click="returnLoanTarget = null" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitReturnLoan" :disabled="returnLoanProcessing" class="btn-brand flex-1 justify-center">
+                        {{ returnLoanProcessing ? 'Saqlanmoqda...' : 'Ha, qaytarildi' }}
                     </button>
                 </div>
             </div>
@@ -443,13 +465,22 @@ const submitLoan = () => {
 }
 
 // Kitob qaytarish
+const returnLoanTarget = ref(null)
+const returnLoanProcessing = ref(false)
+
 const confirmReturnLoan = (copy) => {
-    if (!confirm(`"${copy.inventory_code}" nusxasi qaytarib olindimi?`)) {
-        return
-    }
-    router.post(route('admin.library.loans.return', copy.active_loan.id), {}, {
+    returnLoanTarget.value = copy
+}
+
+const submitReturnLoan = () => {
+    returnLoanProcessing.value = true
+    router.post(route('admin.library.loans.return', returnLoanTarget.value.active_loan.id), {}, {
         preserveScroll: true,
         onSuccess: () => toast.success('Kitob qaytarib olindi!'),
+        onFinish: () => {
+            returnLoanProcessing.value = false
+            returnLoanTarget.value = null
+        },
     })
 }
 </script>
