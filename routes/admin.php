@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\XapiController;
 use App\Http\Controllers\Admin\LibraryCategoryController;
 use App\Http\Controllers\Admin\LibraryBookController;
 use App\Http\Controllers\Admin\BookCopyController;
+use App\Http\Controllers\Admin\LibraryLoanController;
 use App\Http\Controllers\Admin\StudentLibraryController;
 use App\Http\Controllers\Admin\BookPurchaseController;
 use App\Http\Controllers\Admin\CourseCatalogController;
@@ -343,6 +344,14 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/{id}/copies',            [BookCopyController::class, 'store'])->name('copies.store')->middleware('permission:library.create');
         Route::put('/{id}/copies/{copyId}',    [BookCopyController::class, 'update'])->name('copies.update')->middleware('permission:library.edit');
         Route::delete('/{id}/copies/{copyId}', [BookCopyController::class, 'destroy'])->name('copies.destroy')->middleware('permission:library.delete');
+
+        // Abonement — kitob berish/qaytarish (Phase 2, LibraryLoanController'ga
+        // qarang). Talaba/xodim qidirish 'library.create' bilan cheklangan
+        // (kitob berish huquqi bilan bir xil — turniket moslashtirish
+        // ruxsatidan ('turnstile.match') ATAYLAB mustaqil).
+        Route::get('/borrowers/search',        [LibraryLoanController::class, 'searchBorrowers'])->name('loans.search-borrowers')->middleware('permission:library.create');
+        Route::post('/{id}/loans',             [LibraryLoanController::class, 'store'])->name('loans.store')->middleware('permission:library.create');
+        Route::post('/loans/{loanId}/return',  [LibraryLoanController::class, 'returnLoan'])->name('loans.return')->middleware('permission:library.edit');
     });
 
     // "Kurslarim" — joriy foydalanuvchining o'ziga yozilgan (Enrollment)

@@ -47,3 +47,10 @@ Schedule::command('turnstile:notify-students')->everyMinute()->withoutOverlappin
 // tushiriladi — bu vaqtga kelib deyarli barcha xodimning kunlik oxirgi
 // chiqish voqeasi allaqachon ro'y bergan bo'ladi.
 Schedule::command('attendance:notify-staff')->dailyAt('20:00');
+
+// Har kuni ertalab kutubxonadan kitob olgan (hali qaytarmagan) har bir
+// talaba/xodimga qaytarish muddati haqida Telegram xabari yuboradi:
+// muddatga 1-2 kun qolganda bir marta oldindan, muddat o'tib ketgan
+// bo'lsa esa har hafta bittadan qayta eslatma (NotifyLibraryLoans'ga
+// qarang).
+Schedule::command('library:notify-loans')->dailyAt('10:00');

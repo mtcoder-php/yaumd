@@ -91,6 +91,7 @@
                     <tr>
                         <th>Inventar raqami</th>
                         <th>Holati</th>
+                        <th>Kim oldi / muddati</th>
                         <th>Izoh</th>
                         <th class="text-right">Amallar</th>
                     </tr>
@@ -103,9 +104,29 @@
                                 {{ statusLabel(c.status) }}
                             </span>
                         </td>
+                        <td class="text-sm">
+                            <template v-if="c.active_loan">
+                                <p class="font-semibold text-gray-900">{{ c.active_loan.borrower_name || '—' }}</p>
+                                <p class="text-xs mt-0.5" :class="isOverdue(c.active_loan) ? 'text-red-600 font-semibold' : 'text-gray-400'">
+                                    {{ formatDate(c.active_loan.due_date) }} gacha
+                                    <span v-if="isOverdue(c.active_loan)">— muddati o'tgan</span>
+                                </p>
+                            </template>
+                            <span v-else class="text-gray-300">—</span>
+                        </td>
                         <td class="text-sm text-gray-500">{{ c.condition_notes || '—' }}</td>
                         <td>
                             <div class="flex items-center justify-end gap-1">
+                                <button v-if="c.status === 'available'" @click="openLoanModal(c)"
+                                        class="btn-brand !py-1.5 !px-3 !text-xs">
+                                    <Icon icon="mdi:book-arrow-right-outline" class="w-4 h-4" />
+                                    Berish
+                                </button>
+                                <button v-else-if="c.status === 'loaned' && c.active_loan" @click="confirmReturnLoan(c)"
+                                        class="btn-neutral !py-1.5 !px-3 !text-xs">
+                                    <Icon icon="mdi:book-arrow-left-outline" class="w-4 h-4" />
+                                    Qaytarildi
+                                </button>
                                 <button @click="openCopyModal(c)" title="Tahrirlash" class="btn-ghost-icon">
                                     <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                                 </button>
@@ -176,6 +197,67 @@
             </div>
         </div>
 
+        <!-- Kitob berish modali -->
+        <div v-if="loanModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+             style="background: rgba(0,0,0,0.5)" @click.self="closeLoanModal">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <h3 class="text-base font-bold text-gray-900 mb-1">Kitob berish</h3>
+                <p class="text-xs text-gray-400 mb-4">Nusxa: <strong>{{ loanTargetCopy?.inventory_code }}</strong></p>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="field-label">Kimga beriladi</label>
+                        <div class="flex gap-2 mb-2">
+                            <button type="button" @click="switchBorrowerType('student')"
+                                    class="flex-1 py-1.5 rounded-lg text-xs font-semibold border"
+                                    :class="loanBorrowerType === 'student' ? 'bg-brand-50 border-brand-300 text-brand-700' : 'border-gray-200 text-gray-500'">
+                                Talaba
+                            </button>
+                            <button type="button" @click="switchBorrowerType('staff')"
+                                    class="flex-1 py-1.5 rounded-lg text-xs font-semibold border"
+                                    :class="loanBorrowerType === 'staff' ? 'bg-brand-50 border-brand-300 text-brand-700' : 'border-gray-200 text-gray-500'">
+                                Xodim
+                            </button>
+                        </div>
+                        <input v-model="loanSearchQuery" @input="debouncedSearchBorrowers" type="text"
+                               placeholder="Ism bo'yicha qidiring..." class="field-input">
+
+                        <div v-if="loanSelectedBorrower" class="mt-2 flex items-center justify-between bg-brand-50 border border-brand-200 rounded-lg px-3 py-2">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900">{{ loanSelectedBorrower.name }}</p>
+                                <p class="text-xs text-gray-400">{{ loanSelectedBorrower.extra || '—' }}</p>
+                            </div>
+                            <button @click="loanSelectedBorrower = null" class="text-gray-400 hover:text-gray-600">
+                                <Icon icon="mdi:close" class="w-4 h-4" />
+                            </button>
+                        </div>
+                        <div v-else-if="loanSearchResults.length" class="mt-2 border border-gray-100 rounded-lg max-h-40 overflow-y-auto">
+                            <button v-for="r in loanSearchResults" :key="`${r.type}-${r.id}`" type="button"
+                                    @click="selectBorrower(r)"
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 border-b border-gray-50 last:border-0">
+                                <p class="font-semibold text-gray-900">{{ r.name }}</p>
+                                <p class="text-xs text-gray-400">{{ r.extra || '—' }}</p>
+                            </button>
+                        </div>
+                        <p v-if="loanForm.errors.borrower_id" class="err">{{ loanForm.errors.borrower_id }}</p>
+                    </div>
+                    <div>
+                        <label class="field-label">Qaytarish muddati</label>
+                        <input v-model="loanForm.due_date" type="date" class="field-input"
+                               :class="loanForm.errors.due_date ? 'field-error' : ''">
+                        <p v-if="loanForm.errors.due_date" class="err">{{ loanForm.errors.due_date }}</p>
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button @click="closeLoanModal" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
+                    <button @click="submitLoan" :disabled="loanForm.processing || !loanSelectedBorrower"
+                            class="btn-brand flex-1 justify-center">
+                        {{ loanForm.processing ? 'Berilmoqda...' : 'Berish' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </AppLayout>
 </template>
 
@@ -183,6 +265,7 @@
 import { ref, computed } from 'vue'
 import { Link, useForm, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
+import { useToast } from 'vue-toastification'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import RichTextEditor from '@/Components/RichTextEditor.vue'
 
@@ -190,7 +273,27 @@ const props = defineProps({
     book: { type: Object, required: true },
 })
 
+const toast = useToast()
+
 const languageLabel = (v) => ({ uz: "O'zbek", ru: 'Rus', en: 'Ingliz' }[v] || v || '—')
+
+// 'due_date' backend'dan ISO satr sifatida keladi (masalan
+// "2026-10-11T00:00:00.000000Z") — bu yerda faqat sana qismini
+// o'zbekcha kunlik ko'rinishga o'giramiz.
+const formatDate = (iso) => {
+    if (!iso) return '—'
+    const d = new Date(iso)
+    return d.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+const isOverdue = (loan) => {
+    if (!loan?.due_date) return false
+    const due = new Date(loan.due_date)
+    due.setHours(0, 0, 0, 0)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return due < today
+}
 
 const availableCount = computed(() => (props.book.copies || []).filter(c => c.status === 'available').length)
 
@@ -248,6 +351,105 @@ const confirmDeleteCopy = (c) => { deleteCopyTarget.value = c }
 const submitDeleteCopy = () => {
     router.delete(route('admin.library.copies.destroy', [props.book.id, deleteCopyTarget.value.id]), {
         onSuccess: () => { deleteCopyTarget.value = null },
+    })
+}
+
+// Kitob berish
+const loanModalOpen = ref(false)
+const loanTargetCopy = ref(null)
+const loanBorrowerType = ref('student')
+const loanSearchQuery = ref('')
+const loanSearchResults = ref([])
+const loanSelectedBorrower = ref(null)
+
+const loanForm = useForm({
+    book_copy_id: null,
+    borrower_type: 'student',
+    borrower_id: null,
+    due_date: '',
+})
+
+const defaultDueDate = () => {
+    const d = new Date()
+    d.setDate(d.getDate() + 14)
+    return d.toISOString().slice(0, 10)
+}
+
+const openLoanModal = (copy) => {
+    loanTargetCopy.value = copy
+    loanBorrowerType.value = 'student'
+    loanSearchQuery.value = ''
+    loanSearchResults.value = []
+    loanSelectedBorrower.value = null
+    loanForm.clearErrors()
+    loanForm.book_copy_id = copy.id
+    loanForm.borrower_type = 'student'
+    loanForm.borrower_id = null
+    loanForm.due_date = defaultDueDate()
+    loanModalOpen.value = true
+}
+
+const closeLoanModal = () => {
+    loanModalOpen.value = false
+    loanTargetCopy.value = null
+}
+
+const switchBorrowerType = (type) => {
+    loanBorrowerType.value = type
+    loanForm.borrower_type = type
+    loanSelectedBorrower.value = null
+    loanForm.borrower_id = null
+    loanSearchResults.value = []
+    if (loanSearchQuery.value.trim()) {
+        debouncedSearchBorrowers()
+    }
+}
+
+let borrowerSearchTimer = null
+const debouncedSearchBorrowers = () => {
+    clearTimeout(borrowerSearchTimer)
+    borrowerSearchTimer = setTimeout(async () => {
+        if (!loanSearchQuery.value.trim()) {
+            loanSearchResults.value = []
+            return
+        }
+        try {
+            const response = await fetch(
+                route('admin.library.loans.search-borrowers') +
+                `?type=${loanBorrowerType.value}&q=${encodeURIComponent(loanSearchQuery.value)}`,
+                { headers: { Accept: 'application/json' } }
+            )
+            loanSearchResults.value = await response.json()
+        } catch (e) {
+            loanSearchResults.value = []
+        }
+    }, 300)
+}
+
+const selectBorrower = (result) => {
+    loanSelectedBorrower.value = result
+    loanForm.borrower_id = result.id
+    loanSearchResults.value = []
+}
+
+const submitLoan = () => {
+    loanForm.post(route('admin.library.loans.store', props.book.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.success('Kitob berildi!')
+            closeLoanModal()
+        },
+    })
+}
+
+// Kitob qaytarish
+const confirmReturnLoan = (copy) => {
+    if (!confirm(`"${copy.inventory_code}" nusxasi qaytarib olindimi?`)) {
+        return
+    }
+    router.post(route('admin.library.loans.return', copy.active_loan.id), {}, {
+        preserveScroll: true,
+        onSuccess: () => toast.success('Kitob qaytarib olindi!'),
     })
 }
 </script>

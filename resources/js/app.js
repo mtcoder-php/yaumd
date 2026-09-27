@@ -10,7 +10,7 @@ import 'vue-toastification/dist/index.css'
 import VueApexCharts from 'vue3-apexcharts'
 
 createInertiaApp({
-    title: (title) => `${title} - Yangi Asr Universiteti`,
+    title: (title) => `${title}  Yangi asr universiteti`,
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.vue`,

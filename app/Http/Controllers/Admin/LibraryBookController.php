@@ -70,8 +70,18 @@ class LibraryBookController extends Controller
 
     public function show(int $id): Response
     {
-        $book = LibraryBook::with(['category', 'addedBy', 'copies' => fn ($q) => $q->latest()])
-            ->findOrFail($id);
+        $book = LibraryBook::with([
+            'category',
+            'addedBy',
+            'copies' => fn ($q) => $q->latest(),
+            // Har bir nusxaning HOZIRGI faol abonementi (agar bo'lsa) —
+            // Show.vue shu orqali "kimda, qachongacha" ko'rsatadi.
+            // 'borrower' — MorphTo (student/staff), Student va User
+            // modellari ustida BIR XIL nom (fullName()/full_name) yo'q
+            // bo'lgani uchun frontendda ikkalasini ham hisobga olamiz.
+            'copies.activeLoan.borrower',
+            'copies.activeLoan.issuedBy',
+        ])->findOrFail($id);
 
         return Inertia::render('Admin/LibraryBooks/Show', [
             'book' => $book,
