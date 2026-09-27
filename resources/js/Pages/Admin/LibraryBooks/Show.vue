@@ -161,7 +161,7 @@
                             <option value="available">Mavjud (bo'sh)</option>
                             <option value="damaged">Shikastlangan</option>
                             <option value="lost">Yo'qolgan</option>
-                            <option v-if="editingCopy?.status === 'loaned'" value="loaned">Talaba qo'lida</option>
+                            <option v-if="editingCopy?.status === 'loaned'" value="loaned">Berilgan</option>
                         </select>
                         <p v-if="copyForm.errors.status" class="err">{{ copyForm.errors.status }}</p>
                     </div>
@@ -287,15 +287,12 @@
 import { ref, computed } from 'vue'
 import { Link, useForm, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
-import { useToast } from 'vue-toastification'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     book: { type: Object, required: true },
 })
-
-const toast = useToast()
 
 const languageLabel = (v) => ({ uz: "O'zbek", ru: 'Rus', en: 'Ingliz' }[v] || v || '—')
 
@@ -319,9 +316,13 @@ const isOverdue = (loan) => {
 
 const availableCount = computed(() => (props.book.copies || []).filter(c => c.status === 'available').length)
 
+// "loaned" holati talaba yoki xodimga bir xilda tegishli bo'lishi mumkin
+// (BookLoan.borrower_type) — shuning uchun statik "Talaba qo'lida" o'rniga
+// neytral matn ishlatiladi; kimga berilgani jadvaldagi "Kim oldi" ustunida
+// (borrower_name) allaqachon aniq ko'rsatiladi.
 const statusLabel = (v) => ({
     available: 'Mavjud',
-    loaned:    "Talaba qo'lida",
+    loaned:    'Berilgan',
     damaged:   'Shikastlangan',
     lost:      "Yo'qolgan",
 }[v] || v)
@@ -455,12 +456,13 @@ const selectBorrower = (result) => {
 }
 
 const submitLoan = () => {
+    // Tostr xabarini bu yerda alohida chaqirmaymiz — backend 'success'
+    // flash xabarini qaytaradi, uni esa AppLayout'dagi umumiy watcher
+    // (page.props.flash) allaqachon tostr qilib ko'rsatadi. Ikkalasini
+    // ham chaqirish ikkita bir xil tostr chiqishiga sabab bo'lgan edi.
     loanForm.post(route('admin.library.loans.store', props.book.id), {
         preserveScroll: true,
-        onSuccess: () => {
-            toast.success('Kitob berildi!')
-            closeLoanModal()
-        },
+        onSuccess: () => closeLoanModal(),
     })
 }
 
@@ -473,10 +475,12 @@ const confirmReturnLoan = (copy) => {
 }
 
 const submitReturnLoan = () => {
+    // Xuddi submitLoan'dagi kabi — backend'ning 'success' flash xabari
+    // AppLayout orqali avtomatik tostr bo'lib chiqadi, shuning uchun
+    // bu yerda qo'shimcha toast.success() chaqirilmaydi.
     returnLoanProcessing.value = true
     router.post(route('admin.library.loans.return', returnLoanTarget.value.active_loan.id), {}, {
         preserveScroll: true,
-        onSuccess: () => toast.success('Kitob qaytarib olindi!'),
         onFinish: () => {
             returnLoanProcessing.value = false
             returnLoanTarget.value = null

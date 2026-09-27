@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LibraryLoanNotification extends Model
 {
+    public const TYPE_ISSUED = 'issued';
     public const TYPE_REMINDER_BEFORE = 'reminder_before';
     public const TYPE_OVERDUE = 'overdue';
 

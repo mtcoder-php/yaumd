@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\BookCopy;
 use App\Models\BookLoan;
 use App\Models\LibraryBook;
+use App\Models\LibraryLoanNotification;
 use App\Models\Setting;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\TelegramService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -79,7 +81,7 @@ class LibraryLoanController extends Controller
      * qiymat allaqachon shu kalitdan o'qiladi, kerak bo'lganda keyinroq UI
      * qo'shish qo'shimcha migratsiyasiz bo'ladi).
      */
-    public function store(Request $request, int $bookId)
+    public function store(Request $request, int $bookId, TelegramService $telegram)
     {
         $book = LibraryBook::findOrFail($bookId);
 
@@ -110,7 +112,7 @@ class LibraryLoanController extends Controller
             ? Carbon::parse($data['due_date'])
             : Carbon::today()->addDays($defaultDays);
 
-        BookLoan::create([
+        $loan = BookLoan::create([
             'book_copy_id' => $copy->id,
             'borrower_type' => $data['borrower_type'],
             'borrower_id' => $borrowerModel->id,
@@ -121,6 +123,25 @@ class LibraryLoanController extends Controller
         ]);
 
         $copy->update(['status' => 'loaned']);
+
+        // Kitob berilgan zahoti darhol tasdiq xabari — 'library:notify-loans'
+        // buyrug'i orqali keladigan (muddat yaqinlashganda/o'tganda) eslatma
+        // xabarlaridan MUSTAQIL, alohida bir martalik xabar. Borrower
+        // Telegram botga ulanmagan bo'lsa (chat_id yo'q) — jim o'tkazib
+        // yuboriladi, so'rov muvaffaqiyatsiz bo'lmaydi.
+        if ($borrowerModel->telegram_chat_id) {
+            $telegram->sendMessage(
+                $borrowerModel->telegram_chat_id,
+                "📚 Sizga <b>{$book->title}</b> kitobi berildi.\nQaytarish muddati: <b>{$dueDate->format('d.m.Y')}</b>."
+            );
+
+            LibraryLoanNotification::create([
+                'book_loan_id' => $loan->id,
+                'type' => LibraryLoanNotification::TYPE_ISSUED,
+                'week' => 0,
+                'sent_at' => now(),
+            ]);
+        }
 
         return back()->with('success', "Kitob berildi! Qaytarish muddati: {$dueDate->format('d.m.Y')}.");
     }
