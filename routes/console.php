@@ -34,7 +34,13 @@ Schedule::command('turnstile:sync-events')->everyMinute()->withoutOverlapping();
 // Yangi employee_no'larni (va oldin hal qilinmagan qolganlarini) talaba/
 // xodim yozuviga ism bo'yicha moslashtiradi (MatchTurnstilePeople'ga
 // qarang). Idempotent — admin qo'lda tasdiqlagan/rad etganiga tegmaydi.
-Schedule::command('turnstile:match-people')->everyFiveMinutes()->withoutOverlapping();
+// MUHIM: avval har 5 daqiqada edi — 'notify-staff'/'notify-students'
+// har daqiqada ishlagani uchun, yangi (hali moslashtirilmagan) voqealar
+// ular ko'rmaguncha 5 daqiqagacha kutib turardi. Hozircha talaba/xodim
+// soni kichik (universitet miqyosida) bo'lgani uchun bu buyruq juda
+// yengil — shuning uchun kechikishni qisqartirish uchun har daqiqaga
+// tushirildi.
+Schedule::command('turnstile:match-people')->everyMinute()->withoutOverlapping();
 
 // Talabaga turniketdan o'tgani haqida (kirdi/chiqdi vaqti + to'lov holati)
 // darhol Telegram xabari yuboradi (NotifyStudentTurnstileEvents'ga qarang).

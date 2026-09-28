@@ -184,6 +184,7 @@ import { Link, useForm, router } from '@inertiajs/vue3'
 import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import RichTextEditor from '@/Components/RichTextEditor.vue'
+import { confirmDialog } from '@/Composables/useConfirm'
 
 const props = defineProps({
     course: { type: Object, required: true },
@@ -214,8 +215,15 @@ const submit = () => {
     form.put(route('admin.courses.lessons.update', [props.course.id, props.lesson.id]))
 }
 
-const deleteAttachment = (att) => {
-    if (! confirm(`"${att.title}" faylini o'chirasizmi?`)) return
+const deleteAttachment = async (att) => {
+    const ok = await confirmDialog({
+        title: 'Faylni o\'chirish',
+        message: `"${att.title}" faylini o'chirasizmi?`,
+        confirmText: "O'chirish",
+        danger: true,
+    })
+    if (! ok) return
+
     router.delete(route('admin.courses.lessons.attachments.destroy', [props.course.id, props.lesson.id, att.id]), {
         preserveScroll: true,
     })

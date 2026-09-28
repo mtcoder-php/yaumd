@@ -170,6 +170,7 @@ import { Icon } from '@iconify/vue'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { useToast } from 'vue-toastification'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { confirmDialog } from '@/Composables/useConfirm'
 
 const toast = useToast()
 
@@ -252,10 +253,14 @@ const debouncedSearchCandidates = () => {
     }, 300)
 }
 
-const assign = (match, type, id, name) => {
-    if (!confirm(`"${match.employee_no}" ni "${name}" bilan moslashtirishni tasdiqlaysizmi?`)) {
-        return
-    }
+const assign = async (match, type, id, name) => {
+    const ok = await confirmDialog({
+        title: 'Moslashtirishni tasdiqlash',
+        message: `"${match.employee_no}" ni "${name}" bilan moslashtirishni tasdiqlaysizmi?`,
+        confirmText: 'Tasdiqlash',
+    })
+    if (!ok) return
+
     router.post(route('admin.turnstile.matches.assign', match.id), { type, id }, {
         preserveScroll: true,
         onSuccess: () => {
@@ -265,10 +270,15 @@ const assign = (match, type, id, name) => {
     })
 }
 
-const reject = (match) => {
-    if (!confirm(`"${match.employee_no}" uchun mos YAUMD yozuvi yo'q deb belgilaysizmi? Bu holat keyingi avtomatik moslashtirishlarda o'tkazib yuboriladi.`)) {
-        return
-    }
+const reject = async (match) => {
+    const ok = await confirmDialog({
+        title: 'Rad etish',
+        message: `"${match.employee_no}" uchun mos YAUMD yozuvi yo'q deb belgilaysizmi? Bu holat keyingi avtomatik moslashtirishlarda o'tkazib yuboriladi.`,
+        confirmText: 'Rad etish',
+        danger: true,
+    })
+    if (!ok) return
+
     router.post(route('admin.turnstile.matches.reject', match.id), {}, {
         preserveScroll: true,
         onSuccess: () => toast.success('Rad etildi'),

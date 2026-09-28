@@ -255,6 +255,12 @@
                 <slot />
             </main>
         </div>
+
+        <!-- Butun loyiha uchun BITTA umumiy tasdiqlash modali — brauzerning
+             o'ziga xos confirm()/alert() oynalari o'rniga, bu yerda bir
+             marta joylashtirilib, har qanday sahifadan `confirmDialog()`
+             (useConfirm.js) orqali chaqiriladi. -->
+        <ConfirmDialog />
     </div>
 </template>
 
@@ -262,6 +268,7 @@
 import { ref, computed, watch } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import { useToast } from 'vue-toastification'
+import ConfirmDialog from '@/Components/ConfirmDialog.vue'
 import {
     Bars3Icon,
     ShieldCheckIcon,
