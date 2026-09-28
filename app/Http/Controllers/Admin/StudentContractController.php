@@ -116,8 +116,19 @@ class StudentContractController extends Controller
     {
         $student = Student::where('user_id', $request->user()->id)->firstOrFail();
 
+        // MUHIM: show() metodidagi bilan bir xil ehtiyot chorasi — kontrakt
+        // ba'zan 'student_id' orqali emas, balki abituriyentlik bosqichidan
+        // qolgan 'applicant_id' orqali bog'langan bo'lishi mumkin. Faqat
+        // 'student_id' bo'yicha qidirilsa, aynan shunday kontraktlar uchun
+        // "Mening shartnomam" sahifasida ko'rinsa ham, PDF yuklab olishda
+        // 404 chiqib qolardi.
         $contract = Contract::with(['applicant.region', 'applicant.district', 'student', 'direction'])
-            ->where('student_id', $student->id)
+            ->where(function ($q) use ($student) {
+                $q->where('student_id', $student->id);
+                if ($student->applicant_id) {
+                    $q->orWhere('applicant_id', $student->applicant_id);
+                }
+            })
             ->findOrFail($id);
 
         return $pdfService->generate($contract)->download("kontrakt-{$contract->contract_number}.pdf");

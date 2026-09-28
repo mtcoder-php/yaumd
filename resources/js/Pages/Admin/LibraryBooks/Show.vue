@@ -385,12 +385,22 @@ const props = defineProps({
 const languageLabel = (v) => ({ uz: "O'zbek", ru: 'Rus', en: 'Ingliz' }[v] || v || '—')
 
 // 'due_date' backend'dan ISO satr sifatida keladi (masalan
-// "2026-10-11T00:00:00.000000Z") — bu yerda faqat sana qismini
-// o'zbekcha kunlik ko'rinishga o'giramiz.
+// "2026-10-11T00:00:00.000000Z") — bu yerda DD.MM.YYYY ko'rinishiga
+// o'giramiz. MUHIM: 'toLocaleDateString("uz-UZ", ...)' ATAYLAB
+// ishlatilmaydi — ko'plab brauzerlarda "uz-UZ" lokalining standart
+// raqamli sana formati aslida YYYY-MM-DD bo'lib chiqadi (ICU/CLDR
+// ma'lumotlariga qarab farq qiladi), DD.MM.YYYY emas. Shuning uchun
+// kun/oy/yil qo'lda, lokaldan mustaqil ravishda tuziladi. UTC
+// funksiyalari ishlatiladi (getDate() emas, getUTCDate()) — chunki
+// backend sanani UTC yarim tunida saqlaydi, aks holda brauzer vaqt
+// zonasiga qarab sana bir kunga siljib qolishi mumkin edi.
 const formatDate = (iso) => {
     if (!iso) return '—'
     const d = new Date(iso)
-    return d.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    const day = String(d.getUTCDate()).padStart(2, '0')
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const year = d.getUTCFullYear()
+    return `${day}.${month}.${year}`
 }
 
 const isOverdue = (loan) => {

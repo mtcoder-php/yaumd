@@ -249,7 +249,18 @@ const unlinkTelegram = () => {
 }
 
 const formatPrice = (v) => new Intl.NumberFormat('uz-UZ').format(v || 0) + " so'm"
-const formatDate = (v) => v ? new Date(v).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'
+// MUHIM: 'toLocaleDateString("uz-UZ", ...)' ATAYLAB ishlatilmaydi — ko'plab
+// brauzerlarda "uz-UZ" lokalining standart raqamli sana formati aslida
+// YYYY-MM-DD bo'lib chiqadi (ICU/CLDR ma'lumotlariga qarab), DD.MM.YYYY
+// emas. Shuning uchun kun/oy/yil qo'lda, lokaldan mustaqil (UTC) tuziladi.
+const formatDate = (v) => {
+    if (!v) return '—'
+    const d = new Date(v)
+    const day = String(d.getUTCDate()).padStart(2, '0')
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const year = d.getUTCFullYear()
+    return `${day}.${month}.${year}`
+}
 
 const statusLabel = (v) => ({ draft: 'Qoralama', signed: 'Imzolangan', paid: "To'langan", cancelled: 'Bekor qilingan' }[v] || v)
 const statusClass = (v) => ({

@@ -126,6 +126,19 @@ class LibraryBookController extends Controller
         $data['price'] = $data['price'] ?? 0;
         unset($data['digital_file']);
 
+        // MUHIM: 'cover_image' ham xuddi shu sababdan bu yerda olib
+        // tashlanadi. Edit.vue formasida rasm maydoni har doim
+        // boshlang'ich holatda 'null' bo'ladi (yangi fayl tanlanmaguncha)
+        // va forma FormData sifatida yuborilganda ('digital_file' fayli
+        // bilan bir qatorda) bu 'null' ham so'rovga qo'shilib, keyin
+        // 'validated()' orqali '$data' ichiga tushib qolar edi. Natijada
+        // foydalanuvchi rasmni O'ZGARTIRMASDAN saqlaganda ham, pastdagi
+        // 'update($data)' bazadagi mavjud 'cover_image' ustunini shu
+        // 'null' bilan ustidan yozib, rasmni yo'qotib qo'yardi. Endi
+        // 'cover_image' FAQAT quyida, chindan ham yangi fayl yuklangan
+        // taqdirdagina '$data'ga qo'shiladi.
+        unset($data['cover_image']);
+
         if ($request->hasFile('cover_image')) {
             if ($book->cover_image) {
                 Storage::disk('public')->delete($book->cover_image);

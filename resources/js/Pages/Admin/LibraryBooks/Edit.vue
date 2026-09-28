@@ -229,7 +229,17 @@ const onFileChange = (e) => {
 }
 
 const submit = () => {
-    form.put(route('admin.library.update', props.book.id))
+    // MUHIM: to'g'ridan-to'g'ri 'form.put()' ishlatilmaydi. Formada
+    // 'cover_image' yoki 'digital_file' tanlangan bo'lsa, Inertia so'rovni
+    // FormData (multipart) ko'rinishida yuboradi — biroq PHP multipart
+    // tanasi bilan kelgan HAQIQIY PUT so'rovlarini UMUMAN parslamaydi
+    // ($_POST va $_FILES bo'sh bo'lib qoladi, faqat POST uchun ishlaydi).
+    // Natijada serverga BARCHA maydonlar "bo'sh" bo'lib yetib borar edi va
+    // "Kitob nomi majburiy" kabi xatoliklar chiqar edi — hatto maydonlar
+    // to'ldirilgan bo'lsa ham. Yechim: so'rovni POST sifatida yuborib,
+    // '_method' maydoni orqali Laravel'ga buni PUT sifatida qayta
+    // yo'naltirish kerakligini aytamiz (Inertia'ning standart workaround'i).
+    form.transform((data) => ({ ...data, _method: 'put' })).post(route('admin.library.update', props.book.id))
 }
 </script>
 

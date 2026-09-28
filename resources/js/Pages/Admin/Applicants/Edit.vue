@@ -344,11 +344,17 @@ const statuses = [
 const statusLabel = (s) => statuses.find(x => x.value === s)?.label || s
 const statusBadge = (s) => statuses.find(x => x.value === s)?.class || 'badge-neutral'
 
+// MUHIM: 'toLocaleDateString("uz-UZ", ...)' ATAYLAB ishlatilmaydi — ko'plab
+// brauzerlarda "uz-UZ" lokalining standart raqamli sana formati aslida
+// YYYY-MM-DD bo'lib chiqadi (ICU/CLDR ma'lumotlariga qarab), DD.MM.YYYY
+// emas. Shuning uchun kun/oy/yil qo'lda, lokaldan mustaqil (UTC) tuziladi.
 const formatDate = (date) => {
     if (!date) return '—'
-    return new Date(date).toLocaleDateString('uz-UZ', {
-        day: '2-digit', month: '2-digit', year: 'numeric'
-    })
+    const d = new Date(date)
+    const day = String(d.getUTCDate()).padStart(2, '0')
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const year = d.getUTCFullYear()
+    return `${day}.${month}.${year}`
 }
 </script>
 

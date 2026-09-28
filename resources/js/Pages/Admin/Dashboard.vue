@@ -366,7 +366,15 @@ const MONTH_SHORT = ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyun', 'Iyul', 'Avg', '
 
 const formatPeriodLabel = (label) => {
     if (period.value === 'daily') {
-        return new Date(label).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit' })
+        // MUHIM: 'toLocaleDateString("uz-UZ", ...)' ATAYLAB ishlatilmaydi —
+        // ko'plab brauzerlarda "uz-UZ" lokalining standart raqamli sana
+        // formati aslida YYYY-MM-DD bo'lib chiqadi (ICU/CLDR ma'lumotlariga
+        // qarab), DD.MM emas. Shuning uchun kun/oy qo'lda, lokaldan
+        // mustaqil (UTC) tuziladi.
+        const d = new Date(label)
+        const day = String(d.getUTCDate()).padStart(2, '0')
+        const month = String(d.getUTCMonth() + 1).padStart(2, '0')
+        return `${day}.${month}`
     }
     if (period.value === 'monthly') {
         const [y, m] = label.split('-')

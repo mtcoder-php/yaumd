@@ -141,9 +141,17 @@ const props = defineProps({
     academicYears: { type: Object, default: () => ({ data: [], links: [], total: 0 }) },
 })
 
+// MUHIM: 'toLocaleDateString("uz-UZ", ...)' ATAYLAB ishlatilmaydi — ko'plab
+// brauzerlarda "uz-UZ" lokalining standart raqamli sana formati aslida
+// YYYY-MM-DD bo'lib chiqadi (ICU/CLDR ma'lumotlariga qarab), DD.MM.YYYY
+// emas. Shuning uchun kun/oy/yil qo'lda, lokaldan mustaqil (UTC) tuziladi.
 const formatDate = (d) => {
     if (!d) return '—'
-    return new Date(d).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    const dt = new Date(d)
+    const day = String(dt.getUTCDate()).padStart(2, '0')
+    const month = String(dt.getUTCMonth() + 1).padStart(2, '0')
+    const year = dt.getUTCFullYear()
+    return `${day}.${month}.${year}`
 }
 
 const deleteTarget = ref(null)

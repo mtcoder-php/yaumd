@@ -60,7 +60,7 @@
 
                     <div v-if="book.description">
                         <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Tavsif</p>
-                        <p class="text-sm text-gray-700 whitespace-pre-line">{{ book.description }}</p>
+                        <div class="text-sm text-gray-700 prose prose-sm max-w-none" v-html="book.description"></div>
                     </div>
 
                     <p class="text-xs text-gray-400 pt-2 border-t border-gray-100">

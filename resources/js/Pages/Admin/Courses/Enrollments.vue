@@ -207,7 +207,18 @@ const props = defineProps({
 const toast = useToast()
 
 const initials = (name) => (name || '?').trim().split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase()
-const formatDate = (v) => v ? new Date(v).toLocaleDateString('uz-UZ') : '—'
+// MUHIM: 'toLocaleDateString("uz-UZ")' ATAYLAB ishlatilmaydi — ko'plab
+// brauzerlarda "uz-UZ" lokalining standart raqamli sana formati aslida
+// YYYY-MM-DD bo'lib chiqadi (ICU/CLDR ma'lumotlariga qarab), DD.MM.YYYY
+// emas. Shuning uchun kun/oy/yil qo'lda, lokaldan mustaqil (UTC) tuziladi.
+const formatDate = (v) => {
+    if (!v) return '—'
+    const d = new Date(v)
+    const day = String(d.getUTCDate()).padStart(2, '0')
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const year = d.getUTCFullYear()
+    return `${day}.${month}.${year}`
+}
 
 const statusLabel = (v) => ({ active: 'Faol', completed: 'Tugatgan', dropped: "Tark etgan", expired: 'Muddati o\'tgan' }[v] || v)
 const statusClass = (v) => ({

@@ -255,11 +255,17 @@ class HemisImportService
                     // (Abituriyentlar oqimidan kelmagani uchun applicant_id
                     // emas, student_id orqali bog'lanadi).
                     if ($student->funding_type === 'contract' && ! Contract::where('student_id', $student->id)->exists()) {
+                        $annualFee = $student->direction?->annual_fee ?? 0;
+
                         Contract::create([
                             'student_id'      => $student->id,
                             'direction_id'    => $student->direction_id,
                             'contract_number' => Contract::generateNumber(),
-                            'amount'          => $student->direction?->annual_fee ?? 0,
+                            // 'base_amount' — chegirmasiz to'liq narx, 'amount' —
+                            // haqiqiy to'lanadigan summa. Import orqali chegirma
+                            // qo'llanilmagani uchun ikkalasi teng.
+                            'base_amount'     => $annualFee,
+                            'amount'          => $annualFee,
                             'payment_type'    => 'contract',
                             'status'          => 'draft',
                         ]);

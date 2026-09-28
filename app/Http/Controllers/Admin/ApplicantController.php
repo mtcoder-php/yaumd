@@ -150,11 +150,17 @@ class ApplicantController extends Controller
             return;
         }
 
+        $annualFee = $applicant->direction?->annual_fee ?? 0;
+
         Contract::create([
             'applicant_id'    => $applicant->id,
             'direction_id'    => $applicant->direction_id,
             'contract_number' => Contract::generateNumber(),
-            'amount'          => $applicant->direction?->annual_fee ?? 0,
+            // 'base_amount' — chegirmasiz to'liq narx, 'amount' — haqiqiy
+            // to'lanadigan summa. Bu yerda chegirma qo'llanilmagani uchun
+            // ikkalasi teng (discount_percent ustuni standart 0).
+            'base_amount'     => $annualFee,
+            'amount'          => $annualFee,
             'payment_type'    => 'contract',
             'status'          => 'draft',
         ]);

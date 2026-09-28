@@ -91,7 +91,7 @@ const props = defineProps({
 // qo'yilgan. Haqiqiy yangilik rasmi bo'lsa (admin panelda yuklangan),
 // backend'dan kelgan `news` propi ustunlik qiladi.
 const demoNews = [
-    { id: 1, slug: 'yangilik-1', title_uz: 'Yangi Asr universiteti 2025-yil qabul jarayonini boshladi', image: '/blogs/blog-1.jpg', published_at: '2025-03-15', views: 1240, category: { name_uz: 'Qabul', color: '#4f46e5' } },
+    { id: 1, slug: 'yangilik-1', title_uz: 'Yangi Asr universiteti 2026-yil qabul jarayonini boshladi', image: '/blogs/blog-1.jpg', published_at: '2025-03-15', views: 1240, category: { name_uz: 'Qabul', color: '#4f46e5' } },
     { id: 2, slug: 'yangilik-2', title_uz: 'Xalqaro hamkorlik doirasida yangi shartnoma imzolandi', image: '/blogs/blog-2.jpg', published_at: '2025-03-10', views: 856, category: { name_uz: 'Xalqaro', color: '#0891b2' } },
     { id: 3, slug: 'yangilik-3', title_uz: 'Talabalarimiz respublika olimpiadasida g\'olib bo\'ldi', image: '/blogs/blog-1.jpg', published_at: '2025-03-08', views: 2103, category: { name_uz: 'Tadbir', color: '#22c55e' } },
     { id: 4, slug: 'yangilik-4', title_uz: 'Yangi o\'quv laboratoriyasi ochildi', image: '/blogs/blog-2.jpg', published_at: '2025-03-05', views: 431, category: { name_uz: "Ta'lim", color: '#f97316' } },
