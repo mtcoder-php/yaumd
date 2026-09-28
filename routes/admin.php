@@ -44,6 +44,8 @@ use App\Http\Controllers\Admin\CrmReportController;
 use App\Http\Controllers\Admin\TutorKpiController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\PersonMatchController;
+use App\Http\Controllers\Admin\TurnstileAccessCheckController;
+use App\Http\Controllers\Admin\StaffAttendanceController;
 
 
 // Har bir marshrutga qo'yilgan 'permission:...' RolePermissionSeeder'dagi
@@ -188,6 +190,21 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/{personMatch}/assign', [PersonMatchController::class, 'assign'])->name('assign')->middleware('permission:turnstile.match');
         Route::post('/{personMatch}/reject', [PersonMatchController::class, 'reject'])->name('reject')->middleware('permission:turnstile.match');
     });
+
+    // Turniket kirish TEKSHIRUVI (test) — jismoniy qurilmaga tegmasdan,
+    // bitta talabani tanlab, "qarz/to'lov holatiga ko'ra ochadimi
+    // yo'qmi" qarorini ko'rish uchun. Faqat o'qish/tekshirish ('view')
+    // — hech qanday yozuv/hardware harakati sodir bo'lmaydi, shuning
+    // uchun 'turnstile.match' emas, 'turnstile.view' yetarli.
+    Route::prefix('turnstile/access-check')->name('turnstile.access-check.')->group(function () {
+        Route::get('/', [TurnstileAccessCheckController::class, 'index'])->name('index')->middleware('permission:turnstile.view');
+        Route::get('/search', [TurnstileAccessCheckController::class, 'search'])->name('search')->middleware('permission:turnstile.view');
+        Route::get('/check', [TurnstileAccessCheckController::class, 'check'])->name('check')->middleware('permission:turnstile.view');
+    });
+
+    // HR uchun — xodimlarning kirish/chiqish (davomat) tarixi, faqat
+    // ko'rish uchun ('attendance.view') — turniket voqealariga asoslangan.
+    Route::get('/attendance', [StaffAttendanceController::class, 'index'])->name('attendance.index')->middleware('permission:attendance.view');
 
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/',          [UserController::class, 'index'])->name('index')->middleware('permission:user.view');

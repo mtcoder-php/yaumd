@@ -83,15 +83,14 @@ class HikvisionTerminalClient
 
                 if (isset($row['time'])) {
                     // MUHIM: terminal vaqtni "+05:00" (Toshkent) belgisi bilan
-                    // yuboradi. Carbon::parse() to'g'ri lahzani o'qiydi, lekin
-                    // "+05:00" belgisini o'zida saqlab qoladi — agar shu
-                    // holatda saqlansa, Eloquent'ning 'datetime' cast'i uni
-                    // avval UTC'ga aylantirmasdan, xuddi shu raqamlarni
-                    // (masalan "17:00:20") UTC sifatida bazaga yozib qo'yadi.
-                    // Natijada keyingi o'qishda bu "kelajakdagi" vaqt bo'lib
-                    // chiqadi (haqiqiy UTC'dan ~5 soat oldinda). ->utc() shu
-                    // aylantirishni majburan bajaradi.
-                    $eventTime = Carbon::parse($row['time'])->utc();
+                    // yuboradi, va 'config/app.php'ning 'timezone'si ham
+                    // ATAYLAB 'Asia/Tashkent' (bir xil) qilib qo'yilgan —
+                    // shuning uchun ->utc() ENDI ISHLATILMAYDI: Carbon::parse()
+                    // o'qigan lahza hech qanday aylantirishsiz to'g'ridan-
+                    // to'g'ri to'g'ri mahalliy vaqt sifatida saqlanadi/
+                    // solishtiriladi. ->utc() qaytarilsa, saqlangan vaqt yana
+                    // 5 soat noto'g'ri bo'lib qoladi.
+                    $eventTime = Carbon::parse($row['time']);
                     if (! $lastEventTime || $eventTime->greaterThan($lastEventTime)) {
                         $lastEventTime = $eventTime;
                     }

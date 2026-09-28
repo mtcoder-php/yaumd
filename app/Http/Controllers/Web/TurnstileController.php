@@ -59,54 +59,13 @@ class TurnstileController extends Controller
             ]);
         }
 
-        if ($student->status !== 'active') {
-            return response()->json([
-                'allowed'      => false,
-                'reason'       => 'inactive',
-                'student_name' => $student->fullName(),
-                'message'      => "Talaba holati faol emas ({$student->status})",
-            ]);
-        }
-
-        if ($student->funding_type === 'grant') {
-            return response()->json([
-                'allowed'      => true,
-                'reason'       => null,
-                'student_name' => $student->fullName(),
-                'message'      => 'Grant asosida o\'qiydi, kontrakt to\'lovi talab qilinmaydi',
-            ]);
-        }
-
-        $contract = $this->schedule->findActiveContract($student);
-
-        if (! $contract) {
-            // Ma'lumotlar bazasida nomuvofiqlik (kontrakt turi "contract",
-            // lekin haqiqiy kontrakt yozuvi topilmadi) — talabani noto'g'ri
-            // bloklamaslik uchun ruxsat beriladi, lekin sabab aniq
-            // ko'rsatiladi (admin buni ko'rib chiqishi kerak).
-            return response()->json([
-                'allowed'      => true,
-                'reason'       => 'no_contract_found',
-                'student_name' => $student->fullName(),
-                'message'      => 'Diqqat: kontrakt yozuvi topilmadi (admin tekshirishi kerak)',
-            ]);
-        }
-
-        $status = $this->schedule->currentStatus($contract);
-        $allowed = $status['is_compliant'] || $status['is_fully_paid'];
-
-        return response()->json([
-            'allowed'         => $allowed,
-            'reason'          => $allowed ? null : $status['reason'],
-            'student_name'    => $student->fullName(),
-            'debt_amount'     => $status['debt_amount'],
-            'required_amount' => $status['required_amount'],
-            'paid_amount'     => $status['paid_amount'],
-            'next_deadline'   => $status['next_deadline']?->toDateString(),
-            'message'         => $allowed
-                ? 'Qarzi yo\'q, kirish ruxsat etiladi'
-                : 'To\'lovda muammo bor: ' . number_format($status['debt_amount'], 0, '.', ' ') . " so'm qarz",
-        ]);
+        // Qaror mantig'ining o'zi (faol/grant/kontrakt/qarz tekshiruvi)
+        // ContractPaymentScheduleService::accessDecisionForStudent'da
+        // yashaydi — admin panelidagi "Turniket tekshiruvi" test sahifasi
+        // (TurnstileAccessCheckController) ham AYNAN shu metodni
+        // chaqiradi, shuning uchun haqiqiy terminal so'rovi va admin
+        // testi doim bir xil natija beradi.
+        return response()->json($this->schedule->accessDecisionForStudent($student));
     }
 
     private function hasValidToken(Request $request): bool

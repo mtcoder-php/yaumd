@@ -63,6 +63,8 @@ class RolePermissionSeeder extends Seeder
             // Turniket (Face ID) — employeeNo'larni talaba/xodim bilan
             // moslashtirish, sinxronlash holatini ko'rish
             'turnstile.view', 'turnstile.match',
+            // HR — xodimlar davomati (kirish/chiqish) hisoboti
+            'attendance.view',
         ];
 
         foreach ($permissions as $permission) {
@@ -93,6 +95,7 @@ class RolePermissionSeeder extends Seeder
             'group.view', 'group.create', 'group.edit',
             'audit.view',
             'turnstile.view', 'turnstile.match',
+            'attendance.view',
         ]);
 
         // Qabul xodimi

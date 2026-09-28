@@ -196,4 +196,60 @@ class ContractPaymentScheduleService
             ->latest('id')
             ->first();
     }
+
+    /**
+     * Berilgan talaba uchun "turniket ochadimi yo'qmi" qarorining
+     * to'liq mantig'i — TurnstileController::checkAccess (haqiqiy
+     * terminal so'rovi) VA admin panelidagi "Turniket tekshiruvi" test
+     * sahifasi (TurnstileAccessCheckController) AYNAN shu metodni
+     * chaqiradi, shuning uchun qaror mantig'i faqat BITTA joyda
+     * yashaydi va ikkalasi doim bir xil natija beradi.
+     */
+    public function accessDecisionForStudent(Student $student): array
+    {
+        if ($student->status !== 'active') {
+            return [
+                'allowed'      => false,
+                'reason'       => 'inactive',
+                'student_name' => $student->fullName(),
+                'message'      => "Talaba holati faol emas ({$student->status})",
+            ];
+        }
+
+        if ($student->funding_type === 'grant') {
+            return [
+                'allowed'      => true,
+                'reason'       => null,
+                'student_name' => $student->fullName(),
+                'message'      => 'Grant asosida o\'qiydi, kontrakt to\'lovi talab qilinmaydi',
+            ];
+        }
+
+        $contract = $this->findActiveContract($student);
+
+        if (! $contract) {
+            return [
+                'allowed'      => true,
+                'reason'       => 'no_contract_found',
+                'student_name' => $student->fullName(),
+                'message'      => 'Diqqat: kontrakt yozuvi topilmadi (admin tekshirishi kerak)',
+            ];
+        }
+
+        $status = $this->currentStatus($contract);
+        $allowed = $status['is_compliant'] || $status['is_fully_paid'];
+
+        return [
+            'allowed'         => $allowed,
+            'reason'          => $allowed ? null : $status['reason'],
+            'student_name'    => $student->fullName(),
+            'debt_amount'     => $status['debt_amount'],
+            'required_amount' => $status['required_amount'],
+            'paid_amount'     => $status['paid_amount'],
+            'next_deadline'   => $status['next_deadline']?->toDateString(),
+            'message'         => $allowed
+                ? 'Qarzi yo\'q, kirish ruxsat etiladi'
+                : 'To\'lovda muammo bor: ' . number_format($status['debt_amount'], 0, '.', ' ') . " so'm qarz",
+        ];
+    }
 }

@@ -63,9 +63,20 @@ return [
     | will be used by the PHP date and date-time functions. The timezone
     | is set to "UTC" by default as it is suitable for most use cases.
     |
+    | MUHIM (YAUMD): butun tizim O'zbekistonda, bitta joyda ishlaydigan
+    | universitet uchun qurilgan (O'zbekiston DST/yozgi vaqtga
+    | o'tmaydi, shuning uchun 'Asia/Tashkent' doimiy UTC+5). Shu sababli
+    | ataylab 'UTC' o'rniga to'g'ridan-to'g'ri mahalliy vaqt qo'llanadi —
+    | shunda barcha 'now()'/'today()' chaqiruvlari, kunlik rejalashtirilgan
+    | buyruqlar ('dailyAt(...)') va turniket voqealarining vaqti to'g'ridan
+    | -to'g'ri, hech qanday qo'shimcha aylantirishsiz haqiqiy mahalliy
+    | vaqtga mos keladi (masalan 'payments:send-reminders'->dailyAt('09:00')
+    | endi aynan ertalab soat 09:00'da, UTC 09:00 (mahalliy soat 14:00)da
+    | emas, ishga tushadi).
+    |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Asia/Tashkent',
 
     /*
     |--------------------------------------------------------------------------

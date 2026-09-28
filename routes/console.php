@@ -40,6 +40,13 @@ Schedule::command('turnstile:match-people')->everyFiveMinutes()->withoutOverlapp
 // darhol Telegram xabari yuboradi (NotifyStudentTurnstileEvents'ga qarang).
 Schedule::command('turnstile:notify-students')->everyMinute()->withoutOverlapping();
 
+// Xodimga turniketdan o'tgani haqida (kirdi/chiqdi vaqti) darhol shaxsiy
+// Telegram xabari, VA (sozlangan bo'lsa) HR guruhiga xuddi shu voqea
+// haqida xabar yuboradi (NotifyStaffTurnstileEvents'ga qarang). Kun
+// oxiridagi kech qolish/erta ketish xabarini (attendance:notify-staff)
+// ALMASHTIRMAYDI — uni TO'LDIRADI.
+Schedule::command('turnstile:notify-staff')->everyMinute()->withoutOverlapping();
+
 // Har kuni ish kuni tugagach, xodimlarning bugungi birinchi kirish/oxirgi
 // chiqish vaqtini standart ish vaqti (08:00–17:00, Setting orqali
 // sozlanadi) bilan solishtirib, kech qolish/erta ketish haqida Telegram

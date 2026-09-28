@@ -111,10 +111,14 @@ class SyncTurnstileEvents extends Command
             }
 
             $event->fill([
-                // ->utc() SHART — sabab HikvisionTerminalClient'dagi izohda
-                // tushuntirilgan (terminal "+05:00" bilan yuboradi, UTC'ga
-                // aylantirmasdan saqlash noto'g'ri vaqt yozib qo'yadi).
-                'event_time' => Carbon::parse($row['time'])->utc(),
+                // MUHIM: ->utc() ATAYLAB ISHLATILMAYDI — 'config/app.php'
+                // endi 'Asia/Tashkent' (terminal yuboradigan "+05:00" bilan
+                // BIR XIL) ga sozlangan, shuning uchun Carbon::parse() bilan
+                // o'qilgan lahza, hech qanday aylantirishsiz, to'g'ridan-
+                // to'g'ri to'g'ri mahalliy vaqt sifatida saqlanadi. Agar bu
+                // yerga ->utc() qaytarilsa, saqlangan vaqt yana 5 soat
+                // noto'g'ri (orqada) bo'lib qoladi.
+                'event_time' => Carbon::parse($row['time']),
                 'major' => $row['major'] ?? 0,
                 'minor' => $row['minor'] ?? 0,
                 'employee_no' => $row['employeeNoString'] ?? null,

@@ -25,10 +25,10 @@
                  Yig'ilgan holatda to'liq matn o'rniga faqat universitet
                  belgisi (ikonka) ko'rsatiladi. -->
             <div class="h-16 flex items-center justify-center bg-brand-600 flex-shrink-0 px-2">
-                <img v-if="sidebarCollapsed" src="/assets/favicon.png" alt="Yangi Asr Universiteti" class="w-9 h-9 flex-shrink-0" />
+                <img v-if="sidebarCollapsed" src="/assets/logo-icon.png" alt="Yangi Asr Universiteti" class="w-9 h-9 flex-shrink-0" />
                 <div v-else class="text-center">
-                    <p class="font-bold text-white text-2xl leading-none">edu.yangi-asr.uz</p>
-<!--                    <p class="text-sm font-semibold text-brand-100 mt-1">Universiteti</p>-->
+                    <p class="font-bold text-white text-lg leading-none">Yangi Asr</p>
+                    <p class="text-sm font-semibold text-brand-100 mt-1">Universiteti</p>
                 </div>
             </div>
 
@@ -127,8 +127,8 @@
                 :title="sidebarCollapsed ? 'Sidebarni ochish' : 'Sidebarni yig\'ish'"
                 class="hidden lg:flex items-center justify-center h-11 flex-shrink-0 bg-brand-600 text-white hover:bg-brand-700 transition"
             >
-                <ChevronDoubleLeftIcon v-if="!sidebarCollapsed" class="w-10 h-10" />
-                <ChevronDoubleRightIcon v-else class="w-10 h-10" />
+                <ChevronDoubleLeftIcon v-if="!sidebarCollapsed" class="w-5 h-5" />
+                <ChevronDoubleRightIcon v-else class="w-5 h-5" />
             </button>
         </aside>
 
@@ -286,6 +286,8 @@ import {
     TrophyIcon,
     FingerPrintIcon,
     Cog6ToothIcon,
+    CheckBadgeIcon,
+    ClockIcon,
 } from '@heroicons/vue/24/outline'
 
 defineProps({
@@ -431,6 +433,8 @@ const menus = {
         { icon: ChartBarIcon,              label: 'CRM hisobotlari',    href: '/admin/crm/reports' },
         { icon: TrophyIcon,                label: 'Tutor KPI',          href: '/admin/crm/tutor-kpi' },
         { icon: FingerPrintIcon,           label: 'Turniket moslashtirish', href: '/admin/turnstile/matches' },
+        { icon: CheckBadgeIcon,            label: 'Turniket tekshiruvi',    href: '/admin/turnstile/access-check' },
+        { icon: ClockIcon,                 label: 'Xodimlar davomati',      href: '/admin/attendance' },
         { type: 'group', label: "Ta'lim", icon: BookOpenIcon },
         { icon: RectangleStackIcon,        label: 'Kurs kategoriyalari', href: '/admin/course-categories' },
         { icon: BookOpenIcon,              label: 'Kurslar',            href: '/admin/courses' },
@@ -464,6 +468,8 @@ const menus = {
         { icon: ChartBarIcon,              label: 'CRM hisobotlari',    href: '/admin/crm/reports' },
         { icon: TrophyIcon,                label: 'Tutor KPI',          href: '/admin/crm/tutor-kpi' },
         { icon: FingerPrintIcon,           label: 'Turniket moslashtirish', href: '/admin/turnstile/matches' },
+        { icon: CheckBadgeIcon,            label: 'Turniket tekshiruvi',    href: '/admin/turnstile/access-check' },
+        { icon: ClockIcon,                 label: 'Xodimlar davomati',      href: '/admin/attendance' },
         { type: 'group', label: "Ta'lim", icon: BookOpenIcon },
         { icon: RectangleStackIcon,        label: 'Kurs kategoriyalari', href: '/admin/course-categories' },
         { icon: BookOpenIcon,              label: 'Kurslar',            href: '/admin/courses' },

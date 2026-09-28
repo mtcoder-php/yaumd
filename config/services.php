@@ -64,6 +64,7 @@ return [
         'bot_token'      => env('TELEGRAM_BOT_TOKEN'),
         'bot_username'   => env('TELEGRAM_BOT_USERNAME'),
         'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
+        'hr_chat_id'     => env('TELEGRAM_HR_CHAT_ID'),
     ],
 
     // Turniket (Face ID) tekshiruv API'sini himoya qiluvchi maxfiy kalit —
