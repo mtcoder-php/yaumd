@@ -56,6 +56,22 @@ class MatchTurnstilePeople extends Command
             if (! $force && in_array($currentStatus, [PersonMatch::STATUS_MATCHED, PersonMatch::STATUS_REJECTED], true)) {
                 $stats['skipped']++;
 
+                // MUHIM BUG TUZATISHI: status (masalan "matched") o'zi
+                // o'zgarmasa ham, shu employee_no bo'yicha KEYINROQ
+                // sinxronlangan YANGI 'turnstile_events' qatorlarining
+                // 'matched_type'/'matched_id' ustunlari HALI BO'SH bo'lishi
+                // mumkin — bu ustunlar voqea yaratilganda emas, FAQAT shu
+                // metod orqali to'ldiriladi. Avval bu yerda to'g'ridan-
+                // to'g'ri "continue" bo'lgani uchun, ADMIN BIR MARTA
+                // TASDIQLAGAN xodim/talaba keyingi kunlarda qayta-qayta
+                // turniketdan o'tsa ham, uning YANGI voqealari hech qachon
+                // moslashtirilmay ("matched_type" bo'sh) qolib, natijada
+                // 'turnstile:notify-staff'/'notify-students' ularni umuman
+                // ko'rmay, xabar mangu yuborilmay qolar edi. Shuning uchun
+                // status qayta hisoblanmasa ham, mavjud moslashtiruv YANGI
+                // voqealarga albatta qayta qo'llanadi (backfill).
+                PersonMatch::where('employee_no', $employeeNo)->first()?->syncEventsMatch();
+
                 continue;
             }
 

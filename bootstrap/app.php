@@ -11,6 +11,18 @@ use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        // MUHIM BUG TUZATISHI: 'commands' parametri bu yerda avval
+        // umuman yo'q edi — shuning uchun 'routes/console.php' (barcha
+        // Schedule::command(...) va Artisan::command(...) shu yerda
+        // yozilgan) Laravel tomonidan HECH QACHON yuklanmagan edi.
+        // Natijada 'php artisan schedule:list' doim "No scheduled tasks
+        // have been defined" deb ko'rsatgan va 'schedule:work'/
+        // 'schedule:run' orqali (masalan serverdagi crontab orqali)
+        // hech qaysi jadval — turniket sinxronlashi, to'lov eslatmalari,
+        // kutubxona eslatmalari va h.k. — avtomatik ishlamagan; ular
+        // faqat qo'lda ('php artisan turnstile:sync-events' kabi)
+        // ishga tushirilganda ishlagan.
+        commands: __DIR__.'/../routes/console.php',
         then: function () {
             Route::middleware('web')
                 ->group(base_path('routes/admin.php'));

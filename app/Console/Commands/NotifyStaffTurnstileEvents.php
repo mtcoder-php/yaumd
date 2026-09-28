@@ -74,11 +74,18 @@ class NotifyStaffTurnstileEvents extends Command
             $icon = $event->device?->direction === 'chiqish' ? '🚶' : '🚪';
 
             if ($user->telegram_chat_id) {
-                $telegram->sendMessage(
+                // MUHIM: sendMessage() natijasi (true/false) albatta
+                // tekshiriladi — aks holda Telegram API xato qaytarsa ham
+                // (masalan noto'g'ri chat_id, bot bloklangan) buyruq
+                // "yuborildi" deb hisoblab, xatoni butunlay yashirib
+                // qo'yardi (storage/logs/laravel.log'da haqiqiy sabab
+                // yoziladi — TelegramService'ga qarang).
+                if ($telegram->sendMessage(
                     $user->telegram_chat_id,
                     "{$icon} Siz bugun soat <b>{$time}</b> da {$direction}."
-                );
-                $sentToStaff++;
+                )) {
+                    $sentToStaff++;
+                }
             }
 
             if ($hrChatId !== '') {
@@ -89,11 +96,12 @@ class NotifyStaffTurnstileEvents extends Command
                 };
                 $deviceName = $event->device?->name ?? "noma'lum terminal";
 
-                $telegram->sendMessage(
+                if ($telegram->sendMessage(
                     $hrChatId,
                     "{$icon} <b>{$user->full_name}</b> bugun soat <b>{$time}</b> da {$directionLabel} ({$deviceName})."
-                );
-                $sentToHr++;
+                )) {
+                    $sentToHr++;
+                }
             }
 
             // Xodimning o'zi ham, HR ham xabar olmagan bo'lsa ham (masalan
