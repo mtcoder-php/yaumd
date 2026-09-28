@@ -11,6 +11,7 @@ use App\Models\Setting;
 use App\Models\Student;
 use App\Models\StudentGroup;
 use App\Models\User;
+use App\Services\LibraryReservationService;
 use App\Services\TelegramService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -168,7 +169,7 @@ class LibraryLoanController extends Controller
      * qiymat allaqachon shu kalitdan o'qiladi, kerak bo'lganda keyinroq UI
      * qo'shish qo'shimcha migratsiyasiz bo'ladi).
      */
-    public function store(Request $request, int $bookId, TelegramService $telegram)
+    public function store(Request $request, int $bookId, TelegramService $telegram, LibraryReservationService $reservations)
     {
         $book = LibraryBook::findOrFail($bookId);
 
@@ -179,11 +180,17 @@ class LibraryLoanController extends Controller
             'borrower_type' => 'required|in:student,staff',
             'borrower_id' => 'required|integer',
             'due_date' => 'nullable|date|after:today',
+            // Nusxa biror boshqa shaxs uchun band (status='reserved') bo'lsa
+            // ham, kutubxonachi buni AYNAN shu band qilingan shaxsdan
+            // boshqasiga berishni tasdiqlagani — Show.vue shu holatda
+            // ogohlantirish ko'rsatib, foydalanuvchi rozi bo'lsagina
+            // 'true' yuboradi.
+            'override_reservation' => 'nullable|boolean',
         ]);
 
-        $copy = BookCopy::where('book_id', $book->id)->findOrFail($data['book_copy_id']);
+        $copy = BookCopy::where('book_id', $book->id)->with('activeReservation.borrower')->findOrFail($data['book_copy_id']);
 
-        if ($copy->status !== 'available') {
+        if (! in_array($copy->status, ['available', 'reserved'], true)) {
             return back()->with('error', "Bu nusxa hozir bo'sh emas.");
         }
 
@@ -193,6 +200,33 @@ class LibraryLoanController extends Controller
 
         if (! $borrowerModel) {
             return back()->with('error', "Tanlangan shaxs topilmadi.");
+        }
+
+        // Nusxa band qilingan (reserved) bo'lsa — yoki AYNAN shu band qilgan
+        // shaxsga berilishi kerak (navbat "bajarildi" bo'lib yopiladi), yoki
+        // kutubxonachi buni ongli ravishda boshqasiga berishni tasdiqlashi
+        // kerak (bu holda eski band bekor qilinadi, lekin nusxa DARHOL yangi
+        // shaxsga o'tayotgani uchun navbatdagi keyingi kishiga surilmaydi —
+        // aks holda shu nusxa ikki marta "berilib" qolar edi).
+        $fulfillingReservation = null;
+
+        if ($copy->status === 'reserved') {
+            $activeReservation = $copy->activeReservation;
+
+            $isReservationHolder = $activeReservation
+                && $activeReservation->borrower_type === $data['borrower_type']
+                && (int) $activeReservation->borrower_id === (int) $borrowerModel->id;
+
+            if ($isReservationHolder) {
+                $fulfillingReservation = $activeReservation;
+            } elseif (! $request->boolean('override_reservation')) {
+                $holderName = $activeReservation?->borrower_name ?? 'boshqa bir shaxs';
+                $until = $activeReservation?->expires_at?->format('d.m.Y H:i');
+
+                return back()->with('error', "Bu nusxa {$holderName} uchun band qilingan ({$until}gacha). Boshqa shaxsga berish uchun tasdiqlashingiz kerak.");
+            } elseif ($activeReservation) {
+                $reservations->cancel($activeReservation, $request->user()->id, 'librarian_override', releaseCopy: false);
+            }
         }
 
         // Bir shaxsda bir vaqtning o'zida qancha kitob bo'lishi mumkinligi
@@ -225,6 +259,12 @@ class LibraryLoanController extends Controller
 
         $copy->update(['status' => 'loaned']);
 
+        // Agar bu nusxa AYNAN shu shaxs uchun band qilingan bo'lsa — navbat
+        // yozuvi endi "bajarildi" (fulfilled) bo'lib yopiladi.
+        if ($fulfillingReservation) {
+            $reservations->fulfil($fulfillingReservation, $loan);
+        }
+
         // Kitob berilgan zahoti darhol tasdiq xabari — 'library:notify-loans'
         // buyrug'i orqali keladigan (muddat yaqinlashganda/o'tganda) eslatma
         // xabarlaridan MUSTAQIL, alohida bir martalik xabar. Borrower
@@ -248,9 +288,12 @@ class LibraryLoanController extends Controller
     }
 
     /**
-     * Kitob qaytarib olinganda — nusxa yana "mavjud" bo'lib qoladi.
+     * Kitob qaytarib olinganda — nusxa yana "mavjud" bo'lib qoladi. Agar shu
+     * kitobga navbat (band qilish) bo'lsa, nusxa DARHOL navbatdagi birinchi
+     * shaxs uchun "band" holatiga o'tadi va unga Telegram xabari boradi
+     * (LibraryReservationService::onCopyReturned()ga qarang).
      */
-    public function returnLoan(Request $request, int $loanId)
+    public function returnLoan(Request $request, int $loanId, LibraryReservationService $reservations)
     {
         $loan = BookLoan::with('bookCopy')->findOrFail($loanId);
 
@@ -264,8 +307,15 @@ class LibraryLoanController extends Controller
             'returned_to' => $request->user()->id,
         ]);
 
-        $loan->bookCopy->update(['status' => 'available']);
+        $copy = $loan->bookCopy;
+        $copy->update(['status' => 'available']);
+        $reservations->onCopyReturned($copy);
 
-        return back()->with('success', "Kitob qaytarib olindi!");
+        $message = 'Kitob qaytarib olindi!';
+        if ($copy->fresh()->status === 'reserved') {
+            $message .= " Bu kitobga navbat bor edi — nusxa avtomatik navbatdagi shaxs uchun band qilindi va unga xabar yuborildi.";
+        }
+
+        return back()->with('success', $message);
     }
 }

@@ -15,7 +15,15 @@ class UpdateBookCopyRequest extends FormRequest
     {
         return [
             'inventory_code'  => 'required|string|max:50|unique:book_copies,inventory_code,' . $this->route('copyId'),
-            'status'          => 'required|in:available,loaned,damaged,lost',
+            // 'reserved' shu ro'yxatda bo'lishi SHART — aks holda nusxa
+            // band qilingan holatda ekan, kutubxonachi shu nusxaning
+            // 'condition_notes' kabi boshqa maydonini tahrirlab saqlashga
+            // urinsagina ham (status dropdown'ga tegmasa ham) validatsiya
+            // "status noto'g'ri qiymat" xatosi bilan muvaffaqiyatsiz bo'lib
+            // qolar edi (BookCopyController::update() qo'lda 'reserved'ga
+            // O'TKAZISHNING o'zini alohida taqiqlaydi, bu yerda faqat
+            // MAVJUD 'reserved' qiymatini qabul qilish uchun).
+            'status'          => 'required|in:available,loaned,reserved,damaged,lost',
             'condition_notes' => 'nullable|string',
         ];
     }

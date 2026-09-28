@@ -71,6 +71,11 @@ class LibraryBook extends Model implements Purchasable
         return $this->hasMany(BookCopy::class, 'book_id');
     }
 
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(BookReservation::class, 'book_id');
+    }
+
     public function addedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'added_by');

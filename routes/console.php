@@ -54,3 +54,11 @@ Schedule::command('attendance:notify-staff')->dailyAt('20:00');
 // bo'lsa esa har hafta bittadan qayta eslatma (NotifyLibraryLoans'ga
 // qarang).
 Schedule::command('library:notify-loans')->dailyAt('10:00');
+
+// Kitob band qilish (rezervatsiya) navbatida "tayyor" (ready) holatidagi,
+// ammo belgilangan muddatda (Setting: 'library.reservation_pickup_hours',
+// standart 24 soat) kelib olinmagan yozuvlarni avtomatik 'expired' qilib,
+// nusxani navbatdagi keyingi shaxsga o'tkazadi (ExpireLibraryReservations'ga
+// qarang). Har 30 daqiqada — kunlik emas, aks holda 24 soatlik oyna kuniga
+// bir marta tekshirilsa, navbat ko'p soat kechikib qolishi mumkin edi.
+Schedule::command('library:expire-reservations')->everyThirtyMinutes()->withoutOverlapping();

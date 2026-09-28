@@ -72,7 +72,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-base font-bold text-gray-900">Fizik nusxalar (inventar)</p>
-                    <p class="text-xs text-gray-400 mt-0.5">Jami {{ book.copies?.length || 0 }} ta nusxa, shundan {{ availableCount }} tasi bo'sh</p>
+                    <p class="text-xs text-gray-400 mt-0.5">Jami {{ book.copies_count || 0 }} ta nusxa, shundan {{ book.available_copies_count || 0 }} tasi bo'sh</p>
                 </div>
                 <button @click="openCopyModal()" class="btn-brand">
                     <Icon icon="mdi:plus" class="w-4 h-4" />
@@ -82,7 +82,7 @@
 
             <!-- Nusxalar jadvali -->
             <div class="table-grid-wrap">
-                <div v-if="!book.copies?.length" class="p-12 text-center text-gray-400">
+                <div v-if="!copies.data?.length" class="p-12 text-center text-gray-400">
                     <Icon icon="mdi:barcode-off" class="w-10 h-10 mx-auto mb-2 opacity-40" />
                     <p class="text-sm">Hali fizik nusxa qo'shilmagan</p>
                 </div>
@@ -97,7 +97,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="c in book.copies" :key="c.id">
+                    <tr v-for="c in copies.data" :key="c.id">
                         <td class="text-sm font-semibold text-gray-900">{{ c.inventory_code }}</td>
                         <td>
                             <span class="badge-pill" :class="statusClass(c.status)">
@@ -112,12 +112,18 @@
                                     <span v-if="isOverdue(c.active_loan)">— muddati o'tgan</span>
                                 </p>
                             </template>
+                            <template v-else-if="c.active_reservation">
+                                <p class="font-semibold text-amber-700">{{ c.active_reservation.borrower_name || '—' }} uchun band</p>
+                                <p class="text-xs mt-0.5 text-amber-600">
+                                    {{ formatDateTime(c.active_reservation.expires_at) }}gacha kelishi kerak
+                                </p>
+                            </template>
                             <span v-else class="text-gray-300">—</span>
                         </td>
                         <td class="text-sm text-gray-500">{{ c.condition_notes || '—' }}</td>
                         <td>
                             <div class="flex items-center justify-end gap-1">
-                                <button v-if="c.status === 'available'" @click="openLoanModal(c)"
+                                <button v-if="c.status === 'available' || c.status === 'reserved'" @click="openLoanModal(c)"
                                         class="btn-brand !py-1.5 !px-3 !text-xs">
                                     <Icon icon="mdi:book-arrow-right-outline" class="w-4 h-4" />
                                     Berish
@@ -132,6 +138,64 @@
                                 </button>
                                 <button @click="confirmDeleteCopy(c)" title="O'chirish" class="btn-ghost-icon danger">
                                     <Icon icon="mdi:delete-outline" class="w-4 h-4" />
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div v-if="(copies.last_page ?? 1) > 1"
+                     class="px-4 py-3 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
+                    <p class="text-xs text-gray-500">{{ copies.from }}–{{ copies.to }} / {{ copies.total }}</p>
+                    <div class="flex items-center gap-1.5">
+                        <template v-for="link in (copies.links ?? [])" :key="link.label">
+                            <component
+                                :is="link.url ? Link : 'span'"
+                                :href="link.url ?? undefined"
+                                preserve-scroll
+                                class="pagination-btn"
+                                :class="[link.active ? 'active' : '', !link.url ? 'disabled' : '']"
+                            >
+                                <Icon v-if="isPrevLabel(link.label)" icon="mdi:chevron-left" class="w-4 h-4" />
+                                <Icon v-else-if="isNextLabel(link.label)" icon="mdi:chevron-right" class="w-4 h-4" />
+                                <span v-else v-html="link.label" />
+                            </component>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navbat (band qilishlar) -->
+            <div v-if="book.reservations?.length" class="table-grid-wrap">
+                <div class="p-4 border-b border-gray-100">
+                    <p class="text-base font-bold text-gray-900">Navbat (band qilishlar)</p>
+                    <p class="text-xs text-gray-400 mt-0.5">Barcha nusxalari band bo'lgani uchun navbatga turgan talaba/xodimlar</p>
+                </div>
+                <table class="table-grid">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Ism</th>
+                        <th>Holati</th>
+                        <th class="text-right">Amallar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(r, i) in book.reservations" :key="r.id">
+                        <td class="text-sm text-gray-400">{{ i + 1 }}</td>
+                        <td class="text-sm font-semibold text-gray-900">{{ r.borrower_name || '—' }}</td>
+                        <td class="text-sm">
+                            <span v-if="r.status === 'ready'" class="badge-pill badge-success">
+                                Tayyor — {{ formatDateTime(r.expires_at) }}gacha
+                            </span>
+                            <span v-else class="badge-pill badge-neutral">Navbatda</span>
+                        </td>
+                        <td>
+                            <div class="flex items-center justify-end">
+                                <button @click="confirmCancelReservation(r)" class="btn-ghost-icon danger" title="Navbatni bekor qilish">
+                                    <Icon icon="mdi:close-circle-outline" class="w-4 h-4" />
                                 </button>
                             </div>
                         </td>
@@ -175,7 +239,11 @@
                             <option value="damaged">Shikastlangan</option>
                             <option value="lost">Yo'qolgan</option>
                             <option v-if="editingCopy?.status === 'loaned'" value="loaned">Berilgan</option>
+                            <option v-if="editingCopy?.status === 'reserved'" value="reserved">Band qilingan</option>
                         </select>
+                        <p v-if="editingCopy?.status === 'reserved'" class="text-xs text-amber-600 mt-1">
+                            Bu nusxa hozir navbatdagi bir shaxs uchun band qilingan. Holatni boshqasiga o'zgartirsangiz, band bekor bo'ladi.
+                        </p>
                         <p v-if="copyForm.errors.status" class="err">{{ copyForm.errors.status }}</p>
                     </div>
                     <div>
@@ -216,6 +284,18 @@
             <div class="bg-white rounded-2xl w-full max-w-md p-6 my-auto">
                 <h3 class="text-base font-bold text-gray-900 mb-1">Kitob berish</h3>
                 <p class="text-xs text-gray-400 mb-4">Nusxa: <strong>{{ loanTargetCopy?.inventory_code }}</strong></p>
+
+                <!-- Bu nusxa band qilingan bo'lsa — kimga berilishi kerakligi haqida ogohlantirish -->
+                <div v-if="loanReservationContext" class="rounded-lg border px-3 py-2 mb-4 text-xs"
+                     :class="isGivingToReservationHolder ? 'border-green-200 bg-green-50 text-green-700' : 'border-amber-200 bg-amber-50 text-amber-700'">
+                    <template v-if="isGivingToReservationHolder">
+                        ✓ Bu nusxa aynan <strong>{{ loanReservationContext.borrower_name }}</strong> uchun band qilingan — to'g'ri shaxsni berayapsiz.
+                    </template>
+                    <template v-else>
+                        ⚠️ Bu nusxa <strong>{{ loanReservationContext.borrower_name }}</strong> uchun band qilingan
+                        ({{ formatDateTime(loanReservationContext.expires_at) }}gacha). Boshqa shaxsga bersangiz, uning navbati bekor bo'ladi.
+                    </template>
+                </div>
 
                 <div class="space-y-4">
                     <div>
@@ -336,8 +416,8 @@
                 <div class="flex gap-3 mt-6">
                     <button @click="closeLoanModal" class="btn-neutral flex-1 justify-center">Bekor qilish</button>
                     <button @click="submitLoan" :disabled="loanForm.processing || !loanSelectedBorrower"
-                            class="btn-brand flex-1 justify-center">
-                        {{ loanForm.processing ? 'Berilmoqda...' : 'Berish' }}
+                            class="btn-brand flex-1 justify-center" :class="loanReservationContext && !isGivingToReservationHolder ? '!bg-amber-600' : ''">
+                        {{ loanForm.processing ? 'Berilmoqda...' : (loanReservationContext && !isGivingToReservationHolder ? "Baribir shu odamga berish" : 'Berish') }}
                     </button>
                 </div>
             </div>
@@ -365,6 +445,26 @@
             </div>
         </div>
 
+        <!-- Navbatni bekor qilish modali -->
+        <div v-if="cancelReservationTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+             style="background: rgba(0,0,0,0.5)" @click.self="cancelReservationTarget = null">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                    <Icon icon="mdi:close-circle-outline" class="w-6 h-6 text-red-500" />
+                </div>
+                <h3 class="text-base font-bold text-gray-900 text-center mb-2">Navbatni bekor qilish</h3>
+                <p class="text-sm text-gray-500 text-center mb-6">
+                    <strong>{{ cancelReservationTarget?.borrower_name }}</strong>ning navbatini bekor qilasizmi?
+                </p>
+                <div class="flex gap-3">
+                    <button @click="cancelReservationTarget = null" class="btn-neutral flex-1 justify-center">Yo'q</button>
+                    <button @click="submitCancelReservation" :disabled="cancelReservationProcessing" class="btn-danger-pill flex-1">
+                        {{ cancelReservationProcessing ? 'Bekor qilinmoqda...' : "Ha, bekor qilish" }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </AppLayout>
 </template>
 
@@ -377,10 +477,16 @@ import RichTextEditor from '@/Components/RichTextEditor.vue'
 
 const props = defineProps({
     book: { type: Object, required: true },
+    copies: { type: Object, default: () => ({ data: [], links: [], total: 0 }) },
     directions: { type: Array, default: () => [] },
     staffRoles: { type: Array, default: () => [] },
     maxActiveLoansPerBorrower: { type: Number, default: 3 },
 })
+
+// LibraryBooks/Index.vue'dagi bilan bir xil naqsh — Laravel'ning standart
+// "Previous"/"Next" yorliqlari o'rniga sof strelka ikonkalari ko'rsatiladi.
+const isPrevLabel = (label) => /Previous|&laquo;|«/i.test(label)
+const isNextLabel = (label) => /Next|&raquo;|»/i.test(label)
 
 const languageLabel = (v) => ({ uz: "O'zbek", ru: 'Rus', en: 'Ingliz' }[v] || v || '—')
 
@@ -403,6 +509,20 @@ const formatDate = (iso) => {
     return `${day}.${month}.${year}`
 }
 
+// Band qilish "tayyor" muddati — kun VA soatni ko'rsatish kerak, shuning
+// uchun 'formatDate()'dan farqli, UTC emas mahalliy vaqt getterlari
+// ishlatiladi (bu haqiqiy vaqt tamg'asi, calendar-only sana emas).
+const formatDateTime = (iso) => {
+    if (!iso) return '—'
+    const d = new Date(iso)
+    const day = String(d.getDate()).padStart(2, '0')
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const year = d.getFullYear()
+    const hour = String(d.getHours()).padStart(2, '0')
+    const minute = String(d.getMinutes()).padStart(2, '0')
+    return `${day}.${month}.${year}, ${hour}:${minute}`
+}
+
 const isOverdue = (loan) => {
     if (!loan?.due_date) return false
     const due = new Date(loan.due_date)
@@ -417,8 +537,6 @@ const isOverdue = (loan) => {
 // identifikatsiya uchun.
 const initials = (name) => (name || '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()
 
-const availableCount = computed(() => (props.book.copies || []).filter(c => c.status === 'available').length)
-
 // "loaned" holati talaba yoki xodimga bir xilda tegishli bo'lishi mumkin
 // (BookLoan.borrower_type) — shuning uchun statik "Talaba qo'lida" o'rniga
 // neytral matn ishlatiladi; kimga berilgani jadvaldagi "Kim oldi" ustunida
@@ -426,6 +544,7 @@ const availableCount = computed(() => (props.book.copies || []).filter(c => c.st
 const statusLabel = (v) => ({
     available: 'Mavjud',
     loaned:    'Berilgan',
+    reserved:  'Band qilingan',
     damaged:   'Shikastlangan',
     lost:      "Yo'qolgan",
 }[v] || v)
@@ -433,6 +552,7 @@ const statusLabel = (v) => ({
 const statusClass = (v) => ({
     available: 'badge-success',
     loaned:    'badge-brand',
+    reserved:  'badge-warning',
     damaged:   'badge-warning',
     lost:      'badge-danger',
 }[v] || 'badge-neutral')
@@ -485,6 +605,11 @@ const submitDeleteCopy = () => {
 // Kitob berish
 const loanModalOpen = ref(false)
 const loanTargetCopy = ref(null)
+// Agar berilayotgan nusxa band qilingan (status='reserved') bo'lsa — shu
+// band qilish yozuvi (kim uchun, qachongacha). Loan modali shu orqali
+// ogohlantirish ko'rsatadi va kerak bo'lsa 'override_reservation' bayrog'ini
+// avtomatik qo'shadi.
+const loanReservationContext = ref(null)
 const loanBorrowerType = ref('student')
 const loanSearchQuery = ref('')
 const loanSearchResults = ref([])
@@ -507,6 +632,16 @@ const loanForm = useForm({
     borrower_type: 'student',
     borrower_id: null,
     due_date: '',
+    override_reservation: false,
+})
+
+// Tanlangan shaxs band qilingan nusxaning egasi bilan bir xilmi — shu
+// asosida ogohlantirish rangi va yakuniy 'override_reservation' bayrog'i
+// hisoblanadi.
+const isGivingToReservationHolder = computed(() => {
+    if (!loanReservationContext.value || !loanSelectedBorrower.value) return false
+    return loanSelectedBorrower.value.type === loanReservationContext.value.borrower_type
+        && String(loanSelectedBorrower.value.id) === String(loanReservationContext.value.borrower_id)
 })
 
 const defaultDueDate = () => {
@@ -525,6 +660,7 @@ const resetLoanFilters = () => {
 
 const openLoanModal = (copy) => {
     loanTargetCopy.value = copy
+    loanReservationContext.value = copy.active_reservation || null
     loanBorrowerType.value = 'student'
     loanSearchQuery.value = ''
     loanSearchResults.value = []
@@ -536,12 +672,33 @@ const openLoanModal = (copy) => {
     loanForm.borrower_type = 'student'
     loanForm.borrower_id = null
     loanForm.due_date = defaultDueDate()
+    loanForm.override_reservation = false
+
+    // Band qilingan nusxa bo'lsa — qulaylik uchun to'g'ridan-to'g'ri o'sha
+    // band qilgan shaxsni tanlangan holatda ochamiz (kutubxonachi odatda
+    // aynan shu odamga berishni xohlaydi, qayta qidirishning hojati yo'q).
+    if (loanReservationContext.value) {
+        const ctx = loanReservationContext.value
+        loanBorrowerType.value = ctx.borrower_type
+        loanForm.borrower_type = ctx.borrower_type
+        selectBorrower({
+            type: ctx.borrower_type,
+            id: ctx.borrower_id,
+            name: ctx.borrower_name,
+            extra: null,
+            meta: null,
+            photo_url: null,
+            is_active: true,
+        })
+    }
+
     loanModalOpen.value = true
 }
 
 const closeLoanModal = () => {
     loanModalOpen.value = false
     loanTargetCopy.value = null
+    loanReservationContext.value = null
     loanBorrowerHistory.value = null
 }
 
@@ -648,6 +805,13 @@ const clearSelectedBorrower = () => {
 }
 
 const submitLoan = () => {
+    // Nusxa band qilingan, lekin tanlangan shaxs o'sha band egasi EMAS
+    // bo'lsa — kutubxonachi ogohlantirish matnini ko'rib turib "Baribir
+    // shu odamga berish" tugmasini bosgani, eski bandni bekor qilishga
+    // roziligi sifatida qabul qilinadi (server ham buni mustaqil ravishda
+    // qayta tekshiradi).
+    loanForm.override_reservation = !!(loanReservationContext.value && !isGivingToReservationHolder.value)
+
     // Tostr xabarini bu yerda alohida chaqirmaymiz — backend 'success'
     // flash xabarini qaytaradi, uni esa AppLayout'dagi umumiy watcher
     // (page.props.flash) allaqachon tostr qilib ko'rsatadi. Ikkalasini
@@ -676,6 +840,26 @@ const submitReturnLoan = () => {
         onFinish: () => {
             returnLoanProcessing.value = false
             returnLoanTarget.value = null
+        },
+    })
+}
+
+// Navbatni (band qilishni) kutubxonachi tomonidan bekor qilish — masalan
+// shaxs qo'ng'iroqqa javob bermasa yoki navbatga endi qiziqmasa.
+const cancelReservationTarget = ref(null)
+const cancelReservationProcessing = ref(false)
+
+const confirmCancelReservation = (reservation) => {
+    cancelReservationTarget.value = reservation
+}
+
+const submitCancelReservation = () => {
+    cancelReservationProcessing.value = true
+    router.post(route('admin.library.reservations.cancel', cancelReservationTarget.value.id), {}, {
+        preserveScroll: true,
+        onFinish: () => {
+            cancelReservationProcessing.value = false
+            cancelReservationTarget.value = null
         },
     })
 }

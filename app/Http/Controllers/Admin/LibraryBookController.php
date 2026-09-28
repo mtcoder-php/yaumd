@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLibraryBookRequest;
 use App\Http\Requests\UpdateLibraryBookRequest;
+use App\Models\BookCopy;
 use App\Models\Direction;
 use App\Models\LibraryBook;
 use App\Models\LibraryCategory;
@@ -81,21 +82,49 @@ class LibraryBookController extends Controller
 
     public function show(int $id): Response
     {
-        $book = LibraryBook::with([
-            'category',
-            'addedBy',
-            'copies' => fn ($q) => $q->latest(),
-            // Har bir nusxaning HOZIRGI faol abonementi (agar bo'lsa) —
-            // Show.vue shu orqali "kimda, qachongacha" ko'rsatadi.
-            // 'borrower' — MorphTo (student/staff), Student va User
-            // modellari ustida BIR XIL nom (fullName()/full_name) yo'q
-            // bo'lgani uchun frontendda ikkalasini ham hisobga olamiz.
-            'copies.activeLoan.borrower',
-            'copies.activeLoan.issuedBy',
-        ])->findOrFail($id);
+        $book = LibraryBook::with(['category', 'addedBy'])
+            ->withCount([
+                'copies',
+                'copies as available_copies_count' => fn ($q) => $q->where('status', 'available'),
+            ])
+            ->with([
+                // Navbat paneli — hali hal bo'lmagan (waiting/ready) barcha
+                // band qilishlar, eng eski birinchi (FIFO navbat tartibi).
+                // Bular odatda ko'p sonli bo'lmagani uchun (aktiv navbat
+                // uzunligi cheklangan) sahifalashsiz to'liq yuklanadi.
+                'reservations' => fn ($q) => $q->whereIn('status', ['waiting', 'ready'])->oldest('created_at'),
+                'reservations.borrower',
+            ])
+            ->findOrFail($id);
+
+        // Fizik nusxalar (inventar) endi ALOHIDA sahifalangan so'rov orqali
+        // keladi ("$book->copies" emas) — kutubxonachi bir martada 100 tagacha
+        // nusxa qo'sha oladigan bo'lgandan beri (BookCopyController::store()),
+        // hammasini bitta sahifada ko'rsatish jadvalni haddan tashqari
+        // uzun qilib yuborardi. Umumiy/bo'sh soni yuqoridagi withCount()
+        // orqali (book.copies_count / book.available_copies_count) — bu
+        // sonlar HAR DOIM to'g'ri bo'lishi kerak, joriy sahifada nechta
+        // qator ko'rinayotganidan qat'i nazar.
+        $copies = BookCopy::where('book_id', $book->id)
+            ->with([
+                // Har bir nusxaning HOZIRGI faol abonementi (agar bo'lsa) —
+                // Show.vue shu orqali "kimda, qachongacha" ko'rsatadi.
+                // 'borrower' — MorphTo (student/staff), Student va User
+                // modellari ustida BIR XIL nom (fullName()/full_name) yo'q
+                // bo'lgani uchun frontendda ikkalasini ham hisobga olamiz.
+                'activeLoan.borrower',
+                'activeLoan.issuedBy',
+                // Nusxa 'reserved' holatida bo'lsa — u AYNAN kim uchun ushlab
+                // turilgani va qachongacha kelib olishi kerakligi.
+                'activeReservation.borrower',
+            ])
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('Admin/LibraryBooks/Show', [
             'book' => $book,
+            'copies' => $copies,
             // Kitob berish oynasidagi "kimga beriladi" qidiruvini filtrlash
             // uchun kerak bo'lgan spravochnik ma'lumotlar — talaba uchun
             // yo'nalishlar ro'yxati (guruh esa yo'nalish+kurs tanlangach

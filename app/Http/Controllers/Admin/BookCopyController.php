@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateBookCopyRequest;
 use App\Models\BookCopy;
 use App\Models\BookLoan;
 use App\Models\LibraryBook;
+use App\Services\LibraryReservationService;
 
 class BookCopyController extends Controller
 {
@@ -41,9 +42,9 @@ class BookCopyController extends Controller
         return back()->with('success', "{$quantity} ta nusxa qo'shildi! Inventar raqamlari: {$range}.");
     }
 
-    public function update(UpdateBookCopyRequest $request, int $id, int $copyId)
+    public function update(UpdateBookCopyRequest $request, int $id, int $copyId, LibraryReservationService $reservations)
     {
-        $copy = BookCopy::where('book_id', $id)->findOrFail($copyId);
+        $copy = BookCopy::where('book_id', $id)->with('activeReservation')->findOrFail($copyId);
         $data = $request->validated();
 
         // Nusxani "talaba/xodim qo'lida" holatiga FAQAT kitob berish
@@ -54,7 +55,17 @@ class BookCopyController extends Controller
             return back()->with('error', "Nusxani \"olingan\" holatiga faqat kitob berish orqali o'tkazish mumkin.");
         }
 
+        // Xuddi shu sabab bilan — "band qilingan" holatiga FAQAT
+        // rezervatsiya navbati (LibraryReservationService) o'tkazishi
+        // mumkin, aks holda BookReservation yozuvsiz "reserved" nusxa
+        // paydo bo'lib qolardi (kim uchun ekani noma'lum).
+        if (($data['status'] ?? $copy->status) === 'reserved' && $copy->status !== 'reserved') {
+            return back()->with('error', "Nusxani \"band qilingan\" holatiga faqat rezervatsiya navbati orqali o'tkazish mumkin.");
+        }
+
         $wasLoaned = $copy->status === 'loaned';
+        $wasReserved = $copy->status === 'reserved';
+        $activeReservation = $copy->activeReservation;
 
         $copy->update($data);
 
@@ -74,6 +85,23 @@ class BookCopyController extends Controller
             }
         }
 
+        // Xuddi shunday — nusxa band qilingan edi, lekin admin uni qo'lda
+        // boshqa holatga o'tkazsa, eski band qilish yozuvi "ready" bo'lib
+        // osilib qolmasin (endi hech qaysi nusxaga ishora qilmaydigan
+        // "yolg'on" band bo'lib qolar edi). 'available'ga o'tkazilsa,
+        // navbatda boshqa kutayotgan bo'lsa, nusxa DARHOL ularga o'tadi
+        // (releaseCopy=true); 'damaged'/'lost' bo'lsa, nusxa endi hech
+        // kimga berib bo'lmaydi, shuning uchun band shunchaki bekor
+        // qilinadi (releaseCopy=false).
+        if ($wasReserved && $copy->status !== 'reserved' && $activeReservation) {
+            $reservations->cancel(
+                $activeReservation,
+                $request->user()->id,
+                'librarian_override',
+                releaseCopy: $copy->status === 'available',
+            );
+        }
+
         return back()->with('success', 'Nusxa ma\'lumotlari yangilandi!');
     }
 
@@ -83,6 +111,10 @@ class BookCopyController extends Controller
 
         if ($copy->status === 'loaned') {
             return back()->with('error', "Bu nusxa hozir talaba qo'lida — avval qaytarilishi kerak.");
+        }
+
+        if ($copy->status === 'reserved') {
+            return back()->with('error', "Bu nusxa hozir band qilingan — avval navbatni bekor qiling yoki shaxs kelib olguncha kuting.");
         }
 
         $copy->delete();

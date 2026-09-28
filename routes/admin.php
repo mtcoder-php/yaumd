@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\LibraryCategoryController;
 use App\Http\Controllers\Admin\LibraryBookController;
 use App\Http\Controllers\Admin\BookCopyController;
 use App\Http\Controllers\Admin\LibraryLoanController;
+use App\Http\Controllers\Admin\LibraryReservationController;
 use App\Http\Controllers\Admin\StudentLibraryController;
 use App\Http\Controllers\Admin\BookPurchaseController;
 use App\Http\Controllers\Admin\CourseCatalogController;
@@ -354,6 +355,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/borrowers/{type}/{id}/history', [LibraryLoanController::class, 'borrowerHistory'])->name('loans.borrower-history')->middleware('permission:library.create');
         Route::post('/{id}/loans',             [LibraryLoanController::class, 'store'])->name('loans.store')->middleware('permission:library.create');
         Route::post('/loans/{loanId}/return',  [LibraryLoanController::class, 'returnLoan'])->name('loans.return')->middleware('permission:library.edit');
+
+        // Kitob band qilish (rezervatsiya) navbati — kutubxonachi tomonidan
+        // qo'lda bekor qilish (masalan shaxs qo'ng'iroqqa javob bermasa).
+        // Talaba/xodimning O'ZI o'z navbatini 'my-library' guruhidagi
+        // alohida marshrut orqali bekor qiladi (pastda).
+        Route::post('/reservations/{id}/cancel', [LibraryReservationController::class, 'cancel'])->name('reservations.cancel')->middleware('permission:library.edit');
     });
 
     // "Kurslarim" — joriy foydalanuvchining o'ziga yozilgan (Enrollment)
@@ -400,6 +407,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::prefix('my-library')->name('my-library.')->group(function () {
         Route::get('/',     [StudentLibraryController::class, 'index'])->name('index');
         Route::get('/{id}', [StudentLibraryController::class, 'show'])->name('show');
+
+        // Kitob band qilish (rezervatsiya) — barcha nusxalar band bo'lganda
+        // navbatga turish va o'z navbatini bekor qilish.
+        Route::post('/{id}/reserve',             [StudentLibraryController::class, 'reserve'])->name('reserve');
+        Route::post('/reservations/{id}/cancel', [StudentLibraryController::class, 'cancelReservation'])->name('reservations.cancel');
 
         // Pullik elektron kitobni Click yoki Payme orqali sotib olish.
         // Haqiqiy ruxsat bu yerda EMAS, balki server-serverga keladigan

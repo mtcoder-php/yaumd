@@ -39,6 +39,17 @@ class BookCopy extends Model
     }
 
     /**
+     * activeLoan()dagi bilan bir xil naqsh — agar bu nusxa hozir aynan bir
+     * shaxs uchun "band qilib" ushlab turilgan bo'lsa (status='reserved'),
+     * shu band qilish yozuvi. Show.vue jadvalida "Kim uchun band" ustuni
+     * shu orqali ko'rsatiladi.
+     */
+    public function activeReservation(): HasOne
+    {
+        return $this->hasOne(BookReservation::class)->where('status', BookReservation::STATUS_READY)->latestOfMany();
+    }
+
+    /**
      * Yangi nusxalar uchun ketma-ket inventar raqamlari — "KUT-000001"
      * shaklida (Show.vue'dagi eski qo'lda kiritish namunasi bilan bir xil
      * format). 'inventory_code' butun jadval bo'yicha GLOBAL unikal ustun

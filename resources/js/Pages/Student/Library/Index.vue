@@ -7,6 +7,37 @@
                 <p class="text-sm text-gray-500 mt-0.5">Universitet elektron kutubxona katalogi — jami {{ books.total }} ta kitob</p>
             </div>
 
+            <!-- Mening navbatlarim -->
+            <div v-if="myReservations.length" class="bg-white rounded-2xl border border-gray-100 p-4"
+                 style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
+                <p class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
+                    <Icon icon="mdi:bookmark-multiple-outline" class="w-4 h-4 text-gray-400" />
+                    Mening navbatlarim
+                </p>
+                <div class="space-y-2">
+                    <div v-for="r in myReservations" :key="r.id"
+                         class="flex items-center justify-between gap-3 rounded-xl border px-3 py-2"
+                         :class="r.status === 'ready' ? 'border-green-200 bg-green-50' : 'border-gray-100 bg-gray-50'">
+                        <Link :href="route('admin.my-library.show', r.book.id)" class="flex items-center gap-2 min-w-0 hover:underline">
+                            <div class="w-8 h-10 rounded bg-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                <img v-if="r.book.cover_image_url" :src="r.book.cover_image_url" class="w-full h-full object-cover" alt="">
+                                <Icon v-else icon="mdi:book-outline" class="w-4 h-4 text-gray-400" />
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-gray-900 truncate">{{ r.book.title }}</p>
+                                <p class="text-xs" :class="r.status === 'ready' ? 'text-green-700 font-semibold' : 'text-gray-400'">
+                                    {{ r.status === 'ready' ? `Tayyor! ${formatDateTime(r.expires_at)}gacha oling` : `${r.queue_position}-o'rinda navbatda` }}
+                                </p>
+                            </div>
+                        </Link>
+                        <button @click="cancelReservation(r.id)" :disabled="cancellingId === r.id"
+                                class="text-xs text-red-500 hover:text-red-600 font-semibold flex-shrink-0">
+                            Bekor qilish
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Filters -->
             <div class="bg-white rounded-2xl border border-gray-100 p-4 flex flex-wrap gap-3"
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.05)">
@@ -89,10 +120,34 @@ import { Icon } from '@iconify/vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
-    books:      { type: Object, default: () => ({ data: [], links: [], total: 0 }) },
-    categories: { type: Array, default: () => [] },
-    filters:    { type: Object, default: () => ({}) },
+    books:          { type: Object, default: () => ({ data: [], links: [], total: 0 }) },
+    categories:     { type: Array, default: () => [] },
+    filters:        { type: Object, default: () => ({}) },
+    myReservations: { type: Array, default: () => [] },
 })
+
+// LibraryBooks/Show.vue'dagi bilan bir xil sabab bilan qo'lda tuziladi
+// ('toLocaleDateString' "uz-UZ" lokalida ko'pincha YYYY-MM-DD tartibini
+// qaytaradi) — bu yerda haqiqiy vaqt tamg'asi (soat bilan) ko'rsatiladi.
+const formatDateTime = (iso) => {
+    if (!iso) return '—'
+    const d = new Date(iso)
+    const day = String(d.getDate()).padStart(2, '0')
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const year = d.getFullYear()
+    const hour = String(d.getHours()).padStart(2, '0')
+    const minute = String(d.getMinutes()).padStart(2, '0')
+    return `${day}.${month}.${year}, ${hour}:${minute}`
+}
+
+const cancellingId = ref(null)
+const cancelReservation = (id) => {
+    cancellingId.value = id
+    router.post(route('admin.my-library.reservations.cancel', id), {}, {
+        preserveScroll: true,
+        onFinish: () => { cancellingId.value = null },
+    })
+}
 
 const filters = ref({
     search:      props.filters.search || '',
