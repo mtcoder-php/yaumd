@@ -265,6 +265,21 @@ class LibraryLoanController extends Controller
             $reservations->fulfil($fulfillingReservation, $loan);
         }
 
+        // MUHIM: shu shaxsning AYNAN shu kitobga BOSHQA faol (waiting/ready)
+        // band qilishi ham qolib ketmasligi kerak — masalan kutubxonachi
+        // navbatni hisobga olmay, oddiy bo'sh nusxadan to'g'ridan-to'g'ri
+        // bergan bo'lishi mumkin (band qilingan 'reserved' nusxadan emas).
+        // Bu bo'lmasa, odam kitobni allaqachon qo'lga olgan bo'lsa ham,
+        // uning eski band qilishi abadiy "navbatda"/"band" bo'lib qolib
+        // ketar edi.
+        $reservations->resolveDanglingReservations(
+            $book,
+            $data['borrower_type'],
+            $borrowerModel->id,
+            $loan,
+            $fulfillingReservation?->id,
+        );
+
         // Kitob berilgan zahoti darhol tasdiq xabari — 'library:notify-loans'
         // buyrug'i orqali keladigan (muddat yaqinlashganda/o'tganda) eslatma
         // xabarlaridan MUSTAQIL, alohida bir martalik xabar. Borrower
@@ -293,23 +308,59 @@ class LibraryLoanController extends Controller
      * shaxs uchun "band" holatiga o'tadi va unga Telegram xabari boradi
      * (LibraryReservationService::onCopyReturned()ga qarang).
      */
-    public function returnLoan(Request $request, int $loanId, LibraryReservationService $reservations)
+    public function returnLoan(Request $request, int $loanId, TelegramService $telegram, LibraryReservationService $reservations)
     {
-        $loan = BookLoan::with('bookCopy')->findOrFail($loanId);
+        $loan = BookLoan::with(['bookCopy.book', 'borrower'])->findOrFail($loanId);
 
         if ($loan->status !== BookLoan::STATUS_ACTIVE) {
             return back()->with('error', 'Bu kitob allaqachon qaytarilgan/yopilgan.');
         }
 
+        $returnedAt = now();
+
         $loan->update([
             'status' => BookLoan::STATUS_RETURNED,
-            'returned_at' => now(),
+            'returned_at' => $returnedAt,
             'returned_to' => $request->user()->id,
         ]);
 
         $copy = $loan->bookCopy;
         $copy->update(['status' => 'available']);
         $reservations->onCopyReturned($copy);
+
+        // Kitob berilganda yuboriladigan instant tasdiq xabari bilan bir xil
+        // naqsh (yuqoridagi store()ga qarang) — endi qaytarishni ham
+        // "yopib qo'yadi": qaysi sanada qaytargani va muddatidan oldin/
+        // kechikib ekanini ko'rsatadi.
+        $borrower = $loan->borrower;
+
+        if ($borrower?->telegram_chat_id) {
+            $bookTitle = $loan->bookCopy?->book?->title ?? 'Kitob';
+            $returnedDate = $returnedAt->copy()->startOfDay();
+            $dueDate = $loan->due_date->copy()->startOfDay();
+
+            if ($returnedDate->equalTo($dueDate)) {
+                $statusText = "Aynan muddatida qaytardingiz — rahmat!";
+            } elseif ($returnedDate->lessThan($dueDate)) {
+                $daysEarly = $returnedDate->diffInDays($dueDate);
+                $statusText = "Muddatidan {$daysEarly} kun oldin qaytardingiz — rahmat!";
+            } else {
+                $daysLate = $dueDate->diffInDays($returnedDate);
+                $statusText = "Muddatidan {$daysLate} kun kech qaytardingiz.";
+            }
+
+            $telegram->sendMessage(
+                $borrower->telegram_chat_id,
+                "✅ Siz <b>{$bookTitle}</b> kitobini <b>{$returnedDate->format('d.m.Y')}</b> sanada qaytardingiz.\n{$statusText}"
+            );
+
+            LibraryLoanNotification::create([
+                'book_loan_id' => $loan->id,
+                'type' => LibraryLoanNotification::TYPE_RETURNED,
+                'week' => 0,
+                'sent_at' => now(),
+            ]);
+        }
 
         $message = 'Kitob qaytarib olindi!';
         if ($copy->fresh()->status === 'reserved') {

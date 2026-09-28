@@ -227,6 +227,79 @@ class LibraryReservationService
     }
 
     /**
+     * Kitobga yangi fizik nusxa(lar) qo'shilganda (BookCopyController::
+     * store()) chaqiriladi — agar shu kitobga allaqachon navbat bo'lsa,
+     * yangi nusxalar DARHOL navbatdagi eng eski kutayotganlarga
+     * taqsimlanadi (har biriga alohida Telegram xabari bilan), qolgani
+     * esa oddiy 'available' bo'lib qoladi.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, BookCopy>  $newCopies  Yangi qo'shilgan, hali 'available' bo'lgan nusxalar
+     * @return int nechta nusxa navbatga taqsimlangani
+     */
+    public function assignNewCopiesToQueue(\Illuminate\Database\Eloquent\Collection $newCopies): int
+    {
+        if ($newCopies->isEmpty()) {
+            return 0;
+        }
+
+        $waitingCount = BookReservation::where('book_id', $newCopies->first()->book_id)
+            ->where('status', BookReservation::STATUS_WAITING)
+            ->count();
+
+        if ($waitingCount === 0) {
+            return 0;
+        }
+
+        $toAssign = min($waitingCount, $newCopies->count());
+        $assigned = 0;
+
+        foreach ($newCopies->take($toAssign) as $copy) {
+            $this->releaseCopy($copy);
+            $assigned++;
+        }
+
+        return $assigned;
+    }
+
+    /**
+     * Kitob (qaysi yo'l bilan bo'lmasin — band qilingan nusxadan yoki
+     * oddiy bo'sh nusxadan) shu shaxsga berilgach chaqiriladi: agar shu
+     * shaxsning AYNAN shu kitobga boshqa FAOL (waiting/ready) band
+     * qilishi ham qolib ketgan bo'lsa (masalan kutubxonachi navbatni
+     * hisobga olmay, boshqa bo'sh nusxadan to'g'ridan-to'g'ri bergan
+     * bo'lsa), u ham yopiladi — aks holda odam kitobni allaqachon qo'lga
+     * olgan bo'lsa ham, navbatda/band bo'lib abadiy osilib qolar edi.
+     * Agar o'sha eski band qilish ALOHIDA nusxaga bog'langan bo'lsa
+     * (status='ready'), o'sha nusxa ham bo'shatiladi (navbatda yana
+     * boshqa kimdir bo'lsa, unga o'tadi).
+     */
+    public function resolveDanglingReservations(
+        LibraryBook $book,
+        string $borrowerType,
+        int $borrowerId,
+        BookLoan $loan,
+        ?int $exceptReservationId = null,
+    ): void {
+        $stale = BookReservation::where('book_id', $book->id)
+            ->where('borrower_type', $borrowerType)
+            ->where('borrower_id', $borrowerId)
+            ->whereIn('status', [BookReservation::STATUS_WAITING, BookReservation::STATUS_READY])
+            ->when($exceptReservationId, fn ($q) => $q->where('id', '!=', $exceptReservationId))
+            ->with('bookCopy')
+            ->get();
+
+        foreach ($stale as $reservation) {
+            $oldCopy = $reservation->bookCopy;
+
+            $this->fulfil($reservation, $loan);
+
+            if ($oldCopy && $oldCopy->id !== $loan->book_copy_id) {
+                $this->releaseCopy($oldCopy->fresh());
+            }
+        }
+    }
+
+    /**
      * Shu talaba/xodimning shu kitobdagi FAOL (waiting/ready) band qilishi
      * — Student/Library/Show.vue "band qilish" tugmasi o'rniga joriy
      * holatni ko'rsatishi uchun.

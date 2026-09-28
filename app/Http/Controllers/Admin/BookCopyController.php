@@ -12,7 +12,7 @@ use App\Services\LibraryReservationService;
 
 class BookCopyController extends Controller
 {
-    public function store(StoreBookCopyRequest $request, int $id)
+    public function store(StoreBookCopyRequest $request, int $id, LibraryReservationService $reservations)
     {
         $book = LibraryBook::findOrFail($id);
         $data = $request->validated();
@@ -37,9 +37,28 @@ class BookCopyController extends Controller
 
         BookCopy::insert($rows);
 
+        // MUHIM: agar yangi nusxalar "mavjud" (available) holatida
+        // qo'shilayotgan bo'lsa VA shu kitobga allaqachon navbat (band
+        // qilish) bo'lsa — ular DARHOL navbatdagi eng eski
+        // kutayotganlarga taqsimlanadi (har biriga Telegram xabari bilan).
+        // Bu bo'lmasa, ilgari band qilib navbatga turgan talaba/xodim
+        // kitob allaqachon paydo bo'lganidan umuman xabardor bo'lmay,
+        // navbati abadiy "kutmoqda" bo'lib qolar edi.
+        $assignedToQueue = 0;
+
+        if ($data['status'] === 'available') {
+            $newCopies = BookCopy::whereIn('inventory_code', $codes)->get();
+            $assignedToQueue = $reservations->assignNewCopiesToQueue($newCopies);
+        }
+
         $range = $quantity > 1 ? "{$codes[0]} – {$codes[array_key_last($codes)]}" : $codes[0];
 
-        return back()->with('success', "{$quantity} ta nusxa qo'shildi! Inventar raqamlari: {$range}.");
+        $message = "{$quantity} ta nusxa qo'shildi! Inventar raqamlari: {$range}.";
+        if ($assignedToQueue > 0) {
+            $message .= " Shundan {$assignedToQueue} tasi navbatda kutgan talaba/xodimlarga avtomatik band qilindi va ularga Telegram xabari yuborildi.";
+        }
+
+        return back()->with('success', $message);
     }
 
     public function update(UpdateBookCopyRequest $request, int $id, int $copyId, LibraryReservationService $reservations)
